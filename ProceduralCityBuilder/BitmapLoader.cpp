@@ -4,7 +4,7 @@
 #include "BitshiftingUtility.hpp"
 #include <cmath>
 
-pcb::Image::Image() {
+pcb::Image::Image() : pixelArray(nullptr), widthInPixels(0), heightInPixels(0) {
 
 }
 
@@ -78,7 +78,7 @@ pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
 		break;
 	}
 
-	int pixelStorageRowSizeInBytes = 4 * std::ceil((colorDepth * bitmapWidth) / 32.0f);
+	int pixelStorageRowSizeInBytes = static_cast<int>(4 * std::ceil((colorDepth * bitmapWidth) / 32.0f));
 	int pixelArraySizeInBytes = pixelStorageRowSizeInBytes * std::abs(bitmapHeight);
 	char* pixelBuffer = new char[pixelArraySizeInBytes];
 	fileStream.seekg(pixelArrayOffset);

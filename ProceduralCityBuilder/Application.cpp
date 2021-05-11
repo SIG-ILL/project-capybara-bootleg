@@ -2,7 +2,6 @@
 #include <GL/freeglut.h>
 
 #include "Application.hpp"
-#include "BitmapLoader.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -26,27 +25,10 @@ pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0)
 	
 }
 
-GLuint textureId;
-
 void pcb::Application::run(Application* instance, int argc, char* argv[]) {
 	Application::instance = instance;
 
 	initializeGLUT(argc, argv);
-
-
-
-
-	pcb::BitmapLoader loader;
-	Image* image = loader.loadFromFile("test2.bmp");
-	glGenTextures(1, &textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image->getWidth(), image->getHeight(), 0, GL_BGR, GL_UNSIGNED_BYTE, image->getPixels());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	delete image;
-
-
-
 
 	glutMainLoop();
 }
@@ -132,49 +114,11 @@ void drawTestShape() {
 		0, 0, 0.5
 	};
 
-	GLfloat textures[]{
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-	};
-
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, vertices);	
 	glColorPointer(3, GL_FLOAT, 0, colors);
-	glTexCoordPointer(2, GL_FLOAT, 0, textures);
 	glDrawArrays(GL_QUADS, 0, 24);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
@@ -221,11 +165,11 @@ void pcb::Application::render() {
 }
 
 void pcb::Application::reshape(int width, int height) {
-	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90, (float)width/height, 1, 1000);
+	gluPerspective(90, static_cast<float>(width) / height, 1, 1000);
 	glMatrixMode(GL_MODELVIEW);
 }
 
