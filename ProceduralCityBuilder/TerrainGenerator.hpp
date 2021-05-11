@@ -1,8 +1,10 @@
 #pragma once
 
-class TerrainGenerator {
-public:
-	TerrainGenerator();
+namespace pcb {
+	class TerrainGenerator {
+	public:
+		TerrainGenerator();
 
-	void generate();
-};
+		void generate();
+	};
+}

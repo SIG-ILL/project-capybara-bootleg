@@ -2,16 +2,31 @@
 
 #include "BitmapLoader.hpp"
 #include "BitshiftingUtility.hpp"
+#include <cmath>
 
-Image::Image() {
-
-}
-
-Image::~Image() {
+pcb::Image::Image() {
 
 }
 
-Image* BitmapLoader::loadFromFile(std::string filename) {
+pcb::Image::Image(char* sourcePixels, int pixelArraySize, int width, int height) : pixelArray(new char[pixelArraySize]), widthInPixels(width), heightInPixels(height) {
+	for (int i = 0; i < pixelArraySize; i++) {
+		pixelArray[i] = sourcePixels[i];
+	}
+}
+
+pcb::Image::~Image() {
+	delete[] pixelArray;
+}
+
+int pcb::Image::getWidth() { return widthInPixels; }
+
+int pcb::Image::getHeight() { return heightInPixels; }
+
+char* pcb::Image::getPixels() { return pixelArray; }
+
+
+
+pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
 	std::ifstream fileStream;
 	fileStream.open(filename, std::fstream::binary);
 	if (!fileStream.is_open()) {
@@ -29,15 +44,14 @@ Image* BitmapLoader::loadFromFile(std::string filename) {
 
 	char bufferInt[4];
 	fileStream.read(bufferInt, 4);
-	int pixelArrayOffset = (int)(((unsigned char)bufferInt[3] << 24) | ((unsigned char)bufferInt[2] << 16) | ((unsigned char)bufferInt[1] << 8) | (unsigned char)bufferInt[0]);
-	//int pixelArrayOffset = littleToBigEndian<int>(bufferInt, 4);
+	int pixelArrayOffset = pcb::littleToBigEndian<int>(bufferInt, 4);
 
 	fileStream.read(bufferInt, 4);
-	int headerSize = (unsigned int)(((unsigned char)bufferInt[3] << 24) | ((unsigned char)bufferInt[2] << 16) | ((unsigned char)bufferInt[1] << 8) | (unsigned char)bufferInt[0]);
+	int headerSize = pcb::littleToBigEndian<unsigned int>(bufferInt, 4);
 
-	int bitmapWidth;
-	int bitmapHeight;
-	short colorDepth;
+	int bitmapWidth = 0;
+	int bitmapHeight = 0;	// If negative, pixels stored from top to bottom. Else (default) stored from bottom to top.
+	short colorDepth = 0;
 
 	switch (headerSize) {
 	case 12:
@@ -53,16 +67,31 @@ Image* BitmapLoader::loadFromFile(std::string filename) {
 	case 108:	
 	case 40:
 		fileStream.read(bufferInt, 4);
-		bitmapWidth = (int)(((unsigned char)bufferInt[3] << 24) | ((unsigned char)bufferInt[2] << 16) | ((unsigned char)bufferInt[1] << 8) | (unsigned char)bufferInt[0]);
+		bitmapWidth = pcb::littleToBigEndian<int>(bufferInt, 4);
 		fileStream.read(bufferInt, 4);
-		bitmapHeight = (int)(((unsigned char)bufferInt[3] << 24) | ((unsigned char)bufferInt[2] << 16) | ((unsigned char)bufferInt[1] << 8) | (unsigned char)bufferInt[0]);
+		bitmapHeight = pcb::littleToBigEndian<int>(bufferInt, 4);
 
 		fileStream.ignore(2);
 		char colorDepthBuffer[2];
 		fileStream.read(colorDepthBuffer, 2);
-		colorDepth = (short)(((unsigned char)colorDepthBuffer[1] << 8) | ((unsigned char)colorDepthBuffer[0]));
+		colorDepth = pcb::littleToBigEndian<short>(colorDepthBuffer, 2);
 		break;
 	}
 
+	int pixelStorageRowSizeInBytes = 4 * std::ceil((colorDepth * bitmapWidth) / 32.0f);
+	int pixelArraySizeInBytes = pixelStorageRowSizeInBytes * std::abs(bitmapHeight);
+	char* pixelBuffer = new char[pixelArraySizeInBytes];
+	fileStream.seekg(pixelArrayOffset);
+	fileStream.read(pixelBuffer, pixelArraySizeInBytes);
+
 	fileStream.close();
+
+	char* pixelBufferReOrdered = new char[pixelArraySizeInBytes];
+
+
+	Image* image = new Image(pixelBuffer, pixelArraySizeInBytes, bitmapWidth, bitmapHeight);
+	delete[] pixelBuffer;
+	delete[] pixelBufferReOrdered;
+
+	return image;
 }

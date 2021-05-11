@@ -1,9 +1,9 @@
 #include "TerrainGenerator.hpp"
 
-TerrainGenerator::TerrainGenerator() {
+pcb::TerrainGenerator::TerrainGenerator() {
 
 }
 
-void TerrainGenerator::generate() {
+void pcb::TerrainGenerator::generate() {
 
 }
