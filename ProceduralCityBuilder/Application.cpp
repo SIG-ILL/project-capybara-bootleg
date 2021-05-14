@@ -2,6 +2,7 @@
 #include <GL/freeglut.h>
 
 #include "Application.hpp"
+#include "BitmapLoader.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -21,14 +22,25 @@ void pcb::Application::idleCallback() {
 	instance->idleUpdate();
 }
 
-pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1) {
-	
+pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), testTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr }, renderObjectsDataPointers{ nullptr, nullptr, nullptr } {}
+
+pcb::Application::~Application() {
+	delete testTexture;
+
+	for (SimpleObject* object : renderObjects) {
+		delete object;
+	}
+
+	for (GLfloat* renderObjectDataPointer : renderObjectsDataPointers) {
+		delete[] renderObjectDataPointer;
+	}
 }
 
 void pcb::Application::run(Application* instance, int argc, char* argv[]) {
 	Application::instance = instance;
 
-	initializeGLUT(argc, argv);
+	initializeGLUT(argc, argv);		// Create OpenGL context before doing anything else OpenGL-related (obviously, but sometimes a necessary reminder).
+	loadResources();
 
 	glutMainLoop();
 }
@@ -49,8 +61,13 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 	glEnable(GL_DEPTH_TEST);
 }
 
-void drawTestShape() {
-	GLfloat vertices[] = {
+void pcb::Application::loadResources() {
+	pcb::BitmapLoader imageLoader;
+	Image* textureImage = imageLoader.loadFromFile("test2.bmp");
+	testTexture = new Texture(textureImage);
+	delete textureImage;
+
+	GLfloat* vertices = new GLfloat[72] {
 		-0.25, -0.25, -0.25,
 		0.25, -0.25, -0.25,
 		0.25, 0.25, -0.25,
@@ -82,7 +99,7 @@ void drawTestShape() {
 		-0.25, -0.25, 0.25
 	};
 
-	GLfloat colors[]{
+	GLfloat* colors = new GLfloat[72] {
 		1, 0, 0,
 		1, 0, 0,
 		1, 0, 0,
@@ -114,15 +131,59 @@ void drawTestShape() {
 		0, 0, 0.5
 	};
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);	
-	glColorPointer(3, GL_FLOAT, 0, colors);
-	glDrawArrays(GL_QUADS, 0, 24);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	GLfloat* textureCoordinates = new GLfloat[48] {
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0,
 
-	glDisable(GL_TEXTURE_2D);
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0,
+
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0,
+
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0,
+
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0,
+
+		0.0, 0.0,
+		0.0, 1.0,
+		1.0, 1.0,
+		1.0, 0.0
+	};
+
+	renderObjectsDataPointers[0] = vertices;
+	renderObjectsDataPointers[1] = colors;
+	renderObjectsDataPointers[2] = textureCoordinates;
+
+	pcb::SimpleObject* simpleObject = new SimpleObject(vertices, 24);
+	simpleObject->setPosition(-1, 0, 0);
+	pcb::SimpleColoredObject* coloredObject = new SimpleColoredObject(vertices, 24, colors);
+	pcb::SimpleTexturedObject* texturedObject = new SimpleTexturedObject(vertices, 24, *testTexture, textureCoordinates);
+	texturedObject->setPosition(1, 0, 0);
+
+	renderObjects[0] = simpleObject;
+	renderObjects[1] = coloredObject;
+	renderObjects[2] = texturedObject;
+}
+
+void pcb::Application::drawTestShapes() {
+	renderObjects[1]->setPosition(translationX, translationY, 0);
+
+	for (SimpleObject* object : renderObjects) {
+		object->render();
+	}
 }
 
 void pcb::Application::render() {
@@ -131,33 +192,35 @@ void pcb::Application::render() {
 	glPushMatrix();
 	glTranslatef(0, 0, -2);
 
-	glPushMatrix();
+	drawTestShapes();
+
+	/*glPushMatrix();
 	glTranslatef(-1, 0, 0);
 	glRotatef(90, 1, 1, 1);
 	glScalef(0.75, 0.75, 0.75);
-	drawTestShape();
+	drawTestShapes();
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(1, 0, 0);
 	glRotatef(90, 1, 1, 1);
 	glScalef(0.75, 0.75, 0.75);
-	drawTestShape();
+	drawTestShapes();
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(translationX, translationY, 0);
 	glRotatef(rotationZ, 1, 1, 1);
 	glScalef(scale, scale, scale);
-	drawTestShape();
+	drawTestShapes();
 	glPopMatrix();
 
 	// Center dot
 	glColor3f(0.5f, 0.5f, 0.5f);
 	glPushMatrix();
 	glScalef(0.025f, 0.025f, 0.025f);
-	drawTestShape();
-	glPopMatrix();
+	drawTestShapes();
+	glPopMatrix();*/
 
 	glPopMatrix();
 

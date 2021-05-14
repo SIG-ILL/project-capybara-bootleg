@@ -4,28 +4,6 @@
 #include "BitshiftingUtility.hpp"
 #include <cmath>
 
-pcb::Image::Image() : pixelArray(nullptr), widthInPixels(0), heightInPixels(0) {
-
-}
-
-pcb::Image::Image(char* sourcePixels, int pixelArraySize, int width, int height) : pixelArray(new char[pixelArraySize]), widthInPixels(width), heightInPixels(height) {
-	for (int i = 0; i < pixelArraySize; i++) {
-		pixelArray[i] = sourcePixels[i];
-	}
-}
-
-pcb::Image::~Image() {
-	delete[] pixelArray;
-}
-
-int pcb::Image::getWidth() { return widthInPixels; }
-
-int pcb::Image::getHeight() { return heightInPixels; }
-
-char* pcb::Image::getPixels() { return pixelArray; }
-
-
-
 pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
 	std::ifstream fileStream;
 	fileStream.open(filename, std::fstream::binary);
@@ -50,7 +28,7 @@ pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
 	int headerSize = pcb::littleToBigEndian<unsigned int>(bufferInt, 4);
 
 	int bitmapWidth = 0;
-	int bitmapHeight = 0;	// If negative, pixels stored from top to bottom. Else (default) stored from bottom to top.
+	int bitmapHeight = 0;	// TODO: If negative, pixels stored from top to bottom. Else (default) stored from bottom to top.
 	short colorDepth = 0;
 
 	switch (headerSize) {
@@ -89,7 +67,7 @@ pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
 	char* pixelBufferReOrdered = new char[pixelArraySizeInBytes];
 
 
-	Image* image = new Image(pixelBuffer, pixelArraySizeInBytes, bitmapWidth, bitmapHeight);
+	Image* image = new Image(pixelBuffer, pixelArraySizeInBytes, bitmapWidth, bitmapHeight, pcb::PixelDataFormat::BGR);		// TODO: Pixel data format should be read from file, not hardcoded like this.
 	delete[] pixelBuffer;
 	delete[] pixelBufferReOrdered;
 

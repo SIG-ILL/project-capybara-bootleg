@@ -1,0 +1,22 @@
+#pragma once
+
+namespace pcb {
+	enum class PixelDataFormat { RGB, BGR };
+
+	class Image {
+	public:
+		Image(char* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat);
+		~Image();
+
+		int getWidth();
+		int getHeight();
+		char* getPixels();	// This doesn't add anything compared to having a public field?
+		PixelDataFormat getPixelDataFormat();
+
+	private:
+		char* pixelArray;
+		int widthInPixels;
+		int heightInPixels;
+		PixelDataFormat pixelDataFormat;
+	};
+}

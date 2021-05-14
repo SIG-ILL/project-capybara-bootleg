@@ -75,13 +75,19 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="BitmapLoader.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="SimpleObject.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
+    <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BitmapLoader.hpp" />
     <ClInclude Include="BitshiftingUtility.hpp" />
+    <ClInclude Include="Image.hpp" />
+    <ClInclude Include="SimpleObject.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
+    <ClInclude Include="Texture.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
