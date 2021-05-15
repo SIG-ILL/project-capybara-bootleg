@@ -3,6 +3,7 @@
 
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
+#include "TerrainGenerator.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -41,6 +42,14 @@ void pcb::Application::run(Application* instance, int argc, char* argv[]) {
 
 	initializeGLUT(argc, argv);		// Create OpenGL context before doing anything else OpenGL-related (obviously, but sometimes a necessary reminder).
 	loadResources();
+
+
+
+	pcb::TerrainGenerator terrainGenerator;
+	terrainGenerator.generate();
+
+
+
 
 	glutMainLoop();
 }
