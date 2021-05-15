@@ -18,7 +18,7 @@ namespace pcb {
 		~HeightMap();
 
 		void print();
-		//Image* to24BitImage();
+		Image* to24BitImage();
 
 	private:
 		unsigned int width;

@@ -19,10 +19,29 @@ pcb::HeightMap* pcb::HeightMapGenerator::generate() {
 
 	for (int y = 0; y < 128; y++) {
 		for (int x = 0; x < 128; x++) {
-			double normalizedX = x / 128.0;
-			double normalizedY = y / 128.0;
-			noiseMap[(y * 128) + x] = static_cast<unsigned char>(round(127.5 * (1 + noise.getValueForCoordinates(normalizedX, normalizedY))));
+			double noiseModifier = 0.025;
+			double noiseInputX = x * noiseModifier;
+			double noiseInputY = y * noiseModifier;
+			noiseMap[(y * 128) + x] = static_cast<unsigned char>(round(127.5 * (1 + noise.getValueForCoordinates(noiseInputX, noiseInputY))));
 		}		
+	}
+
+	for (int y = 0; y < 128; y++) {
+		for (int x = 0; x < 128; x++) {
+			double noiseModifier = 0.05;
+			double noiseInputX = x * noiseModifier;
+			double noiseInputY = y * noiseModifier;
+			noiseMap[(y * 128) + x] |= static_cast<unsigned char>(0.5 * round(127.5 * (1 + noise.getValueForCoordinates(noiseInputX, noiseInputY))));
+		}
+	}
+
+	for (int y = 0; y < 128; y++) {
+		for (int x = 0; x < 128; x++) {
+			double noiseModifier = 0.1;
+			double noiseInputX = x * noiseModifier;
+			double noiseInputY = y * noiseModifier;
+			noiseMap[(y * 128) + x] |= static_cast<unsigned char>(0.25 * round(127.5 * (1 + noise.getValueForCoordinates(noiseInputX, noiseInputY))));
+		}
 	}
 
 	HeightMap* heightMap = new HeightMap(128, 128, noiseMap);
@@ -53,8 +72,18 @@ void pcb::HeightMap::print() {
 	}
 }
 
-/*pcb::Image* pcb::HeightMap::to24BitImage() {
-	char* sourcePixels = 
+pcb::Image* pcb::HeightMap::to24BitImage() {
+	int arraySize = 3 * width * height;
+	char* sourcePixels = new char[arraySize];
+	for (unsigned int y = 0; y < height; y++) {
+		for (unsigned int x = 0; x < width; x++) {
+			unsigned char elevationValue = elevationValues[(y * width) + x];
+			int index = (3 * y * width) + (3 * x);
+			sourcePixels[index] = elevationValue;
+			sourcePixels[index + 1] = elevationValue;
+			sourcePixels[index + 2] = elevationValue;
+		}
+	}
 
-	return new Image();
-}*/
+	return new Image(sourcePixels, arraySize, 128, 128, pcb::PixelDataFormat::RGB);
+}

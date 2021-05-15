@@ -45,8 +45,8 @@ void pcb::Application::run(Application* instance, int argc, char* argv[]) {
 
 
 
-	pcb::TerrainGenerator terrainGenerator;
-	terrainGenerator.generate();
+	//pcb::TerrainGenerator terrainGenerator;
+	//terrainGenerator.generate();
 
 
 
@@ -71,10 +71,15 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 }
 
 void pcb::Application::loadResources() {
-	pcb::BitmapLoader imageLoader;
-	Image* textureImage = imageLoader.loadFromFile("test2.bmp");
+	//pcb::BitmapLoader imageLoader;
+	//Image* textureImage = imageLoader.loadFromFile("test2.bmp");
+	pcb::HeightMapGenerator heightMapGenerator;
+	HeightMap* heightMap = heightMapGenerator.generate();
+	Image* textureImage = heightMap->to24BitImage();
+
 	testTexture = new Texture(textureImage);
 	delete textureImage;
+	delete heightMap;
 
 	GLfloat* vertices = new GLfloat[72] {
 		-0.25, -0.25, -0.25,
@@ -180,7 +185,8 @@ void pcb::Application::loadResources() {
 	simpleObject->setPosition(-1, 0, 0);
 	pcb::SimpleColoredObject* coloredObject = new SimpleColoredObject(vertices, 24, colors);
 	pcb::SimpleTexturedObject* texturedObject = new SimpleTexturedObject(vertices, 24, *testTexture, textureCoordinates);
-	texturedObject->setPosition(1, 0, 0);
+	//texturedObject->setPosition(1, 0, 0);
+	texturedObject->setPosition(0, 0, 1.4);
 
 	renderObjects[0] = simpleObject;
 	renderObjects[1] = coloredObject;
@@ -241,7 +247,7 @@ void pcb::Application::reshape(int width, int height) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90, static_cast<float>(width) / height, 1, 1000);
+	gluPerspective(90, static_cast<float>(width) / height, 0.1, 1000);
 	glMatrixMode(GL_MODELVIEW);
 }
 
