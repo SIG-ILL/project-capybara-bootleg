@@ -22,9 +22,9 @@ namespace pcb {
 		const double F;
 		const double G;
 
-		Gradient grad[12];
+		Gradient grad[16];
 		short perm[512];
-		short permMod12[512];
+		short permMod8[512];
 
 		double dot(Gradient& g, double x, double y);
 	};

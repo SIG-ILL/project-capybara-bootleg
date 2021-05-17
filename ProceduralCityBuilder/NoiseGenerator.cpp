@@ -3,9 +3,9 @@
 #include "NoiseGenerator.hpp"
 
 pcb::NoiseGenerator::NoiseGenerator() : F(0.5 * (sqrt(3.0) - 1.0)), G((3.0 - sqrt(3.0)) / 6.0),
-grad{ Gradient(1, 1), Gradient(-1, 1), Gradient(1, -1), Gradient(-1, -1),
-Gradient(1, 0), Gradient(-1, 0), Gradient(1, 0), Gradient(-1, 0),
-Gradient(0, 1), Gradient(0, -1), Gradient(0, 1), Gradient(0, -1) } {
+grad{ Gradient(1, 0), Gradient(0.92388, 0.38267), Gradient(0.7071, 0.7071), Gradient(0.38267, 0.92388), Gradient(0, 1), Gradient(-0.38267, 0.92388),
+Gradient(-0.7071, 0.7071), Gradient(-0.92388, 0.38267),Gradient(-1, 0), Gradient(-0.92388, -0.38267), Gradient(-0.7071, -0.7071), Gradient(-0.38267, -0.92388),
+Gradient(0, -1), Gradient(0.38267, -0.92388), Gradient(0.7071, -0.7071), Gradient(0.92388, -0.38267) } {
 	short p[]{ 151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
 		190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125,
 		136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41,
@@ -17,7 +17,7 @@ Gradient(0, 1), Gradient(0, -1), Gradient(0, 1), Gradient(0, -1) } {
 		127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180 };
 	for (int i = 0; i < 512; i++) {
 		perm[i] = p[i & 255];
-		permMod12[i] = perm[i] % 12;
+		permMod8[i] = perm[i] % 16;
 	}
 }
 
@@ -50,9 +50,9 @@ double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) {
 
 	int ii = i & 255;
 	int jj = j & 255;
-	int gi0 = permMod12[ii + perm[jj]];
-	int gi1 = permMod12[ii + i1 + perm[jj + j1]];
-	int gi2 = permMod12[ii + 1 + perm[jj + 1]];
+	int gi0 = permMod8[ii + perm[jj]];
+	int gi1 = permMod8[ii + i1 + perm[jj + j1]];
+	int gi2 = permMod8[ii + 1 + perm[jj + 1]];
 
 
 	double n0;
