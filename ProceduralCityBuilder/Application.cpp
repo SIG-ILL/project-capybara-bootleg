@@ -3,7 +3,6 @@
 
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
-#include "TerrainGenerator.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -23,7 +22,8 @@ void pcb::Application::idleCallback() {
 	instance->idleUpdate();
 }
 
-pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), testTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr }, renderObjectsDataPointers{ nullptr, nullptr, nullptr } {}
+pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), testTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
+renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrain(nullptr) {}
 
 pcb::Application::~Application() {
 	delete testTexture;
@@ -35,6 +35,8 @@ pcb::Application::~Application() {
 	for (GLfloat* renderObjectDataPointer : renderObjectsDataPointers) {
 		delete[] renderObjectDataPointer;
 	}
+
+	delete terrain;
 }
 
 void pcb::Application::run(Application* instance, int argc, char* argv[]) {
@@ -74,8 +76,8 @@ void pcb::Application::loadResources() {
 	//pcb::BitmapLoader imageLoader;
 	//Image* textureImage = imageLoader.loadFromFile("test2.bmp");
 	pcb::HeightMapGenerator heightMapGenerator(256, 256);
-	HeightMap* heightMap = heightMapGenerator.generate();
-	Image* textureImage = heightMap->to24BitImage();
+	HeightMap* heightMap = heightMapGenerator.generateNew();
+	Image* textureImage = heightMap->to24BitImageNew();
 
 	testTexture = new Texture(textureImage);
 	delete textureImage;
@@ -181,12 +183,17 @@ void pcb::Application::loadResources() {
 	renderObjectsDataPointers[1] = colors;
 	renderObjectsDataPointers[2] = textureCoordinates;
 
-	pcb::SimpleObject* simpleObject = new SimpleObject(vertices, 24);
-	simpleObject->setPosition(-1, 0, 0);
+	TerrainGenerator terrainGenerator;
+	terrain = terrainGenerator.generateNew();
+
+	//pcb::SimpleObject* simpleObject = new SimpleObject(vertices, 24);
+	pcb::SimpleObject* simpleObject = new SimpleObject(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
+	//simpleObject->setPosition(-1, 0, 0);
+	simpleObject->setPosition(-0.75f, -0.75f, -0.25f);
 	pcb::SimpleColoredObject* coloredObject = new SimpleColoredObject(vertices, 24, colors);
 	pcb::SimpleTexturedObject* texturedObject = new SimpleTexturedObject(vertices, 24, *testTexture, textureCoordinates);
 	//texturedObject->setPosition(1, 0, 0);
-	texturedObject->setPosition(0, 0, 1.4);
+	texturedObject->setPosition(0, 0, 1.4f);
 
 	renderObjects[0] = simpleObject;
 	renderObjects[1] = coloredObject;
@@ -194,11 +201,13 @@ void pcb::Application::loadResources() {
 }
 
 void pcb::Application::drawTestShapes() {
-	renderObjects[1]->setPosition(translationX, translationY, 0);
+	/*renderObjects[1]->setPosition(translationX, translationY, 0);
 
 	for (SimpleObject* object : renderObjects) {
 		object->render();
-	}
+	}*/
+
+	renderObjects[0]->render();
 }
 
 void pcb::Application::render() {

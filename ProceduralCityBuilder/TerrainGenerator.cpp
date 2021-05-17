@@ -3,17 +3,50 @@
 
 #include "TerrainGenerator.hpp"
 
-void pcb::TerrainGenerator::generate() {
-	pcb::HeightMapGenerator heightMapGenerator(128, 128);
-	pcb::HeightMap* heightmap = heightMapGenerator.generate();
-	heightmap->print();
+pcb::Terrain::Terrain(pcb::HeightMap* heightMap, double scale) : quadsVertexCount(heightMap->getWidth() * heightMap->getHeight()), quadsVertices(new GLfloat[3 *quadsVertexCount]) {
+	int mapWidth = heightMap->getWidth();
+	int mapHeight = heightMap->getHeight();
 
-	delete heightmap;
+	for (int y = 0; y < mapHeight; y++) {
+		for (int x = 0; x < mapWidth; x++) {
+			GLfloat elevation = static_cast<GLfloat>(heightMap->getValueAt(x, y));
+			int index = (3 * y * mapWidth) + (3 * x);
+			quadsVertices[index] = static_cast<GLfloat>(scale * x);
+			quadsVertices[index + 1] = static_cast<GLfloat>(scale * elevation);
+			quadsVertices[index + 2] = static_cast<GLfloat>(scale * y);
+		}
+	}
+}
+
+pcb::Terrain::~Terrain() {
+	delete[] quadsVertices;
+}
+
+GLfloat* pcb::Terrain::getQuadsVertices() {
+	return quadsVertices;
+}
+
+int pcb::Terrain::getQuadsVertexCount() {
+	return quadsVertexCount;
+}
+
+pcb::Terrain* pcb::TerrainGenerator::generateNew() {
+	int mapWidth = 256;
+	int mapHeight = 256;
+
+	pcb::HeightMapGenerator heightMapGenerator(mapWidth, mapHeight);
+	pcb::HeightMap* heightMap = heightMapGenerator.generateNew();
+
+	Terrain* terrain = new Terrain(heightMap, 1.5 / mapWidth);
+
+	delete heightMap;
+
+	return terrain;
 }
 
 pcb::HeightMapGenerator::HeightMapGenerator(int width, int height) : width(width), height(height), noiseGenerator() {}
 
-pcb::HeightMap* pcb::HeightMapGenerator::generate() {
+pcb::HeightMap* pcb::HeightMapGenerator::generateNew() {
 
 	unsigned char* noiseMap = new unsigned char[width * height];
 
@@ -99,17 +132,7 @@ pcb::HeightMap::~HeightMap() {
 	delete[] elevationValues;
 }
 
-void pcb::HeightMap::print() {
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			std::cout << static_cast<short>(elevationValues[(y * width) + x]) << " ";
-		}
-
-		std::cout << "\n";
-	}
-}
-
-pcb::Image* pcb::HeightMap::to24BitImage() {
+pcb::Image* pcb::HeightMap::to24BitImageNew() {
 	int arraySize = 3 * width * height;
 	char* sourcePixels = new char[arraySize];
 	for (int y = 0; y < height; y++) {
@@ -123,4 +146,16 @@ pcb::Image* pcb::HeightMap::to24BitImage() {
 	}
 
 	return new Image(sourcePixels, arraySize, width, height, pcb::PixelDataFormat::RGB);
+}
+
+unsigned char pcb::HeightMap::getValueAt(int x, int y) {
+	return elevationValues[(y * width) + x];
+}
+
+int pcb::HeightMap::getWidth() {
+	return width;
+}
+
+int pcb::HeightMap::getHeight() {
+	return height;
 }

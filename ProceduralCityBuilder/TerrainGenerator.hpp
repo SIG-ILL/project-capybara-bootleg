@@ -1,14 +1,11 @@
 #pragma once
 
+#include <GL/glew.h>
+
 #include "Image.hpp"
 #include "NoiseGenerator.hpp"
 
 namespace pcb {
-	class TerrainGenerator {
-	public:
-		void generate();
-	};	
-
 	/*
 	8-bit greyscale heightmap.
 	Elevation data is stored in a single array containing consecutive rows of elevation values.
@@ -18,8 +15,10 @@ namespace pcb {
 		HeightMap(int width, int height, unsigned char* elevationValues);
 		~HeightMap();
 
-		void print();
-		Image* to24BitImage();
+		Image* to24BitImageNew();
+		unsigned char getValueAt(int x, int y);
+		int getWidth();
+		int getHeight();
 
 	private:
 		int width;
@@ -27,11 +26,29 @@ namespace pcb {
 		unsigned char* elevationValues;
 	};
 
+	class Terrain {
+	public:
+		Terrain(pcb::HeightMap* heightMap, double scale);
+		~Terrain();
+
+		GLfloat* getQuadsVertices();
+		int getQuadsVertexCount();
+
+	private:
+		int quadsVertexCount;
+		GLfloat* quadsVertices;
+	};
+
+	class TerrainGenerator {
+	public:
+		pcb::Terrain* generateNew();
+	};
+	
 	class HeightMapGenerator {
 	public:
 		HeightMapGenerator(int width, int height);
 
-		pcb::HeightMap* generate();
+		pcb::HeightMap* generateNew();
 
 	private:
 		int width;

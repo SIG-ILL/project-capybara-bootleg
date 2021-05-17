@@ -4,6 +4,7 @@
 
 #include "Texture.hpp"
 #include "SimpleObject.hpp"
+#include "TerrainGenerator.hpp"
 
 namespace pcb {
 	class Application {
@@ -29,6 +30,7 @@ namespace pcb {
 		Texture* testTexture;
 		SimpleObject* renderObjects[3];
 		GLfloat* renderObjectsDataPointers[3];
+		Terrain* terrain;
 
 		void initializeGLUT(int argc, char* argv[]);
 		void loadResources();
