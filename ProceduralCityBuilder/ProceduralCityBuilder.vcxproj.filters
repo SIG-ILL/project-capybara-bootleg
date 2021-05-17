@@ -36,7 +36,7 @@
     <ClCompile Include="SimpleObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SimplexNoise.cpp">
+    <ClCompile Include="NoiseGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -62,7 +62,7 @@
     <ClInclude Include="SimpleObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimplexNoise.hpp">
+    <ClInclude Include="NoiseGenerator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

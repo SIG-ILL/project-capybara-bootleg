@@ -77,7 +77,7 @@
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="SimpleObject.cpp" />
-    <ClCompile Include="SimplexNoise.cpp" />
+    <ClCompile Include="NoiseGenerator.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
     <ClCompile Include="Texture.cpp" />
   </ItemGroup>
@@ -87,7 +87,7 @@
     <ClInclude Include="BitshiftingUtility.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="SimpleObject.hpp" />
-    <ClInclude Include="SimplexNoise.hpp" />
+    <ClInclude Include="NoiseGenerator.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
     <ClInclude Include="Texture.hpp" />
   </ItemGroup>

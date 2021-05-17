@@ -1,8 +1,8 @@
 #include <cmath>
 
-#include "SimplexNoise.hpp"
+#include "NoiseGenerator.hpp"
 
-pcb::SimplexNoise::SimplexNoise() : F(0.5 * (sqrt(3.0) - 1.0)), G((3.0 - sqrt(3.0)) / 6.0),
+pcb::NoiseGenerator::NoiseGenerator() : F(0.5 * (sqrt(3.0) - 1.0)), G((3.0 - sqrt(3.0)) / 6.0),
 grad{ Gradient(1, 1), Gradient(-1, 1), Gradient(1, -1), Gradient(-1, -1),
 Gradient(1, 0), Gradient(-1, 0), Gradient(1, 0), Gradient(-1, 0),
 Gradient(0, 1), Gradient(0, -1), Gradient(0, 1), Gradient(0, -1) } {
@@ -21,7 +21,7 @@ Gradient(0, 1), Gradient(0, -1), Gradient(0, 1), Gradient(0, -1) } {
 	}
 }
 
-double pcb::SimplexNoise::getValueForCoordinates(double& x, double& y) {
+double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) {
 	double s = (x + y) * F;
 	int i = floor(x + s);
 	int j = floor(y + s);
@@ -88,6 +88,6 @@ double pcb::SimplexNoise::getValueForCoordinates(double& x, double& y) {
 	return 70.0 * (n0 + n1 + n2);
 }
 
-double pcb::SimplexNoise::dot(Gradient& g, double x, double y) {
+double pcb::NoiseGenerator::dot(Gradient& g, double x, double y) {
 	return g.x * x + g.y * y;
 }

@@ -73,7 +73,7 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 void pcb::Application::loadResources() {
 	//pcb::BitmapLoader imageLoader;
 	//Image* textureImage = imageLoader.loadFromFile("test2.bmp");
-	pcb::HeightMapGenerator heightMapGenerator;
+	pcb::HeightMapGenerator heightMapGenerator(256, 256);
 	HeightMap* heightMap = heightMapGenerator.generate();
 	Image* textureImage = heightMap->to24BitImage();
 

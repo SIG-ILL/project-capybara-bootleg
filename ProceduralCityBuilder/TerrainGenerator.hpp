@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Image.hpp"
+#include "NoiseGenerator.hpp"
 
 namespace pcb {
 	class TerrainGenerator {
@@ -14,20 +15,32 @@ namespace pcb {
 	*/
 	class HeightMap {
 	public:
-		HeightMap(unsigned int width, unsigned int height, unsigned char* elevationValues);
+		HeightMap(int width, int height, unsigned char* elevationValues);
 		~HeightMap();
 
 		void print();
 		Image* to24BitImage();
 
 	private:
-		unsigned int width;
-		unsigned int height;
+		int width;
+		int height;
 		unsigned char* elevationValues;
 	};
 
 	class HeightMapGenerator {
 	public:
+		HeightMapGenerator(int width, int height);
+
 		pcb::HeightMap* generate();
+
+	private:
+		int width;
+		int height;
+		NoiseGenerator noiseGenerator;
+
+		void createInitialLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor);
+		void addAdditiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor);
+		void addSubtractiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor);
+		double generateValueForCoordinates(double x, double y);
 	};
 }
