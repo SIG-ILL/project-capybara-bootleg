@@ -27,7 +27,8 @@ namespace pcb {
 		float rotationZ;
 		float scale;
 
-		Texture* testTexture;
+		Texture* heightMapTexture;
+		Texture* generatedHeightMapTexture;
 		SimpleObject* renderObjects[3];
 		GLfloat* renderObjectsDataPointers[3];
 		Terrain* terrain;

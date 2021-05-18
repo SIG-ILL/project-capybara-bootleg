@@ -9,10 +9,11 @@ namespace pcb {
 	public:
 		SimpleObject(GLfloat* vertices, GLsizei vertexCount);
 
-		virtual void render();
+		void render();
 		void setPosition(GLfloat x, GLfloat y, GLfloat z);
 
 	protected:
+		virtual void preRenderAction();
 		virtual void postRenderAction();		
 
 	private:
@@ -27,9 +28,8 @@ namespace pcb {
 	public:
 		SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, Texture& texture, GLfloat* textureCoordinates);
 
-		virtual void render() override;
-
 	protected:
+		virtual void preRenderAction() override;
 		virtual void postRenderAction() override;
 
 	private:
@@ -41,9 +41,8 @@ namespace pcb {
 	public:
 		SimpleColoredObject(GLfloat* vertices, GLsizei vertexCount, GLfloat* colors);
 
-		virtual void render() override;
-
 	protected:
+		virtual void preRenderAction() override;
 		virtual void postRenderAction() override;
 
 	private:

@@ -2,7 +2,7 @@
 
 #include "NoiseGenerator.hpp"
 
-pcb::NoiseGenerator::NoiseGenerator() : F(0.5 * (sqrt(3.0) - 1.0)), G((3.0 - sqrt(3.0)) / 6.0),
+pcb::NoiseGenerator::NoiseGenerator() : F(0.5 * (std::sqrt(3.0) - 1.0)), G((3.0 - sqrt(3.0)) / 6.0),
 grad{ Gradient(1, 0), Gradient(0.92388, 0.38267), Gradient(0.7071, 0.7071), Gradient(0.38267, 0.92388), Gradient(0, 1), Gradient(-0.38267, 0.92388),
 Gradient(-0.7071, 0.7071), Gradient(-0.92388, 0.38267),Gradient(-1, 0), Gradient(-0.92388, -0.38267), Gradient(-0.7071, -0.7071), Gradient(-0.38267, -0.92388),
 Gradient(0, -1), Gradient(0.38267, -0.92388), Gradient(0.7071, -0.7071), Gradient(0.92388, -0.38267) } {
@@ -15,16 +15,17 @@ Gradient(0, -1), Gradient(0.38267, -0.92388), Gradient(0.7071, -0.7071), Gradien
 		129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12,
 		191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45,
 		127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180 };
+
 	for (int i = 0; i < 512; i++) {
 		perm[i] = p[i & 255];
-		permMod8[i] = perm[i] % 16;
+		permMod16[i] = perm[i] % 16;
 	}
 }
 
 double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) {
 	double s = (x + y) * F;
-	int i = floor(x + s);
-	int j = floor(y + s);
+	int i = static_cast<int>(std::floor(x + s));
+	int j = static_cast<int>(std::floor(y + s));
 	double t = G * (i + j);
 	double X0 = i - t;
 	double Y0 = j - t;
@@ -50,9 +51,9 @@ double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) {
 
 	int ii = i & 255;
 	int jj = j & 255;
-	int gi0 = permMod8[ii + perm[jj]];
-	int gi1 = permMod8[ii + i1 + perm[jj + j1]];
-	int gi2 = permMod8[ii + 1 + perm[jj + 1]];
+	int gi0 = permMod16[ii + perm[jj]];
+	int gi1 = permMod16[ii + i1 + perm[jj + j1]];
+	int gi2 = permMod16[ii + 1 + perm[jj + 1]];
 
 
 	double n0;

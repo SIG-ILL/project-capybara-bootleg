@@ -24,7 +24,7 @@ namespace pcb {
 
 		Gradient grad[16];
 		short perm[512];
-		short permMod8[512];
+		short permMod16[512];
 
 		double dot(Gradient& g, double x, double y);
 	};
