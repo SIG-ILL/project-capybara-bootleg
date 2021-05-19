@@ -1,8 +1,10 @@
-#include <fstream>
-
 #include "BitmapLoader.hpp"
-#include "BitshiftingUtility.hpp"
+
+#include <fstream>
 #include <cmath>
+
+#include "BitshiftingUtility.hpp"
+
 
 pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
 	std::ifstream fileStream;

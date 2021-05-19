@@ -1,14 +1,13 @@
-#include "HeightMapGenerator.hpp"
+#include "HeightmapGenerator.hpp"
 
 #include <cmath>
 
-pcb::HeightMapGenerator::HeightMapGenerator(int width, int height) : width(width), height(height), noiseGenerator() {}
+pcb::HeightmapGenerator::HeightmapGenerator(int width, int height) : width(width), height(height), noiseGenerator() {}
 
-pcb::HeightMap* pcb::HeightMapGenerator::generateNew() {
+pcb::Heightmap* pcb::HeightmapGenerator::generateNew() {
 
 	unsigned char* noiseMap = new unsigned char[width * height];
 
-	//createInitialLayer(noiseMap, 0.025, 0.85, 0.5);
 	createInitialLayer(noiseMap, 0.025, 0.85, 1);
 	addAdditiveLayer(noiseMap, 0.05, 0.25, 0.4);
 	addAdditiveLayer(noiseMap, 0.1, 0.1, 0.3);
@@ -18,13 +17,13 @@ pcb::HeightMap* pcb::HeightMapGenerator::generateNew() {
 	addSubtractiveLayer(noiseMap, 0.1, 0.3, 0.1);
 	addSubtractiveLayer(noiseMap, 0.25, 0.55, 0.4);
 
-	HeightMap* heightMap = new HeightMap(width, height, noiseMap);
+	Heightmap* heightmap = new Heightmap(width, height, noiseMap);
 	delete[] noiseMap;
 
-	return heightMap;
+	return heightmap;
 }
 
-void pcb::HeightMapGenerator::createInitialLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::createInitialLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -41,7 +40,7 @@ void pcb::HeightMapGenerator::createInitialLayer(unsigned char* noiseMap, double
 	}
 }
 
-void pcb::HeightMapGenerator::addAdditiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::addAdditiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -58,7 +57,7 @@ void pcb::HeightMapGenerator::addAdditiveLayer(unsigned char* noiseMap, double n
 	}
 }
 
-void pcb::HeightMapGenerator::addSubtractiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::addSubtractiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -75,6 +74,6 @@ void pcb::HeightMapGenerator::addSubtractiveLayer(unsigned char* noiseMap, doubl
 	}
 }
 
-double pcb::HeightMapGenerator::generateValueForCoordinates(double x, double y) {
+double pcb::HeightmapGenerator::generateValueForCoordinates(double x, double y) {
 	return 127.5 * (1 + noiseGenerator.getValueForCoordinates(x, y));
 }

@@ -3,6 +3,7 @@
 
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
+#include "HeightmapGenerator.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -22,12 +23,12 @@ void pcb::Application::idleCallback() {
 	instance->idleUpdate();
 }
 
-pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), heightMapTexture(nullptr), generatedHeightMapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
+pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
 renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrain(nullptr) {}
 
 pcb::Application::~Application() {
-	delete heightMapTexture;
-	delete generatedHeightMapTexture;
+	delete heightmapTexture;
+	delete generatedHeightmapTexture;
 
 	for (SimpleObject* object : renderObjects) {
 		delete object;
@@ -70,15 +71,15 @@ void pcb::Application::loadResources() {
 	TerrainGenerator terrainGenerator;
 	terrain = terrainGenerator.generateNew();
 
-	Image* heightMapImage = terrainGenerator.getHeightMap24BitImageNew();
-	heightMapTexture = new Texture(heightMapImage);
-	delete heightMapImage;
+	Image* heightmapImage = terrainGenerator.getHeightmap24BitImageNew();
+	heightmapTexture = new Texture(heightmapImage);
+	delete heightmapImage;
 
-	HeightMap* generatedHeightMap = terrain->generateHeightMapNew();
-	Image* generatedHeightMapImage = generatedHeightMap->to24BitImageNew();
-	generatedHeightMapTexture = new Texture(generatedHeightMapImage);
-	delete generatedHeightMap;
-	delete generatedHeightMapImage;
+	Heightmap* generatedHeightmap = terrain->generateHeightmapNew();
+	Image* generatedHeightmapImage = generatedHeightmap->to24BitImageNew();
+	generatedHeightmapTexture = new Texture(generatedHeightmapImage);
+	delete generatedHeightmap;
+	delete generatedHeightmapImage;
 
 	GLfloat* vertices = new GLfloat[72] {
 		-0.25, -0.25, -0.25,
@@ -181,15 +182,15 @@ void pcb::Application::loadResources() {
 	renderObjectsDataPointers[2] = textureCoordinates;
 
 	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(terrain->getQuadsVertices(), terrain->getQuadsVertexCount(), terrain->getQuadsColors());
-	terrainObject->setPosition(-0.2f, 1, -0.5f);
-	pcb::SimpleTexturedObject* heightMapImageObject = new SimpleTexturedObject(vertices, 24, *heightMapTexture, textureCoordinates);
-	heightMapImageObject->setPosition(-0.5f, 1, -0.3f);
-	pcb::SimpleTexturedObject* generatedHeightMapObject = new SimpleTexturedObject(vertices, 24, *generatedHeightMapTexture, textureCoordinates);
-	generatedHeightMapObject->setPosition(-0.5f, 1, 0.3f);
+	terrainObject->setPosition(-0.2f, 0, -0.5f);
+	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(vertices, 24, *heightmapTexture, textureCoordinates);
+	heightmapImageObject->setPosition(-0.5f, 1, -0.3f);
+	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(vertices, 24, *generatedHeightmapTexture, textureCoordinates);
+	generatedHeightmapObject->setPosition(-0.5f, 1, 0.3f);
 
 	renderObjects[0] = terrainObject;
-	renderObjects[1] = heightMapImageObject;
-	renderObjects[2] = generatedHeightMapObject;
+	renderObjects[1] = heightmapImageObject;
+	renderObjects[2] = generatedHeightmapObject;
 }
 
 void pcb::Application::drawTestShapes() {
@@ -217,8 +218,7 @@ void pcb::Application::reshape(int width, int height) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//gluPerspective(90, static_cast<float>(width) / height, 0.1, 1000);
-	gluOrtho2D(-1, 1, -1, 1);
+	gluPerspective(90, static_cast<float>(width) / height, 0.1, 1000);
 	glMatrixMode(GL_MODELVIEW);
 }
 

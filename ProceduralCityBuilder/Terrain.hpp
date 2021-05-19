@@ -2,18 +2,18 @@
 
 #include <GL/glew.h>
 
-#include "HeightMap.hpp"
+#include "Heightmap.hpp"
 
 namespace pcb {
 	class Terrain {
 	public:
-		Terrain(pcb::HeightMap* heightMap, double scale);
+		Terrain(pcb::Heightmap* heightmap, double scale);
 		~Terrain();
 
 		GLfloat* getQuadsVertices();
 		int getQuadsVertexCount();
 		GLfloat* getQuadsColors();
-		pcb::HeightMap* generateHeightMapNew();
+		pcb::Heightmap* generateHeightmapNew();
 
 	private:
 		int gridWidthInVertices;

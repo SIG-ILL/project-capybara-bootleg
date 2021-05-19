@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace pcb {
 	class Gradient {
 	public:
@@ -22,9 +24,9 @@ namespace pcb {
 		const double F;
 		const double G;
 
-		Gradient grad[16];
-		short perm[512];
-		short permMod16[512];
+		std::array<Gradient, 16> grad;
+		std::array<short, 512> perm;
+		std::array<short, 512> permMod16;
 
 		double dot(Gradient& g, double x, double y);
 	};

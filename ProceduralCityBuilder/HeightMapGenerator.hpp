@@ -1,14 +1,14 @@
 #pragma once
 
-#include "HeightMap.hpp"
+#include "Heightmap.hpp"
 #include "NoiseGenerator.hpp"
 
 namespace pcb {
-	class HeightMapGenerator {
+	class HeightmapGenerator {
 	public:
-		HeightMapGenerator(int width, int height);
+		HeightmapGenerator(int width, int height);
 
-		pcb::HeightMap* generateNew();
+		pcb::Heightmap* generateNew();
 
 	private:
 		int width;

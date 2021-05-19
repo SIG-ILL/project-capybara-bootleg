@@ -75,8 +75,8 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="BitmapLoader.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
-    <ClCompile Include="HeightMap.cpp" />
-    <ClCompile Include="HeightMapGenerator.cpp" />
+    <ClCompile Include="Heightmap.cpp" />
+    <ClCompile Include="HeightmapGenerator.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="SimpleObject.cpp" />
     <ClCompile Include="NoiseGenerator.cpp" />
@@ -88,8 +88,8 @@
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BitmapLoader.hpp" />
     <ClInclude Include="BitshiftingUtility.hpp" />
-    <ClInclude Include="HeightMap.hpp" />
-    <ClInclude Include="HeightMapGenerator.hpp" />
+    <ClInclude Include="Heightmap.hpp" />
+    <ClInclude Include="HeightmapGenerator.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="SimpleObject.hpp" />
     <ClInclude Include="NoiseGenerator.hpp" />

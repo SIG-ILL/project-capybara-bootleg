@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Terrain.hpp"
-#include "HeightMap.hpp"
+#include "Heightmap.hpp"
 
 namespace pcb {
 	class TerrainGenerator {
@@ -10,9 +10,9 @@ namespace pcb {
 		~TerrainGenerator();
 
 		pcb::Terrain* generateNew();
-		pcb::Image* getHeightMap24BitImageNew();
+		pcb::Image* getHeightmap24BitImageNew();
 
 	private:
-		pcb::HeightMap* heightMap;
+		pcb::Heightmap* heightmap;
 	};
 }

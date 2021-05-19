@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <array>
 
 #include "Texture.hpp"
 #include "SimpleObject.hpp"
@@ -27,10 +28,10 @@ namespace pcb {
 		float rotationZ;
 		float scale;
 
-		Texture* heightMapTexture;
-		Texture* generatedHeightMapTexture;
+		Texture* heightmapTexture;
+		Texture* generatedHeightmapTexture;
 		SimpleObject* renderObjects[3];
-		GLfloat* renderObjectsDataPointers[3];
+		std::array<GLfloat*, 3> renderObjectsDataPointers;
 		Terrain* terrain;
 
 		void initializeGLUT(int argc, char* argv[]);

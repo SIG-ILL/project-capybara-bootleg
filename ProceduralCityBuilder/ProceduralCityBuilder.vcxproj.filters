@@ -42,10 +42,10 @@
     <ClCompile Include="Terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HeightMap.cpp">
+    <ClCompile Include="Heightmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HeightMapGenerator.cpp">
+    <ClCompile Include="HeightmapGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,10 +77,10 @@
     <ClInclude Include="Terrain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HeightMap.hpp">
+    <ClInclude Include="Heightmap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HeightMapGenerator.hpp">
+    <ClInclude Include="HeightmapGenerator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
