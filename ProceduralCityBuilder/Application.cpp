@@ -4,6 +4,7 @@
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
 #include "HeightmapGenerator.hpp"
+#include "LayeredTerrainGenerator.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -23,8 +24,17 @@ void pcb::Application::idleCallback() {
 	instance->idleUpdate();
 }
 
-pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrain(nullptr) {}
+void pcb::Application::mouseMotionCallback(int x, int y) {
+	instance->handleMouseMotion(x, y);
+}
+
+void pcb::Application::mouseWheelCallback(int button, int dir, int x, int y) {
+	instance->handleMouseWheel(button, dir, x, y);
+}
+
+pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
+isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
+renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrain(nullptr), terrainLayers(), terrainLayerRenderObjects() {}
 
 pcb::Application::~Application() {
 	delete heightmapTexture;
@@ -58,27 +68,32 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 
 	glutCreateWindow("Procedural City Builder");
 
+	mouseWindowX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+	mouseWindowY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+	glutWarpPointer(mouseWindowX, mouseWindowY);
+
 	glutIdleFunc(Application::idleCallback);
 	glutDisplayFunc(Application::renderCallback);
 	glutReshapeFunc(Application::reshapeCallback);
 	glutKeyboardFunc(Application::keyboardCallback);
+	glutMotionFunc(Application::mouseMotionCallback);
+	glutMouseWheelFunc(Application::mouseWheelCallback);
 
 	glClearColor(0, 0, 1, 0);
 	glEnable(GL_DEPTH_TEST);
 }
 
 void pcb::Application::loadResources() {
-	TerrainGenerator terrainGenerator;
+	LayeredTerrainGenerator terrainGenerator(256, 256, 1);
 	terrain = terrainGenerator.generateNew();
 
 	Image* heightmapImage = terrainGenerator.getHeightmap24BitImageNew();
 	heightmapTexture = new Texture(heightmapImage);
 	delete heightmapImage;
 
-	Heightmap* generatedHeightmap = terrain->generateHeightmapNew();
-	Image* generatedHeightmapImage = generatedHeightmap->to24BitImageNew();
+	Heightmap generatedHeightmap = terrain->generateHeightmap();
+	Image* generatedHeightmapImage = generatedHeightmap.to24BitImageNew();
 	generatedHeightmapTexture = new Texture(generatedHeightmapImage);
-	delete generatedHeightmap;
 	delete generatedHeightmapImage;
 
 	GLfloat* vertices = new GLfloat[72] {
@@ -188,6 +203,14 @@ void pcb::Application::loadResources() {
 	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(vertices, 24, *generatedHeightmapTexture, textureCoordinates);
 	generatedHeightmapObject->setPosition(-0.5f, 1, 0.3f);
 
+	terrainLayers = static_cast<pcb::LayeredTerrain*>(terrain)->getLayers();
+	for (int i = 0; i < terrainLayers.size(); i++) {
+		Terrain& terrainLayer = terrainLayers.at(i);
+		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount(), terrainLayer.getQuadsColors()));
+		SimpleColoredObject& object = terrainLayerRenderObjects.back();
+		object.setPosition(-0.2f, static_cast<GLfloat>(i + 1), -0.5f);
+	}
+
 	renderObjects[0] = terrainObject;
 	renderObjects[1] = heightmapImageObject;
 	renderObjects[2] = generatedHeightmapObject;
@@ -197,14 +220,19 @@ void pcb::Application::drawTestShapes() {
 	for (SimpleObject* object : renderObjects) {
 		object->render();
 	}
+
+	for (pcb::SimpleColoredObject& terrainLayerObject : terrainLayerRenderObjects) {
+		terrainLayerObject.render();
+	}
 }
 
 void pcb::Application::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	glTranslatef(0, 0, -2);
-	glRotatef(90.0f, 1, 0, 0);
+	glTranslatef(-translationX, -translationY, -2 + zoom);
+	glRotatef(90.0f + (0.1f * globalRotationX), 1, 0, 0);
+	glRotatef(0.1f * globalRotationY, 0, 1, 0);
 
 	drawTestShapes();
 
@@ -218,7 +246,7 @@ void pcb::Application::reshape(int width, int height) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90, static_cast<float>(width) / height, 0.1, 1000);
+	gluPerspective(90, static_cast<double>(width) / static_cast<double>(height), 0.1, 1000);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -253,4 +281,24 @@ void pcb::Application::handleKeyboard(unsigned char key, int x, int y) {
 
 void pcb::Application::idleUpdate() {
 	glutPostRedisplay();
+}
+
+void pcb::Application::handleMouseMotion(int x, int y) {
+	if (isWarpingPointer) {
+		isWarpingPointer = false;
+		return;
+	}
+
+	globalRotationX += (y - mouseWindowY);
+	globalRotationY += (x - mouseWindowX);
+
+	mouseWindowX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+	mouseWindowY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+
+	isWarpingPointer = true;
+	glutWarpPointer(mouseWindowX, mouseWindowY);
+}
+
+void pcb::Application::handleMouseWheel(int button, int dir, int x, int y) {
+	zoom += (0.05 * dir);
 }

@@ -5,7 +5,7 @@
 #include "Image.hpp"
 
 namespace pcb {
-	class Texture {
+	class Texture final {
 	public:
 		Texture(Image* sourceImage);
 		~Texture();

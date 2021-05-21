@@ -1,8 +1,9 @@
 #include "Terrain.hpp"
 
 #include <cmath>
+#include <algorithm>
 
-pcb::Terrain::Terrain(pcb::Heightmap* heightmap, double scale) : gridWidthInVertices(heightmap->getWidth()), gridHeightInVertices(heightmap->getHeight()), quadsVertexCount(4 * (heightmap->getWidth() - 1) * (heightmap->getHeight() - 1)), quadsVertexCoordinates(new GLfloat[3 * quadsVertexCount]), quadsColors(new GLfloat[3 * quadsVertexCount]) {
+pcb::Terrain::Terrain(const pcb::Heightmap* heightmap, double scale) : gridWidthInVertices(heightmap->getWidth()), gridHeightInVertices(heightmap->getHeight()), quadsVertexCount(4 * (heightmap->getWidth() - 1) * (heightmap->getHeight() - 1)), quadsVertexCoordinates(new GLfloat[3 * quadsVertexCount]), quadsColors(new GLfloat[3 * quadsVertexCount]) {
 	// Array size = 4 * 3 * (width - 1) * (height - 1) (4 for 4 vertices per quad, 3 for 3 dimensions - 3 values per coordinate).
 	int maxLoopWidthIndex = gridWidthInVertices - 1;
 	int maxLoopHeightIndex = gridHeightInVertices - 1;
@@ -41,13 +42,7 @@ pcb::Terrain::Terrain(pcb::Heightmap* heightmap, double scale) : gridWidthInVert
 		}
 	}
 
-	for (int i = 0; i < (3 * quadsVertexCount); i += 3) {
-		GLfloat elevation = quadsVertexCoordinates[i + 1];
-		GLfloat colorValue = static_cast<GLfloat>((elevation / scale) / 255);
-		quadsColors[i] = colorValue;
-		quadsColors[i + 1] = colorValue;
-		quadsColors[i + 2] = colorValue;
-	}
+	setHeightBasedColorGradient(0, 0, 0, 1, 1, 1);
 
 	// A one-dimensional height map can't generate terrain as each pixel is used as vertex coordinates, not the definition of an entire quad.
 	if (gridWidthInVertices == 1 || gridHeightInVertices == 1) {
@@ -56,8 +51,14 @@ pcb::Terrain::Terrain(pcb::Heightmap* heightmap, double scale) : gridWidthInVert
 	}
 }
 
-GLfloat* pcb::Terrain::getQuadsColors() {
-	return quadsColors;
+pcb::Terrain::Terrain(const pcb::Terrain& other) : gridWidthInVertices(other.gridWidthInVertices), gridHeightInVertices(other.gridHeightInVertices), quadsVertexCount(other.quadsVertexCount), quadsVertexCoordinates(new GLfloat[3 * quadsVertexCount]), quadsColors(new GLfloat[3 * quadsVertexCount]) {
+	for (int i = 0; i < (3 * quadsVertexCount); i++) {
+		quadsVertexCoordinates[i] = other.quadsVertexCoordinates[i];
+	}
+
+	for (int i = 0; i < (3 * quadsVertexCount); i++) {
+		quadsColors[i] = other.quadsColors[i];
+	}
 }
 
 pcb::Terrain::~Terrain() {
@@ -65,20 +66,43 @@ pcb::Terrain::~Terrain() {
 	delete[] quadsColors;
 }
 
-GLfloat* pcb::Terrain::getQuadsVertices() {
+pcb::Terrain& pcb::Terrain::operator=(const pcb::Terrain& other) {
+	if (this == &other) {
+		return *this;
+	}
+
+	gridWidthInVertices = other.gridWidthInVertices;
+	gridHeightInVertices = other.gridHeightInVertices;
+	quadsVertexCount = other.quadsVertexCount;
+
+	if (quadsVertexCoordinates != other.quadsVertexCoordinates) {
+		delete[] quadsVertexCoordinates;
+		delete[] quadsColors;
+		quadsVertexCoordinates = new GLfloat[3 * other.quadsVertexCount];
+		quadsColors = new GLfloat[3 * other.quadsVertexCount];
+	}
+
+	std::copy(other.quadsVertexCoordinates, other.quadsVertexCoordinates + (3 * other.quadsVertexCount), quadsVertexCoordinates);
+	std::copy(other.quadsColors, other.quadsColors + (3 * other.quadsVertexCount), quadsColors);
+
+	return *this;
+}
+
+GLfloat* pcb::Terrain::getQuadsVertices() const {
 	return quadsVertexCoordinates;
 }
 
-int pcb::Terrain::getQuadsVertexCount() {
+int pcb::Terrain::getQuadsVertexCount() const {
 	return quadsVertexCount;
 }
 
-pcb::Heightmap* pcb::Terrain::generateHeightmapNew() {
+GLfloat* pcb::Terrain::getQuadsColors() const {
+	return quadsColors;
+}
+
+pcb::Heightmap pcb::Terrain::generateHeightmap() const {
 	unsigned char* elevationValues = new unsigned char[gridWidthInVertices * gridHeightInVertices];
-	double scale = 1.0;
-	if (gridWidthInVertices > 1 && gridHeightInVertices > 1) {
-		scale = quadsVertexCoordinates[3];	// The original, pre-scaling value of the coordinate at this element was x coordinate = 1. The value was scaled and stored, but scale == (value / 1) -> scale == value.
-	}
+	double scale = getScale();
 
 	double inverseScale = 1.0 / scale;
 	int maxLoopWidthIndex = gridWidthInVertices - 1;
@@ -98,8 +122,29 @@ pcb::Heightmap* pcb::Terrain::generateHeightmapNew() {
 
 	elevationValues[(gridWidthInVertices * gridHeightInVertices) - 1] = static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (4 * 3 * (maxLoopWidthIndex - 1)) + (3 * 2) + 1]), 255));;
 
-	pcb::Heightmap* heightmap = new pcb::Heightmap(gridWidthInVertices, gridHeightInVertices, elevationValues);
+	pcb::Heightmap heightmap(gridWidthInVertices, gridHeightInVertices, elevationValues);
 	delete[] elevationValues;
 
 	return heightmap;
+}
+
+void pcb::Terrain::setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue) {
+	double scale = getScale();
+
+	for (int i = 0; i < (3 * quadsVertexCount); i += 3) {
+		GLfloat elevation = quadsVertexCoordinates[i + 1];
+		GLfloat colorValue = static_cast<GLfloat>((elevation / scale) / 255);
+		quadsColors[i] = minRed + (colorValue * (maxRed - minRed));
+		quadsColors[i + 1] = minGreen + (colorValue * (maxGreen - minGreen));
+		quadsColors[i + 2] = minBlue + (colorValue * (maxBlue - minBlue));
+	}
+}
+
+double pcb::Terrain::getScale() const {
+	double scale = 1.0;
+	if (gridWidthInVertices > 1 && gridHeightInVertices > 1) {
+		scale = quadsVertexCoordinates[3];	// The original, pre-scaling value of the coordinate at this element was x coordinate = 1. The value was scaled and stored, but scale == (value / 1) -> scale == value.
+	}
+
+	return scale;
 }

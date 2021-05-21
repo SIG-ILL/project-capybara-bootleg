@@ -11,15 +11,19 @@ namespace pcb {
 	public:
 		Heightmap(int width, int height, unsigned char* elevationValues);
 		Heightmap(const pcb::Heightmap& other);
-		~Heightmap();
+		virtual ~Heightmap();
 
 		pcb::Heightmap& operator+=(const pcb::Heightmap& other);
 		pcb::Heightmap& operator-=(const pcb::Heightmap& other);
 
-		pcb::Image* to24BitImageNew();
-		unsigned char getValueAt(int x, int y);
-		int getWidth();
-		int getHeight();
+		pcb::Image* to24BitImageNew() const;
+		unsigned char getValueAt(int x, int y) const;
+		virtual int getWidth() const;
+		virtual int getHeight() const;
+
+	protected:
+		void add(const pcb::Heightmap& other);
+		void subtract(const pcb::Heightmap& other);
 
 	private:
 		int width;

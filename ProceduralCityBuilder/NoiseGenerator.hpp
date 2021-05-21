@@ -3,7 +3,7 @@
 #include <array>
 
 namespace pcb {
-	class Gradient {
+	class Gradient final {
 	public:
 		Gradient(double x, double y) : x(x), y(y) {};
 
@@ -14,11 +14,14 @@ namespace pcb {
 	/*
 	* Not-quiet simplex noise implementation taken from Stefan Gustavson - Simplex noise demystified (https://weber.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf with updated code http://www.itn.liu.se/~stegu/simplexnoise/SimplexNoise.java)
 	*/
-	class NoiseGenerator {
+	class NoiseGenerator final {
 	public:
 		NoiseGenerator();
 
-		double getValueForCoordinates(double x, double y);
+		/*
+		* Returns a value [-1; 1] for the given coordinate.
+		*/
+		double getValueForCoordinates(double x, double y) const;
 
 	private:
 		const double F;
@@ -28,6 +31,6 @@ namespace pcb {
 		std::array<short, 512> perm;
 		std::array<short, 512> permMod16;
 
-		double dot(Gradient& g, double x, double y);
+		double dot(const Gradient& g, double x, double y) const;
 	};
 }

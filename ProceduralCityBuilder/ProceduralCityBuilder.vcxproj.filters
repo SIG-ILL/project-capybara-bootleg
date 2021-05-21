@@ -13,15 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Terrain Generation">
+      <UniqueIdentifier>{9cbe036e-5095-45cd-8d5f-734229032e2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Terrain Generation">
+      <UniqueIdentifier>{591f3784-9824-41ca-b172-4ef52d0e5259}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EntryPoint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BitmapLoader.cpp">
@@ -39,21 +42,33 @@
     <ClCompile Include="NoiseGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Terrain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Heightmap.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Terrain Generation</Filter>
     </ClCompile>
     <ClCompile Include="HeightmapGenerator.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="LayeredHeightmap.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="LayeredHeightmapGenerator.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="LayeredTerrain.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="LayeredTerrainGenerator.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainGenerator.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainGenerator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BitmapLoader.hpp">
@@ -74,14 +89,32 @@
     <ClInclude Include="NoiseGenerator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Terrain.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Heightmap.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Terrain Generation</Filter>
     </ClInclude>
     <ClInclude Include="HeightmapGenerator.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="LayeredHeightmap.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="LayeredHeightmapGenerator.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="LayeredTerrain.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="LayeredTerrainGenerator.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainGenerator.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="HeightmapLayer.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

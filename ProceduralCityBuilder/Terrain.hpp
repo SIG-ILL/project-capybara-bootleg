@@ -7,13 +7,17 @@
 namespace pcb {
 	class Terrain {
 	public:
-		Terrain(pcb::Heightmap* heightmap, double scale);
-		~Terrain();
+		Terrain(const pcb::Heightmap* heightmap, double scale);
+		Terrain(const pcb::Terrain& other);
+		virtual ~Terrain();
 
-		GLfloat* getQuadsVertices();
-		int getQuadsVertexCount();
-		GLfloat* getQuadsColors();
-		pcb::Heightmap* generateHeightmapNew();
+		pcb::Terrain& operator=(const pcb::Terrain& other);
+
+		GLfloat* getQuadsVertices() const;
+		int getQuadsVertexCount() const;
+		GLfloat* getQuadsColors() const;
+		pcb::Heightmap generateHeightmap() const;
+		void setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue);
 
 	private:
 		int gridWidthInVertices;
@@ -21,5 +25,7 @@ namespace pcb {
 		int quadsVertexCount;
 		GLfloat* quadsVertexCoordinates;
 		GLfloat* quadsColors;
+
+		double getScale() const;
 	};
 }

@@ -3,7 +3,7 @@
 namespace pcb {
 	enum class PixelDataFormat { RGB, BGR };
 
-	class Image {
+	class Image final {
 	public:
 		Image(char* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat);
 		~Image();

@@ -2,28 +2,23 @@
 
 #include <cmath>
 
-pcb::HeightmapGenerator::HeightmapGenerator(int width, int height) : width(width), height(height), noiseGenerator() {}
+pcb::HeightmapGenerator::HeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
 pcb::Heightmap* pcb::HeightmapGenerator::generateNew() {
+	unsigned char* noiseMap = new unsigned char[mapWidth * mapHeight]{ 0 };
+	generateAndAddNoiseMap(noiseMap, 0.025, 0.85, 1);
+	generateAndAddNoiseMap(noiseMap, 0.05, 0.25, 0.4);
+	generateAndAddNoiseMap(noiseMap, 0.1, 0.1, 0.3);
+	generateAndAddNoiseMap(noiseMap, 0.25, 0.15, 0.2);
+	generateAndSubtractNoiseMap(noiseMap, 0.05, 0.15, 0.2);
+	generateAndSubtractNoiseMap(noiseMap, 0.1, 0.3, 0.1);
+	generateAndSubtractNoiseMap(noiseMap, 0.25, 0.55, 0.4);
 
-	unsigned char* noiseMap = new unsigned char[width * height];
-
-	createInitialLayer(noiseMap, 0.025, 0.85, 1);
-	addAdditiveLayer(noiseMap, 0.05, 0.25, 0.4);
-	addAdditiveLayer(noiseMap, 0.1, 0.1, 0.3);
-	addAdditiveLayer(noiseMap, 0.25, 0.15, 0.2);
-
-	addSubtractiveLayer(noiseMap, 0.05, 0.15, 0.2);
-	addSubtractiveLayer(noiseMap, 0.1, 0.3, 0.1);
-	addSubtractiveLayer(noiseMap, 0.25, 0.55, 0.4);
-
-	Heightmap* heightmap = new Heightmap(width, height, noiseMap);
-	delete[] noiseMap;
-
+	Heightmap* heightmap = new Heightmap(mapWidth, mapHeight, noiseMap);
 	return heightmap;
 }
 
-void pcb::HeightmapGenerator::createInitialLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::generateAndAddNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -31,16 +26,16 @@ void pcb::HeightmapGenerator::createInitialLayer(unsigned char* noiseMap, double
 		maxValueFactor = 0.0;
 	}
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
+	for (int y = 0; y < mapHeight; y++) {
+		for (int x = 0; x < mapWidth; x++) {
 			double noiseInputX = x * noiseModifier;
 			double noiseInputY = y * noiseModifier;
-			noiseMap[(y * width) + x] = static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY)));
+			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(std::min(noiseMap[(y * mapWidth) + x] + static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY))), 255));
 		}
 	}
 }
 
-void pcb::HeightmapGenerator::addAdditiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -48,28 +43,11 @@ void pcb::HeightmapGenerator::addAdditiveLayer(unsigned char* noiseMap, double n
 		maxValueFactor = 0.0;
 	}
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
+	for (int y = 0; y < mapHeight; y++) {
+		for (int x = 0; x < mapWidth; x++) {
 			double noiseInputX = x * noiseModifier;
 			double noiseInputY = y * noiseModifier;
-			noiseMap[(y * width) + x] = static_cast<unsigned char>(std::fmin(noiseMap[(y * width) + x] + static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY))), 255));
-		}
-	}
-}
-
-void pcb::HeightmapGenerator::addSubtractiveLayer(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
-	if (maxValueFactor > 1.0) {
-		maxValueFactor = 1.0;
-	}
-	if (maxValueFactor < 0.0) {
-		maxValueFactor = 0.0;
-	}
-
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			double noiseInputX = x * noiseModifier;
-			double noiseInputY = y * noiseModifier;
-			noiseMap[(y * width) + x] = static_cast<unsigned char>(std::fmax(0, noiseMap[(y * width) + x] - static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY)))));
+			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(std::max(0, noiseMap[(y * mapWidth) + x] - static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY)))));
 		}
 	}
 }

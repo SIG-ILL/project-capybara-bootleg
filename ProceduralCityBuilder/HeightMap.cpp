@@ -22,33 +22,17 @@ pcb::Heightmap::~Heightmap() {
 	delete[] elevationValues;
 }
 
-pcb::Heightmap& pcb::Heightmap::operator+=(const Heightmap& other) {
-	int heightConditionValue = static_cast<int>(std::min(height, other.height));
-	int widthConditionValue = static_cast<int>(std::min(width, other.width));
-
-	for (int y = 0; y < heightConditionValue; y++) {
-		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues[(y * width) + x] = static_cast<unsigned char>(std::min(this->elevationValues[(y * width) + x] + other.elevationValues[(y * other.width) + x], 255));
-		}
-	}
-
+pcb::Heightmap& pcb::Heightmap::operator+=(const pcb::Heightmap& other) {
+	add(other);
 	return *this;
 }
 
-pcb::Heightmap& pcb::Heightmap::operator-=(const Heightmap& other) {
-	int heightConditionValue = static_cast<int>(std::min(height, other.height));
-	int widthConditionValue = static_cast<int>(std::min(width, other.width));
-
-	for (int y = 0; y < heightConditionValue; y++) {
-		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues[(y * width) + x] = static_cast<unsigned char>(std::max(0, this->elevationValues[(y * width) + x] - other.elevationValues[(y * other.width) + x]));
-		}
-	}
-
+pcb::Heightmap& pcb::Heightmap::operator-=(const pcb::Heightmap& other) {
+	subtract(other);
 	return *this;
 }
 
-pcb::Image* pcb::Heightmap::to24BitImageNew() {
+pcb::Image* pcb::Heightmap::to24BitImageNew() const {
 	int arraySize = 3 * width * height;
 	char* sourcePixels = new char[arraySize];
 	for (int y = 0; y < height; y++) {
@@ -67,14 +51,36 @@ pcb::Image* pcb::Heightmap::to24BitImageNew() {
 	return image;
 }
 
-unsigned char pcb::Heightmap::getValueAt(int x, int y) {
+unsigned char pcb::Heightmap::getValueAt(int x, int y) const {
 	return elevationValues[(y * width) + x];
 }
 
-int pcb::Heightmap::getWidth() {
+int pcb::Heightmap::getWidth() const {
 	return width;
 }
 
-int pcb::Heightmap::getHeight() {
+int pcb::Heightmap::getHeight() const {
 	return height;
+}
+
+void pcb::Heightmap::add(const pcb::Heightmap& other) {
+	int heightConditionValue = static_cast<int>(std::min(height, other.height));
+	int widthConditionValue = static_cast<int>(std::min(width, other.width));
+
+	for (int y = 0; y < heightConditionValue; y++) {
+		for (int x = 0; x < widthConditionValue; x++) {
+			this->elevationValues[(y * width) + x] = static_cast<unsigned char>(std::min(this->elevationValues[(y * width) + x] + other.elevationValues[(y * other.width) + x], 255));
+		}
+	}
+}
+
+void pcb::Heightmap::subtract(const pcb::Heightmap& other) {
+	int heightConditionValue = static_cast<int>(std::min(height, other.height));
+	int widthConditionValue = static_cast<int>(std::min(width, other.width));
+
+	for (int y = 0; y < heightConditionValue; y++) {
+		for (int x = 0; x < widthConditionValue; x++) {
+			this->elevationValues[(y * width) + x] = static_cast<unsigned char>(std::max(0, this->elevationValues[(y * width) + x] - other.elevationValues[(y * other.width) + x]));
+		}
+	}
 }

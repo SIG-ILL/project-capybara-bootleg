@@ -5,7 +5,7 @@
 #include "Image.hpp"
 
 namespace pcb {
-	class BitmapLoader {
+	class BitmapLoader final {
 	public:
 		Image* loadFromFile(std::string filename);
 	};

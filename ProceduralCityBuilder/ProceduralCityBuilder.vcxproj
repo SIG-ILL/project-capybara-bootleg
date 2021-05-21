@@ -78,6 +78,10 @@
     <ClCompile Include="Heightmap.cpp" />
     <ClCompile Include="HeightmapGenerator.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="LayeredHeightmap.cpp" />
+    <ClCompile Include="LayeredHeightmapGenerator.cpp" />
+    <ClCompile Include="LayeredTerrain.cpp" />
+    <ClCompile Include="LayeredTerrainGenerator.cpp" />
     <ClCompile Include="SimpleObject.cpp" />
     <ClCompile Include="NoiseGenerator.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -90,7 +94,12 @@
     <ClInclude Include="BitshiftingUtility.hpp" />
     <ClInclude Include="Heightmap.hpp" />
     <ClInclude Include="HeightmapGenerator.hpp" />
+    <ClInclude Include="HeightmapLayer.hpp" />
     <ClInclude Include="Image.hpp" />
+    <ClInclude Include="LayeredHeightmap.hpp" />
+    <ClInclude Include="LayeredHeightmapGenerator.hpp" />
+    <ClInclude Include="LayeredTerrain.hpp" />
+    <ClInclude Include="LayeredTerrainGenerator.hpp" />
     <ClInclude Include="SimpleObject.hpp" />
     <ClInclude Include="NoiseGenerator.hpp" />
     <ClInclude Include="Terrain.hpp" />

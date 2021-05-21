@@ -22,11 +22,11 @@ Gradient(0, -1), Gradient(0.38267, -0.92388), Gradient(0.7071, -0.7071), Gradien
 	}
 }
 
-double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) {
+double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) const {
 	double s = (x + y) * F;
 	int i = static_cast<int>(std::floor(x + s));
 	int j = static_cast<int>(std::floor(y + s));
-	double t = G * (i + j);
+	double t = G * (static_cast<double>(i) + j);
 	double X0 = i - t;
 	double Y0 = j - t;
 	double x0 = x - X0;
@@ -89,6 +89,6 @@ double pcb::NoiseGenerator::getValueForCoordinates(double x, double y) {
 	return 70.0 * (n0 + n1 + n2);
 }
 
-double pcb::NoiseGenerator::dot(Gradient& g, double x, double y) {
+double pcb::NoiseGenerator::dot(const Gradient& g, double x, double y) const {
 	return g.x * x + g.y * y;
 }
