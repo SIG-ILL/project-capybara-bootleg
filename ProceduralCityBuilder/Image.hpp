@@ -5,7 +5,7 @@ namespace pcb {
 
 	class Image final {
 	public:
-		Image(char* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat);
+		Image(char const* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat);
 		~Image();
 
 		int getWidth();

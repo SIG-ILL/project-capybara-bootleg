@@ -9,7 +9,7 @@ namespace pcb {
 	*/
 	class Heightmap {
 	public:
-		Heightmap(int width, int height, unsigned char* elevationValues);
+		Heightmap(const int width, const int height, const unsigned char* elevationValues);
 		Heightmap(const pcb::Heightmap& other);
 		virtual ~Heightmap();
 
@@ -20,6 +20,7 @@ namespace pcb {
 		unsigned char getValueAt(int x, int y) const;
 		virtual int getWidth() const;
 		virtual int getHeight() const;
+		int getHighestElevation() const;
 
 	protected:
 		void add(const pcb::Heightmap& other);
@@ -28,6 +29,7 @@ namespace pcb {
 	private:
 		int width;
 		int height;
+		unsigned char highestElevation;
 		unsigned char* elevationValues;
 	};
 }

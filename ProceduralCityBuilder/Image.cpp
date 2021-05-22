@@ -1,6 +1,6 @@
 #include "Image.hpp"
 
-pcb::Image::Image(char* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat) : pixelArray(new char[pixelArraySize]), widthInPixels(width), heightInPixels(height), pixelDataFormat(pixelDataFormat) {
+pcb::Image::Image(char const* sourcePixels, int pixelArraySize, int width, int height, pcb::PixelDataFormat pixelDataFormat) : pixelArray(new char[pixelArraySize]), widthInPixels(width), heightInPixels(height), pixelDataFormat(pixelDataFormat) {
 	for (int i = 0; i < pixelArraySize; i++) {
 		pixelArray[i] = sourcePixels[i];
 	}
