@@ -8,10 +8,10 @@ namespace pcb {
 		Image(char const* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat);
 		~Image();
 
-		int getWidth();
-		int getHeight();
-		char* getPixels();	// This doesn't add anything compared to having a public field?
-		PixelDataFormat getPixelDataFormat();
+		int getWidth() const;
+		int getHeight() const;
+		char* getPixels() const;	// This doesn't add anything compared to having a public field?
+		PixelDataFormat getPixelDataFormat() const;
 
 	private:
 		char* pixelArray;

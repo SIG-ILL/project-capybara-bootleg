@@ -4,7 +4,7 @@
 
 pcb::HeightmapGenerator::HeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
-pcb::Heightmap* pcb::HeightmapGenerator::generateNew() {
+pcb::Heightmap* pcb::HeightmapGenerator::generateNew() const {
 	unsigned char* noiseMap = new unsigned char[mapWidth * mapHeight]{ 0 };
 	generateAndAddNoiseMap(noiseMap, 0.025, 0.85, 1);
 	generateAndAddNoiseMap(noiseMap, 0.05, 0.25, 0.4);
@@ -18,7 +18,7 @@ pcb::Heightmap* pcb::HeightmapGenerator::generateNew() {
 	return heightmap;
 }
 
-void pcb::HeightmapGenerator::generateAndAddNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::generateAndAddNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) const {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -35,7 +35,7 @@ void pcb::HeightmapGenerator::generateAndAddNoiseMap(unsigned char* noiseMap, do
 	}
 }
 
-void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) {
+void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) const {
 	if (maxValueFactor > 1.0) {
 		maxValueFactor = 1.0;
 	}
@@ -52,6 +52,6 @@ void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(unsigned char* noiseMa
 	}
 }
 
-double pcb::HeightmapGenerator::generateValueForCoordinates(double x, double y) {
+double pcb::HeightmapGenerator::generateValueForCoordinates(double x, double y) const {
 	return 127.5 * (1 + noiseGenerator.getValueForCoordinates(x, y));
 }

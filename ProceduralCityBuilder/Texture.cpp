@@ -23,6 +23,6 @@ pcb::Texture::~Texture() {
 	glDeleteTextures(1, &id);
 }
 
-void pcb::Texture::bind() {
+void pcb::Texture::bind() const {
 	glBindTexture(GL_TEXTURE_2D, id);
 }

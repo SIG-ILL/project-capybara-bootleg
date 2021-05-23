@@ -48,12 +48,12 @@ namespace pcb {
 		void initializeGLUT(int argc, char* argv[]);
 		void loadResources();
 
-		void drawTestShapes();
+		void drawTestShapes() const;
 
-		void render();
-		void reshape(int width, int height);
+		void render() const;
+		void reshape(int width, int height) const;
 		void handleKeyboard(unsigned char key, int x, int y);
-		void idleUpdate();
+		void idleUpdate() const;
 		void handleMouseMotion(int x, int y);
 		void handleMouseWheel(int button, int dir, int x, int y);
 	};

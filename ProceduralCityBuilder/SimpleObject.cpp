@@ -15,7 +15,7 @@ pcb::SimpleObject::~SimpleObject() {
 }
 
 
-void pcb::SimpleObject::render() {
+void pcb::SimpleObject::render() const {
 	glPushMatrix();
 
 	glTranslatef(x, y, z);
@@ -34,9 +34,9 @@ void pcb::SimpleObject::render() {
 	glPopMatrix();
 }
 
-void pcb::SimpleObject::preRenderAction() {}
+void pcb::SimpleObject::preRenderAction() const {}
 
-void pcb::SimpleObject::postRenderAction() {}
+void pcb::SimpleObject::postRenderAction() const {}
 
 void pcb::SimpleObject::setPosition(GLfloat x, GLfloat y, GLfloat z) {
 	this->x = x;
@@ -44,7 +44,7 @@ void pcb::SimpleObject::setPosition(GLfloat x, GLfloat y, GLfloat z) {
 	this->z = z;
 }
 
-pcb::SimpleTexturedObject::SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, Texture& texture, GLfloat* textureCoordinates) : SimpleObject(vertices,vertexCount), texture(texture), textureCoordinates(new GLfloat[2 * vertexCount]) {
+pcb::SimpleTexturedObject::SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, const Texture& texture, GLfloat* textureCoordinates) : SimpleObject(vertices,vertexCount), texture(texture), textureCoordinates(new GLfloat[2 * vertexCount]) {
 	std::copy(textureCoordinates, textureCoordinates + (2 * vertexCount), this->textureCoordinates);
 }
 
@@ -56,7 +56,7 @@ pcb::SimpleTexturedObject::~SimpleTexturedObject() {
 	delete[] textureCoordinates;
 }
 
-void pcb::SimpleTexturedObject::preRenderAction(){
+void pcb::SimpleTexturedObject::preRenderAction() const {
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(2, GL_FLOAT, 0, textureCoordinates);
 
@@ -64,7 +64,7 @@ void pcb::SimpleTexturedObject::preRenderAction(){
 	texture.bind();
 }
 
-void pcb::SimpleTexturedObject::postRenderAction() {
+void pcb::SimpleTexturedObject::postRenderAction() const {
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisable(GL_TEXTURE_2D);
 }
@@ -81,11 +81,11 @@ pcb::SimpleColoredObject::~SimpleColoredObject() {
 	delete[] colors;
 }
 
-void pcb::SimpleColoredObject::preRenderAction() {
+void pcb::SimpleColoredObject::preRenderAction() const {
 	glEnableClientState(GL_COLOR_ARRAY);
 	glColorPointer(3, GL_FLOAT, 0, colors);
 }
 
-void pcb::SimpleColoredObject::postRenderAction() {
+void pcb::SimpleColoredObject::postRenderAction() const {
 	glDisableClientState(GL_COLOR_ARRAY);
 }

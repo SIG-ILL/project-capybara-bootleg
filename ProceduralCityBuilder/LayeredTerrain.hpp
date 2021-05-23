@@ -8,7 +8,7 @@
 namespace pcb {
 	class LayeredTerrain final : public pcb::Terrain {
 	public:
-		LayeredTerrain(pcb::LayeredHeightmap* layeredHeightmap, double scale);
+		LayeredTerrain(const pcb::LayeredHeightmap& layeredHeightmap, double scale);
 
 		std::vector<pcb::Terrain> getLayers() const;
 		int getLayerCount() const;

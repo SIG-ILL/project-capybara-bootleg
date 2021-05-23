@@ -11,14 +11,14 @@ namespace pcb {
 		SimpleObject(const pcb::SimpleObject& other);
 		virtual ~SimpleObject();
 
-		void render();
+		void render() const;
 		void setPosition(GLfloat x, GLfloat y, GLfloat z);
 
 	protected:
 		GLsizei vertexCount;
 
-		virtual void preRenderAction();
-		virtual void postRenderAction();		
+		virtual void preRenderAction() const;
+		virtual void postRenderAction() const;
 
 	private:
 		GLfloat* vertices;		
@@ -29,16 +29,16 @@ namespace pcb {
 
 	class SimpleTexturedObject final : public SimpleObject {
 	public:
-		SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, Texture& texture, GLfloat* textureCoordinates);
+		SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, const Texture& texture, GLfloat* textureCoordinates);
 		SimpleTexturedObject(const pcb::SimpleTexturedObject& other);
 		~SimpleTexturedObject();
 
 	protected:
-		void preRenderAction() override;
-		void postRenderAction() override;
+		void preRenderAction() const override;
+		void postRenderAction() const override;
 
 	private:
-		Texture& texture;
+		const Texture& texture;
 		GLfloat* textureCoordinates;
 	};
 
@@ -49,8 +49,8 @@ namespace pcb {
 		~SimpleColoredObject();
 
 	protected:
-		void preRenderAction() override;
-		void postRenderAction() override;
+		void preRenderAction() const override;
+		void postRenderAction() const override;
 
 	private:
 		GLfloat* colors;

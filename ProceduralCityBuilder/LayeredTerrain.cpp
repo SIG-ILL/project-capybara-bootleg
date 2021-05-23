@@ -1,8 +1,8 @@
 #include "LayeredTerrain.hpp"
 
-pcb::LayeredTerrain::LayeredTerrain(pcb::LayeredHeightmap* layeredHeightmap, double scale) : Terrain(layeredHeightmap, scale), layers() {
-	for (const pcb::HeightmapLayer& heightmapLayer : layeredHeightmap->getLayers()) {
-		layers.emplace_back(Terrain(&(heightmapLayer.heightmap), scale));
+pcb::LayeredTerrain::LayeredTerrain(const pcb::LayeredHeightmap& layeredHeightmap, double scale) : Terrain(layeredHeightmap, scale), layers() {
+	for (const pcb::HeightmapLayer& heightmapLayer : layeredHeightmap.getLayers()) {
+		layers.emplace_back(Terrain(heightmapLayer.heightmap, scale));
 
 		if (heightmapLayer.mode == pcb::LayerMode::Addition) {
 			layers.back().setHeightBasedColorGradient(0, 0, 0, 0, 1, 0, true);

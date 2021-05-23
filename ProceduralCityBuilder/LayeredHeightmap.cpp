@@ -2,7 +2,7 @@
 
 pcb::LayeredHeightmap::LayeredHeightmap(int width, int height, unsigned char* elevationValues) : Heightmap(width, height, elevationValues), layers(1, pcb::HeightmapLayer{pcb::Heightmap(width, height, elevationValues), pcb::LayerMode::Addition}) {}
 
-pcb::LayeredHeightmap::LayeredHeightmap(int width, int height, pcb::Heightmap baseHeightmap) : Heightmap(baseHeightmap), layers(1, pcb::HeightmapLayer{ baseHeightmap, pcb::LayerMode::Addition }) {}
+pcb::LayeredHeightmap::LayeredHeightmap(const pcb::Heightmap& baseHeightmap) : Heightmap(baseHeightmap), layers(1, pcb::HeightmapLayer{ baseHeightmap, pcb::LayerMode::Addition }) {}
 
 pcb::LayeredHeightmap& pcb::LayeredHeightmap::operator+=(const pcb::Heightmap& other) {
 	addLayer(other, pcb::LayerMode::Addition);
@@ -32,7 +32,7 @@ int pcb::LayeredHeightmap::getHeight() const {
 	return layers.at(0).heightmap.getHeight();
 }
 
-void pcb::LayeredHeightmap::addLayer(pcb::Heightmap heightmap, pcb::LayerMode mode) {
+void pcb::LayeredHeightmap::addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode) {
 	layers.push_back(pcb::HeightmapLayer{ heightmap, mode });
 
 	if (mode == pcb::LayerMode::Addition) {

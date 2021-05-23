@@ -10,7 +10,7 @@ namespace pcb {
 		Texture(Image* sourceImage);
 		~Texture();
 
-		void bind();
+		void bind() const;
 
 	private:
 		GLuint id;

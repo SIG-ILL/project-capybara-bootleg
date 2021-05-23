@@ -6,7 +6,7 @@ pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapH
 
 pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNew() const {
 	pcb::Heightmap heightmapLayer = generateHeightmap(0.025, 0.85, 1);
-	pcb::LayeredHeightmap* heightmap = new pcb::LayeredHeightmap(mapWidth, mapHeight, heightmapLayer);
+	pcb::LayeredHeightmap* heightmap = new pcb::LayeredHeightmap(heightmapLayer);
 	heightmap->addLayer(generateHeightmap(0.05, 0.25, 0.4), LayerMode::Addition);
 	heightmap->addLayer(generateHeightmap(0.1, 0.1, 0.3), LayerMode::Addition);
 	heightmap->addLayer(generateHeightmap(0.25, 0.15, 0.2), LayerMode::Addition);

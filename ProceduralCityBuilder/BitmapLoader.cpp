@@ -6,7 +6,7 @@
 #include "BitshiftingUtility.hpp"
 
 
-pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) {
+pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) const {
 	std::ifstream fileStream;
 	fileStream.open(filename, std::fstream::binary);
 	if (!fileStream.is_open()) {

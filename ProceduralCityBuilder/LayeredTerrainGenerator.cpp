@@ -13,7 +13,7 @@ pcb::LayeredTerrain* pcb::LayeredTerrainGenerator::generateNew() {
 	delete heightmap;
 	heightmap = heightmapGenerator.generateNew();
 
-	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(heightmap, scale / mapWidth);
+	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(*heightmap, scale / mapWidth);
 
 	return terrain;
 }

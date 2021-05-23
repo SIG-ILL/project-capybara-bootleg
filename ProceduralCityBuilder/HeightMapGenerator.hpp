@@ -10,15 +10,15 @@ namespace pcb {
 	public:
 		HeightmapGenerator(int mapWidth, int mapHeight);
 
-		pcb::Heightmap* generateNew();
+		pcb::Heightmap* generateNew() const;
 
 	private:
 		int mapWidth;
 		int mapHeight;
 		pcb::NoiseGenerator noiseGenerator;
 
-		void generateAndAddNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor);
-		void generateAndSubtractNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor);		
-		double generateValueForCoordinates(double x, double y);
+		void generateAndAddNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) const;
+		void generateAndSubtractNoiseMap(unsigned char* noiseMap, double noiseModifier, double multiplier, double maxValueFactor) const;
+		double generateValueForCoordinates(double x, double y) const;
 	};
 }

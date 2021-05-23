@@ -7,6 +7,6 @@
 namespace pcb {
 	class BitmapLoader final {
 	public:
-		Image* loadFromFile(std::string filename);
+		Image* loadFromFile(std::string filename) const;
 	};
 }

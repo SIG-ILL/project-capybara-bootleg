@@ -204,7 +204,7 @@ void pcb::Application::loadResources() {
 	generatedHeightmapObject->setPosition(-0.5f, 1, 0.3f);
 
 	terrainLayers = static_cast<pcb::LayeredTerrain*>(terrain)->getLayers();
-	for (int i = 0; i < terrainLayers.size(); i++) {
+	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
 		Terrain& terrainLayer = terrainLayers.at(i);
 		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount(), terrainLayer.getQuadsColors()));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
@@ -216,21 +216,21 @@ void pcb::Application::loadResources() {
 	renderObjects[2] = generatedHeightmapObject;
 }
 
-void pcb::Application::drawTestShapes() {
+void pcb::Application::drawTestShapes() const {
 	for (SimpleObject* object : renderObjects) {
 		object->render();
 	}
 
-	for (pcb::SimpleColoredObject& terrainLayerObject : terrainLayerRenderObjects) {
+	for (const pcb::SimpleColoredObject& terrainLayerObject : terrainLayerRenderObjects) {
 		terrainLayerObject.render();
 	}
 }
 
-void pcb::Application::render() {
+void pcb::Application::render() const {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	glTranslatef(-translationX, -translationY, -2 + zoom);
+	glTranslatef(-translationX, -translationY, static_cast<GLfloat>(-2 + zoom));
 	glRotatef(90.0f + (0.1f * globalRotationX), 1, 0, 0);
 	glRotatef(0.1f * globalRotationY, 0, 1, 0);
 
@@ -241,7 +241,7 @@ void pcb::Application::render() {
 	glutSwapBuffers();
 }
 
-void pcb::Application::reshape(int width, int height) {
+void pcb::Application::reshape(int width, int height) const {
 	glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 
 	glMatrixMode(GL_PROJECTION);
@@ -279,7 +279,7 @@ void pcb::Application::handleKeyboard(unsigned char key, int x, int y) {
 	}
 }
 
-void pcb::Application::idleUpdate() {
+void pcb::Application::idleUpdate() const {
 	glutPostRedisplay();
 }
 

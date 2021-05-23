@@ -10,10 +10,10 @@ pcb::Image::~Image() {
 	delete[] pixelArray;
 }
 
-int pcb::Image::getWidth() { return widthInPixels; }
+int pcb::Image::getWidth() const { return widthInPixels; }
 
-int pcb::Image::getHeight() { return heightInPixels; }
+int pcb::Image::getHeight() const { return heightInPixels; }
 
-char* pcb::Image::getPixels() { return pixelArray; }
+char* pcb::Image::getPixels() const { return pixelArray; }
 
-pcb::PixelDataFormat pcb::Image::getPixelDataFormat() { return pixelDataFormat; }
+pcb::PixelDataFormat pcb::Image::getPixelDataFormat() const { return pixelDataFormat; }

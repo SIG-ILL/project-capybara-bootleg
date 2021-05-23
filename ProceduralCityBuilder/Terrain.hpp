@@ -7,7 +7,7 @@
 namespace pcb {
 	class Terrain {
 	public:
-		Terrain(const pcb::Heightmap* heightmap, double scale);
+		Terrain(const pcb::Heightmap& heightmap, double scale);
 		Terrain(const pcb::Terrain& other);
 		virtual ~Terrain();
 
