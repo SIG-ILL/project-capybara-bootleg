@@ -2,18 +2,9 @@
 
 #include <algorithm>
 
-pcb::SimpleObject::SimpleObject(GLfloat* vertices, GLsizei vertexCount) :vertexCount(vertexCount), vertices(new GLfloat[3 * vertexCount]), x(0), y(0), z(0) {
-	std::copy(vertices, vertices + (3 * vertexCount), this->vertices);
-}
+pcb::SimpleObject::SimpleObject(const pcb::GLBufferObject& vertices) : vertices(vertices), x(0), y(0), z(0) {}
 
-pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertexCount(other.vertexCount), vertices(new GLfloat[3 * other.vertexCount]), x(other.x), y(other.y), z(other.z) {
-	std::copy(other.vertices, other.vertices + (3 * other.vertexCount), vertices);
-}
-
-pcb::SimpleObject::~SimpleObject() {
-	delete[] vertices;
-}
-
+pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertices(other.vertices), x(other.x), y(other.y), z(other.z) {}
 
 void pcb::SimpleObject::render() const {
 	glPushMatrix();
@@ -24,10 +15,10 @@ void pcb::SimpleObject::render() const {
 
 	preRenderAction();
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_QUADS, 0, vertexCount);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	vertices.bind();
+	vertices.enableAndSet();
+	glDrawArrays(GL_QUADS, 0, vertices.getVertexCount());
+	vertices.disable();
 
 	postRenderAction();
 
@@ -44,48 +35,32 @@ void pcb::SimpleObject::setPosition(GLfloat x, GLfloat y, GLfloat z) {
 	this->z = z;
 }
 
-pcb::SimpleTexturedObject::SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, const Texture& texture, GLfloat* textureCoordinates) : SimpleObject(vertices,vertexCount), texture(texture), textureCoordinates(new GLfloat[2 * vertexCount]) {
-	std::copy(textureCoordinates, textureCoordinates + (2 * vertexCount), this->textureCoordinates);
-}
+pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::GLBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::GLBufferObject& vboTextureCoordinates) : SimpleObject(vboVertexCoordinates), texture(texture), textureCoordinates(vboTextureCoordinates) {}
 
-pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::SimpleTexturedObject& other) : SimpleObject(other), texture(other.texture), textureCoordinates(new GLfloat[2 * other.vertexCount]) {
-	std::copy(other.textureCoordinates, other.textureCoordinates + (2 * other.vertexCount), this->textureCoordinates);
-}
-
-pcb::SimpleTexturedObject::~SimpleTexturedObject() {
-	delete[] textureCoordinates;
-}
+pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::SimpleTexturedObject& other) : SimpleObject(other), texture(other.texture), textureCoordinates(other.textureCoordinates) {}
 
 void pcb::SimpleTexturedObject::preRenderAction() const {
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	/*glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(2, GL_FLOAT, 0, textureCoordinates);
 
 	glEnable(GL_TEXTURE_2D);
-	texture.bind();
+	texture.bind();*/
 }
 
 void pcb::SimpleTexturedObject::postRenderAction() const {
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisable(GL_TEXTURE_2D);
+	/*glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisable(GL_TEXTURE_2D);*/
 }
 
-pcb::SimpleColoredObject::SimpleColoredObject(GLfloat* vertices, GLsizei vertexCount, GLfloat* colors) : SimpleObject(vertices, vertexCount), colors(new GLfloat[3 * vertexCount]) {
-	std::copy(colors, colors + (3 * vertexCount), this->colors);
-}
+pcb::SimpleColoredObject::SimpleColoredObject(const pcb::GLBufferObject& vboVertexCoordinates, const pcb::GLBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
 
-pcb::SimpleColoredObject::SimpleColoredObject(const pcb::SimpleColoredObject& other) : SimpleObject(other), colors(new GLfloat[3 * other.vertexCount]) {
-	std::copy(other.colors, other.colors + (3 * other.vertexCount), this->colors);
-}
-
-pcb::SimpleColoredObject::~SimpleColoredObject() {
-	delete[] colors;
-}
+pcb::SimpleColoredObject::SimpleColoredObject(const pcb::SimpleColoredObject& other) : SimpleObject(other), colors(other.colors) {}
 
 void pcb::SimpleColoredObject::preRenderAction() const {
-	glEnableClientState(GL_COLOR_ARRAY);
-	glColorPointer(3, GL_FLOAT, 0, colors);
+	/*glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(3, GL_FLOAT, 0, colors);*/
 }
 
 void pcb::SimpleColoredObject::postRenderAction() const {
-	glDisableClientState(GL_COLOR_ARRAY);
+	/*glDisableClientState(GL_COLOR_ARRAY);*/
 }

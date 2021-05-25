@@ -3,25 +3,23 @@
 #include <GL/glew.h>
 
 #include "Texture.hpp"
+#include "GLBufferObject.hpp"
 
 namespace pcb {
 	class SimpleObject {
 	public:
-		SimpleObject(GLfloat* vertices, GLsizei vertexCount);
+		SimpleObject(const pcb::GLBufferObject& vertices);
 		SimpleObject(const pcb::SimpleObject& other);
-		virtual ~SimpleObject();
 
 		void render() const;
 		void setPosition(GLfloat x, GLfloat y, GLfloat z);
 
 	protected:
-		GLsizei vertexCount;
-
 		virtual void preRenderAction() const;
 		virtual void postRenderAction() const;
 
 	private:
-		GLfloat* vertices;		
+		const pcb::GLBufferObject& vertices;
 		GLfloat x;
 		GLfloat y;
 		GLfloat z;
@@ -29,9 +27,8 @@ namespace pcb {
 
 	class SimpleTexturedObject final : public SimpleObject {
 	public:
-		SimpleTexturedObject(GLfloat* vertices, GLsizei vertexCount, const Texture& texture, GLfloat* textureCoordinates);
+		SimpleTexturedObject(const pcb::GLBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::GLBufferObject& vboTextureCoordinates);
 		SimpleTexturedObject(const pcb::SimpleTexturedObject& other);
-		~SimpleTexturedObject();
 
 	protected:
 		void preRenderAction() const override;
@@ -39,20 +36,19 @@ namespace pcb {
 
 	private:
 		const Texture& texture;
-		GLfloat* textureCoordinates;
+		const pcb::GLBufferObject& textureCoordinates;
 	};
 
 	class SimpleColoredObject final : public SimpleObject {
 	public:
-		SimpleColoredObject(GLfloat* vertices, GLsizei vertexCount, GLfloat* colors);
+		SimpleColoredObject(const pcb::GLBufferObject& vboVertexCoordinates, const pcb::GLBufferObject& vboVertexColors);
 		SimpleColoredObject(const pcb::SimpleColoredObject& other);
-		~SimpleColoredObject();
 
 	protected:
 		void preRenderAction() const override;
 		void postRenderAction() const override;
 
 	private:
-		GLfloat* colors;
+		const pcb::GLBufferObject& colors;
 	};
 }

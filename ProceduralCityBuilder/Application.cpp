@@ -1,10 +1,13 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <iostream>
 
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
 #include "HeightmapGenerator.hpp"
 #include "LayeredTerrainGenerator.hpp"
+#include "GLBufferObject.hpp"
+#include "ShaderProgram.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -34,7 +37,7 @@ void pcb::Application::mouseWheelCallback(int button, int dir, int x, int y) {
 
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
 isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrain(nullptr), terrainLayers(), terrainLayerRenderObjects() {}
+renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), previousGlutElapsedTime(0) {}
 
 pcb::Application::~Application() {
 	delete heightmapTexture;
@@ -48,7 +51,9 @@ pcb::Application::~Application() {
 		delete[] renderObjectDataPointer;
 	}
 
-	delete terrain;
+	for (GLBufferObject* vbo : vbos) {
+		delete vbo;
+	}
 }
 
 void pcb::Application::run(Application* instance, int argc, char* argv[]) {
@@ -81,11 +86,23 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 
 	glClearColor(0, 0, 1, 0);
 	glEnable(GL_DEPTH_TEST);
+
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK) {
+		std::cout << "GLEW INIT FAILED WITH ERROR" << glewError << "\n";
+	}
+		
+	std::string shaderSource = "attribute vec3 aPosition; void main() { gl_Position = vec4(aPosition, 1); }";
+	VertexShader defaultVertexShader(shaderSource);
+	shaderSource = "void main()	{ gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); }";
+	FragmentShader defaultFragmentShader(shaderSource);
+	ShaderProgram defaultShaderProgram(defaultVertexShader, defaultFragmentShader);
+	defaultShaderProgram.use();
 }
 
 void pcb::Application::loadResources() {
 	LayeredTerrainGenerator terrainGenerator(256, 256, 1);
-	terrain = terrainGenerator.generateNew();
+	Terrain* terrain = terrainGenerator.generateNew();
 
 	Image* heightmapImage = terrainGenerator.getHeightmap24BitImageNew();
 	heightmapTexture = new Texture(heightmapImage);
@@ -196,20 +213,35 @@ void pcb::Application::loadResources() {
 	renderObjectsDataPointers[1] = colors;
 	renderObjectsDataPointers[2] = textureCoordinates;
 
-	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(terrain->getQuadsVertices(), terrain->getQuadsVertexCount(), terrain->getQuadsColors());
+	pcb::GLBufferObject* terrainVertices = new GLBufferObject(terrain->getQuadsVertices(), 3, terrain->getQuadsVertexCount());
+	vbos.push_back(terrainVertices);
+	pcb::GLBufferObject* terrainColors = new GLBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
+	vbos.push_back(terrainColors);
+	pcb::GLBufferObject* heightMapImageObjectVertices = new GLBufferObject(vertices, 3, 24);
+	vbos.push_back(heightMapImageObjectVertices);
+	pcb::GLBufferObject* heightMapImageObjectTextureCoordinates = new GLBufferObject(textureCoordinates, 2, 24);
+	vbos.push_back(heightMapImageObjectTextureCoordinates);
+
+	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(*terrainVertices, *terrainColors);
 	terrainObject->setPosition(-0.2f, 0, -0.5f);
-	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(vertices, 24, *heightmapTexture, textureCoordinates);
+	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *heightmapTexture, *heightMapImageObjectTextureCoordinates);
 	heightmapImageObject->setPosition(-0.5f, 1, -0.3f);
-	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(vertices, 24, *generatedHeightmapTexture, textureCoordinates);
+	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
 	generatedHeightmapObject->setPosition(-0.5f, 1, 0.3f);
 
 	terrainLayers = static_cast<pcb::LayeredTerrain*>(terrain)->getLayers();
 	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
 		Terrain& terrainLayer = terrainLayers.at(i);
-		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount(), terrainLayer.getQuadsColors()));
+		pcb::GLBufferObject* terrainlayerVertices = new pcb::GLBufferObject(terrainLayer.getQuadsVertices(), 3, terrainLayer.getQuadsVertexCount());
+		vbos.push_back(terrainlayerVertices);
+		pcb::GLBufferObject* terrainLayerColors = new pcb::GLBufferObject(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
+		vbos.push_back(terrainLayerColors);
+		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
 		object.setPosition(-0.2f, static_cast<GLfloat>(i + 1), -0.5f);
 	}
+
+	delete terrain;
 
 	renderObjects[0] = terrainObject;
 	renderObjects[1] = heightmapImageObject;
@@ -226,7 +258,12 @@ void pcb::Application::drawTestShapes() const {
 	}
 }
 
-void pcb::Application::render() const {
+void pcb::Application::render() {
+	int glutElapsedTime = glutGet(GLUT_ELAPSED_TIME);
+	int milisecondsSinceLastRenderStart = glutElapsedTime - previousGlutElapsedTime;
+	previousGlutElapsedTime = glutElapsedTime;
+	//std::cout << "Time between render calls: " << milisecondsSinceLastRenderStart << ", which would be " << (1.0f / (milisecondsSinceLastRenderStart / 1000.0f)) << " FPS\n";
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();

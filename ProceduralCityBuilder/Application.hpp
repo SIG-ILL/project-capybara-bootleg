@@ -41,16 +41,18 @@ namespace pcb {
 		Texture* generatedHeightmapTexture;
 		std::array<SimpleObject*, 3> renderObjects;
 		std::array<GLfloat*, 3> renderObjectsDataPointers;
-		Terrain* terrain;
 		std::vector<Terrain> terrainLayers;
 		std::vector<SimpleColoredObject> terrainLayerRenderObjects;
+		std::vector<GLBufferObject*> vbos;
+
+		int previousGlutElapsedTime;
 
 		void initializeGLUT(int argc, char* argv[]);
 		void loadResources();
 
 		void drawTestShapes() const;
 
-		void render() const;
+		void render();
 		void reshape(int width, int height) const;
 		void handleKeyboard(unsigned char key, int x, int y);
 		void idleUpdate() const;

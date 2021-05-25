@@ -46,7 +46,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glm;E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -61,7 +61,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glm;E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -82,11 +82,16 @@
     <ClCompile Include="LayeredHeightmapGenerator.cpp" />
     <ClCompile Include="LayeredTerrain.cpp" />
     <ClCompile Include="LayeredTerrainGenerator.cpp" />
+    <ClCompile Include="RenderObjectData.cpp" />
+    <ClCompile Include="RenderObjectInstance.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SimpleObject.cpp" />
     <ClCompile Include="NoiseGenerator.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="GLBufferObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp" />
@@ -100,11 +105,16 @@
     <ClInclude Include="LayeredHeightmapGenerator.hpp" />
     <ClInclude Include="LayeredTerrain.hpp" />
     <ClInclude Include="LayeredTerrainGenerator.hpp" />
+    <ClInclude Include="RenderObjectData.hpp" />
+    <ClInclude Include="RenderObjectInstance.hpp" />
+    <ClInclude Include="Shader.hpp" />
+    <ClInclude Include="ShaderProgram.hpp" />
     <ClInclude Include="SimpleObject.hpp" />
     <ClInclude Include="NoiseGenerator.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
     <ClInclude Include="Texture.hpp" />
+    <ClInclude Include="GLBufferObject.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

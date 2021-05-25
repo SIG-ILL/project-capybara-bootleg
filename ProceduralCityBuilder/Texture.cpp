@@ -1,6 +1,6 @@
 #include "Texture.hpp"
 
-pcb::Texture::Texture(Image* sourceImage) : id(0) {
+pcb::Texture::Texture(Image* sourceImage) : name(0) {
 	GLenum pixelDataFormat = GL_RGB;
 	switch (sourceImage->getPixelDataFormat()) {
 	case PixelDataFormat::BGR:
@@ -11,8 +11,8 @@ pcb::Texture::Texture(Image* sourceImage) : id(0) {
 		pixelDataFormat = GL_RGB;
 	}
 
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_2D, id);
+	glGenTextures(1, &name);
+	bind();
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sourceImage->getWidth(), sourceImage->getHeight(), 0, pixelDataFormat, GL_UNSIGNED_BYTE, sourceImage->getPixels());
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -20,9 +20,9 @@ pcb::Texture::Texture(Image* sourceImage) : id(0) {
 }
 
 pcb::Texture::~Texture() {
-	glDeleteTextures(1, &id);
+	glDeleteTextures(1, &name);
 }
 
 void pcb::Texture::bind() const {
-	glBindTexture(GL_TEXTURE_2D, id);
+	glBindTexture(GL_TEXTURE_2D, name);
 }

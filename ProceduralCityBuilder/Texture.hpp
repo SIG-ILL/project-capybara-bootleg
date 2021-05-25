@@ -13,6 +13,6 @@ namespace pcb {
 		void bind() const;
 
 	private:
-		GLuint id;
+		GLuint name;
 	};
 }
