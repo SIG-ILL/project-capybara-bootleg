@@ -41,7 +41,7 @@ void pcb::Application::mouseWheelCallback(int button, int dir, int x, int y) {
 
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
 isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
+renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), colorVbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
 
 pcb::Application::~Application() {
 	delete heightmapTexture;
@@ -57,6 +57,10 @@ pcb::Application::~Application() {
 
 	for (VertexBufferObject* vbo : vbos) {
 		delete vbo;
+	}
+
+	for (VertexColorBufferObject* colorVbo : colorVbos) {
+		delete colorVbo;
 	}
 }
 
@@ -214,8 +218,8 @@ void pcb::Application::loadResources() {
 
 	pcb::VertexBufferObject* terrainVertices = new VertexBufferObject(terrain->getQuadsVertices(), 3, terrain->getQuadsVertexCount());
 	vbos.push_back(terrainVertices);
-	pcb::VertexBufferObject* terrainColors = new VertexBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
-	vbos.push_back(terrainColors);
+	pcb::VertexColorBufferObject* terrainColors = new VertexColorBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
+	colorVbos.push_back(terrainColors);
 	pcb::VertexBufferObject* heightMapImageObjectVertices = new VertexBufferObject(vertices, 3, 24);
 	vbos.push_back(heightMapImageObjectVertices);
 	pcb::VertexBufferObject* heightMapImageObjectTextureCoordinates = new VertexBufferObject(textureCoordinates, 2, 24);
@@ -237,8 +241,8 @@ void pcb::Application::loadResources() {
 		Terrain& terrainLayer = terrainLayers.at(i);
 		pcb::VertexBufferObject* terrainlayerVertices = new pcb::VertexBufferObject(terrainLayer.getQuadsVertices(), 3, terrainLayer.getQuadsVertexCount());
 		vbos.push_back(terrainlayerVertices);
-		pcb::VertexBufferObject* terrainLayerColors = new pcb::VertexBufferObject(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
-		vbos.push_back(terrainLayerColors);
+		pcb::VertexColorBufferObject* terrainLayerColors = new pcb::VertexColorBufferObject(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
+		colorVbos.push_back(terrainLayerColors);
 		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
 		object.setPosition(-0.2f, static_cast<GLfloat>(i + 1), -0.5f);
@@ -268,7 +272,7 @@ void pcb::Application::prepareShaders() {
 }
 
 void pcb::Application::drawTestShapes() const {
-	for (SimpleObject* object : renderObjects) {
+	for (const SimpleObject* const object : renderObjects) {
 		object->render();
 	}
 

@@ -40,7 +40,7 @@ namespace pcb {
 
 	class SimpleColoredObject final : public SimpleObject {
 	public:
-		SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexBufferObject& vboVertexColors);
+		SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors);
 		SimpleColoredObject(const pcb::SimpleColoredObject& other);
 
 	protected:
@@ -48,6 +48,6 @@ namespace pcb {
 		void postRenderAction() const override;
 
 	private:
-		const pcb::VertexBufferObject& colors;
+		const pcb::VertexColorBufferObject& colors;
 	};
 }

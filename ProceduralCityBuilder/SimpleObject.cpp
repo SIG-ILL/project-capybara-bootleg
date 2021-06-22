@@ -45,11 +45,14 @@ void pcb::SimpleTexturedObject::postRenderAction() const {
 	glDisable(GL_TEXTURE_2D);*/
 }
 
-pcb::SimpleColoredObject::SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
+pcb::SimpleColoredObject::SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
 
 pcb::SimpleColoredObject::SimpleColoredObject(const pcb::SimpleColoredObject& other) : SimpleObject(other), colors(other.colors) {}
 
 void pcb::SimpleColoredObject::preRenderAction() const {
+	colors.bind();
+	colors.enableAndSet();
+
 	/*glEnableClientState(GL_COLOR_ARRAY);
 	glColorPointer(3, GL_FLOAT, 0, colors);*/
 }

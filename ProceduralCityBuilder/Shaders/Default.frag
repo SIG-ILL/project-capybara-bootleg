@@ -1,5 +1,9 @@
 #version 460
 
+layout(location = 0) in vec3 aColor;
+
+layout(location = 0) out vec4 resultColor;
+
 void main() {
-	gl_FragColor = vec4(0.0, 1.0, 1.0, 1.0);
+	resultColor = vec4(aColor, 1.0);
 }
