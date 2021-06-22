@@ -7,7 +7,7 @@
 namespace pcb {
 	class Shader {
 	protected:
-		Shader(std::string& sourceCode, GLenum type);
+		Shader(const std::string& sourceCode, GLenum type);
 
 	public:
 		void attachToShaderProgram(GLuint programName);
@@ -19,11 +19,11 @@ namespace pcb {
 
 	class VertexShader : public Shader {
 	public:
-		VertexShader(std::string& sourceCode);
+		VertexShader(const std::string& sourceCode);
 	};
 
 	class FragmentShader : public Shader {
 	public:
-		FragmentShader(std::string& sourceCode);
+		FragmentShader(const std::string& sourceCode);
 	};
 }

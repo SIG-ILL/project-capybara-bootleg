@@ -2,16 +2,16 @@
 
 #include <GL/glew.h>
 
-#include "GLBufferObject.hpp"
+#include "VertexArrayObject.hpp"
 #include "ShaderProgram.hpp"
 
 namespace pcb {
 	class RenderObjectData {
 	public:
-		RenderObjectData(const pcb::GLBufferObject& vertices, const pcb::ShaderProgram& shaderProgram);
+		RenderObjectData(const pcb::VertexArrayObject& vertexArrayObject, const pcb::ShaderProgram& shaderProgram);
 
 	private:
-		const pcb::GLBufferObject& vertices;
+		const pcb::VertexArrayObject& vertexArrayObject;
 		const pcb::ShaderProgram& shaderProgram;
 	};
 }

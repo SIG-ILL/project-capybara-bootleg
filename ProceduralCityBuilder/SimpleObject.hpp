@@ -1,14 +1,15 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 
 #include "Texture.hpp"
-#include "GLBufferObject.hpp"
+#include "VertexBufferObject.hpp"
 
 namespace pcb {
 	class SimpleObject {
 	public:
-		SimpleObject(const pcb::GLBufferObject& vertices);
+		SimpleObject(const pcb::VertexBufferObject& vertices);
 		SimpleObject(const pcb::SimpleObject& other);
 
 		void render() const;
@@ -19,15 +20,13 @@ namespace pcb {
 		virtual void postRenderAction() const;
 
 	private:
-		const pcb::GLBufferObject& vertices;
-		GLfloat x;
-		GLfloat y;
-		GLfloat z;
+		const pcb::VertexBufferObject& vertices;
+		glm::mat4 modelMatrix;
 	};
 
 	class SimpleTexturedObject final : public SimpleObject {
 	public:
-		SimpleTexturedObject(const pcb::GLBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::GLBufferObject& vboTextureCoordinates);
+		SimpleTexturedObject(const pcb::VertexBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::VertexBufferObject& vboTextureCoordinates);
 		SimpleTexturedObject(const pcb::SimpleTexturedObject& other);
 
 	protected:
@@ -36,12 +35,12 @@ namespace pcb {
 
 	private:
 		const Texture& texture;
-		const pcb::GLBufferObject& textureCoordinates;
+		const pcb::VertexBufferObject& textureCoordinates;
 	};
 
 	class SimpleColoredObject final : public SimpleObject {
 	public:
-		SimpleColoredObject(const pcb::GLBufferObject& vboVertexCoordinates, const pcb::GLBufferObject& vboVertexColors);
+		SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexBufferObject& vboVertexColors);
 		SimpleColoredObject(const pcb::SimpleColoredObject& other);
 
 	protected:
@@ -49,6 +48,6 @@ namespace pcb {
 		void postRenderAction() const override;
 
 	private:
-		const pcb::GLBufferObject& colors;
+		const pcb::VertexBufferObject& colors;
 	};
 }

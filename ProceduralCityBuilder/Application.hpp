@@ -3,10 +3,12 @@
 #include <GL/glew.h>
 #include <array>
 #include <vector>
+#include <glm/glm.hpp>
 
 #include "Texture.hpp"
 #include "SimpleObject.hpp"
 #include "TerrainGenerator.hpp"
+#include "ShaderManager.hpp"
 
 namespace pcb {
 	class Application final {
@@ -43,17 +45,20 @@ namespace pcb {
 		std::array<GLfloat*, 3> renderObjectsDataPointers;
 		std::vector<Terrain> terrainLayers;
 		std::vector<SimpleColoredObject> terrainLayerRenderObjects;
-		std::vector<GLBufferObject*> vbos;
+		std::vector<VertexBufferObject*> vbos;
+		ShaderManager shaderManager;
+		glm::mat4 projectionMatrix;
 
 		int previousGlutElapsedTime;
 
 		void initializeGLUT(int argc, char* argv[]);
 		void loadResources();
+		void prepareShaders();
 
 		void drawTestShapes() const;
 
 		void render();
-		void reshape(int width, int height) const;
+		void reshape(int width, int height);
 		void handleKeyboard(unsigned char key, int x, int y);
 		void idleUpdate() const;
 		void handleMouseMotion(int x, int y);

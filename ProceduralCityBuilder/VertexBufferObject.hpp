@@ -3,10 +3,10 @@
 #include <GL/glew.h>
 
 namespace pcb {
-	class GLBufferObject {
+	class VertexBufferObject {
 	public:
-		GLBufferObject(GLfloat* vertices, int elementsPerVertex, int vertexCount);
-		~GLBufferObject();
+		VertexBufferObject(GLfloat* vertices, int elementsPerVertex, int vertexCount);
+		~VertexBufferObject();
 
 		void bind() const;
 		void enableAndSet() const;

@@ -1,6 +1,6 @@
 #include "Shader.hpp"
 
-pcb::Shader::Shader(std::string& sourceCode, GLenum type) : associatedShaderPrograms() {
+pcb::Shader::Shader(const std::string& sourceCode, GLenum type) : associatedShaderPrograms() {
 	name = glCreateShader(type);
 	const char* shaderSourceCString = sourceCode.data();	
 	glShaderSource(name, 1, &shaderSourceCString, nullptr);
@@ -12,6 +12,6 @@ void pcb::Shader::attachToShaderProgram(GLuint programName) {
 	associatedShaderPrograms.push_back(programName);
 }
 
-pcb::VertexShader::VertexShader(std::string& sourceCode) : Shader(sourceCode, GL_VERTEX_SHADER) {}
+pcb::VertexShader::VertexShader(const std::string& sourceCode) : Shader(sourceCode, GL_VERTEX_SHADER) {}
 
-pcb::FragmentShader::FragmentShader(std::string& sourceCode) : Shader(sourceCode, GL_FRAGMENT_SHADER) {}
+pcb::FragmentShader::FragmentShader(const std::string& sourceCode) : Shader(sourceCode, GL_FRAGMENT_SHADER) {}

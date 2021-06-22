@@ -1,12 +1,16 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
 #include "HeightmapGenerator.hpp"
 #include "LayeredTerrainGenerator.hpp"
-#include "GLBufferObject.hpp"
+#include "VertexBufferObject.hpp"
 #include "ShaderProgram.hpp"
 
 pcb::Application* pcb::Application::instance;
@@ -37,7 +41,7 @@ void pcb::Application::mouseWheelCallback(int button, int dir, int x, int y) {
 
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
 isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), previousGlutElapsedTime(0) {}
+renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
 
 pcb::Application::~Application() {
 	delete heightmapTexture;
@@ -51,7 +55,7 @@ pcb::Application::~Application() {
 		delete[] renderObjectDataPointer;
 	}
 
-	for (GLBufferObject* vbo : vbos) {
+	for (VertexBufferObject* vbo : vbos) {
 		delete vbo;
 	}
 }
@@ -91,16 +95,11 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 	if (glewError != GLEW_OK) {
 		std::cout << "GLEW INIT FAILED WITH ERROR" << glewError << "\n";
 	}
-		
-	std::string shaderSource = "attribute vec3 aPosition; void main() { gl_Position = vec4(aPosition, 1); }";
-	VertexShader defaultVertexShader(shaderSource);
-	shaderSource = "void main()	{ gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); }";
-	FragmentShader defaultFragmentShader(shaderSource);
-	ShaderProgram defaultShaderProgram(defaultVertexShader, defaultFragmentShader);
-	defaultShaderProgram.use();
 }
 
 void pcb::Application::loadResources() {
+	prepareShaders();
+
 	LayeredTerrainGenerator terrainGenerator(256, 256, 1);
 	Terrain* terrain = terrainGenerator.generateNew();
 
@@ -213,13 +212,13 @@ void pcb::Application::loadResources() {
 	renderObjectsDataPointers[1] = colors;
 	renderObjectsDataPointers[2] = textureCoordinates;
 
-	pcb::GLBufferObject* terrainVertices = new GLBufferObject(terrain->getQuadsVertices(), 3, terrain->getQuadsVertexCount());
+	pcb::VertexBufferObject* terrainVertices = new VertexBufferObject(terrain->getQuadsVertices(), 3, terrain->getQuadsVertexCount());
 	vbos.push_back(terrainVertices);
-	pcb::GLBufferObject* terrainColors = new GLBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
+	pcb::VertexBufferObject* terrainColors = new VertexBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
 	vbos.push_back(terrainColors);
-	pcb::GLBufferObject* heightMapImageObjectVertices = new GLBufferObject(vertices, 3, 24);
+	pcb::VertexBufferObject* heightMapImageObjectVertices = new VertexBufferObject(vertices, 3, 24);
 	vbos.push_back(heightMapImageObjectVertices);
-	pcb::GLBufferObject* heightMapImageObjectTextureCoordinates = new GLBufferObject(textureCoordinates, 2, 24);
+	pcb::VertexBufferObject* heightMapImageObjectTextureCoordinates = new VertexBufferObject(textureCoordinates, 2, 24);
 	vbos.push_back(heightMapImageObjectTextureCoordinates);
 
 	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(*terrainVertices, *terrainColors);
@@ -229,12 +228,16 @@ void pcb::Application::loadResources() {
 	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
 	generatedHeightmapObject->setPosition(-0.5f, 1, 0.3f);
 
+	renderObjects[0] = terrainObject;
+	renderObjects[1] = heightmapImageObject;
+	renderObjects[2] = generatedHeightmapObject;
+
 	terrainLayers = static_cast<pcb::LayeredTerrain*>(terrain)->getLayers();
 	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
 		Terrain& terrainLayer = terrainLayers.at(i);
-		pcb::GLBufferObject* terrainlayerVertices = new pcb::GLBufferObject(terrainLayer.getQuadsVertices(), 3, terrainLayer.getQuadsVertexCount());
+		pcb::VertexBufferObject* terrainlayerVertices = new pcb::VertexBufferObject(terrainLayer.getQuadsVertices(), 3, terrainLayer.getQuadsVertexCount());
 		vbos.push_back(terrainlayerVertices);
-		pcb::GLBufferObject* terrainLayerColors = new pcb::GLBufferObject(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
+		pcb::VertexBufferObject* terrainLayerColors = new pcb::VertexBufferObject(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
 		vbos.push_back(terrainLayerColors);
 		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
@@ -242,10 +245,26 @@ void pcb::Application::loadResources() {
 	}
 
 	delete terrain;
+}
 
-	renderObjects[0] = terrainObject;
-	renderObjects[1] = heightmapImageObject;
-	renderObjects[2] = generatedHeightmapObject;
+void pcb::Application::prepareShaders() {
+	std::ifstream fileStreamVertex("Shaders\\Default.vert");
+	std::stringstream stringStreamVertex;
+	stringStreamVertex << fileStreamVertex.rdbuf();
+	fileStreamVertex.close();
+
+	std::string shaderSource = stringStreamVertex.str();
+	shaderManager.createVertexShader("defaultVertex", shaderSource);
+
+	std::ifstream fileStreamFragment("Shaders\\Default.frag");
+	std::stringstream stringStreamFragment;
+	stringStreamFragment << fileStreamFragment.rdbuf();
+	fileStreamFragment.close();
+
+	shaderSource = stringStreamFragment.str();
+	shaderManager.createFragmentShader("defaultFragment", shaderSource);
+	shaderManager.createProgram("defaultProgram", "defaultVertex", "defaultFragment");
+	shaderManager.useProgram("defaultProgram");
 }
 
 void pcb::Application::drawTestShapes() const {
@@ -259,32 +278,30 @@ void pcb::Application::drawTestShapes() const {
 }
 
 void pcb::Application::render() {
-	int glutElapsedTime = glutGet(GLUT_ELAPSED_TIME);
-	int milisecondsSinceLastRenderStart = glutElapsedTime - previousGlutElapsedTime;
-	previousGlutElapsedTime = glutElapsedTime;
+	//int glutElapsedTime = glutGet(GLUT_ELAPSED_TIME);
+	//int milisecondsSinceLastRenderStart = glutElapsedTime - previousGlutElapsedTime;
+	//previousGlutElapsedTime = glutElapsedTime;
 	//std::cout << "Time between render calls: " << milisecondsSinceLastRenderStart << ", which would be " << (1.0f / (milisecondsSinceLastRenderStart / 1000.0f)) << " FPS\n";
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPushMatrix();
-	glTranslatef(-translationX, -translationY, static_cast<GLfloat>(-2 + zoom));
-	glRotatef(90.0f + (0.1f * globalRotationX), 1, 0, 0);
-	glRotatef(0.1f * globalRotationY, 0, 1, 0);
+	glm::mat4 identityMatrix(1);
+	glm::mat4 viewMatrix = glm::translate(identityMatrix, glm::vec3(-translationX, -translationY, static_cast<GLfloat>(-2 + zoom)));
+	viewMatrix = glm::rotate(viewMatrix, 90.0f + (0.1f * static_cast<GLfloat>(globalRotationX)), glm::vec3(1, 0, 0));
+	viewMatrix = glm::rotate(viewMatrix, 0.1f * static_cast<GLfloat>(globalRotationY), glm::vec3(0, 1, 0));
+
+	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
 	drawTestShapes();
-
-	glPopMatrix();
 
 	glutSwapBuffers();
 }
 
-void pcb::Application::reshape(int width, int height) const {
+void pcb::Application::reshape(int width, int height) {
 	glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(90, static_cast<double>(width) / static_cast<double>(height), 0.1, 1000);
-	glMatrixMode(GL_MODELVIEW);
+	projectionMatrix = glm::perspective(90.0, static_cast<double>(width) / static_cast<double>(height), 0.1, 1000.0);
 }
 
 void pcb::Application::handleKeyboard(unsigned char key, int x, int y) {

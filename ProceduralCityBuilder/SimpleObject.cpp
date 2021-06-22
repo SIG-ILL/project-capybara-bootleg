@@ -1,17 +1,14 @@
 #include "SimpleObject.hpp"
 
 #include <algorithm>
+#include <glm/gtc/type_ptr.hpp>
 
-pcb::SimpleObject::SimpleObject(const pcb::GLBufferObject& vertices) : vertices(vertices), x(0), y(0), z(0) {}
+pcb::SimpleObject::SimpleObject(const pcb::VertexBufferObject& vertices) : vertices(vertices), modelMatrix(1) {}
 
-pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertices(other.vertices), x(other.x), y(other.y), z(other.z) {}
+pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertices(other.vertices), modelMatrix(other.modelMatrix) {}
 
 void pcb::SimpleObject::render() const {
-	glPushMatrix();
-
-	glTranslatef(x, y, z);
-	//glRotatef(rotationZ, 1, 1, 1);
-	//glScalef(scale, scale, scale);
+	glUniformMatrix4fv(2, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
 	preRenderAction();
 
@@ -21,8 +18,6 @@ void pcb::SimpleObject::render() const {
 	vertices.disable();
 
 	postRenderAction();
-
-	glPopMatrix();
 }
 
 void pcb::SimpleObject::preRenderAction() const {}
@@ -30,12 +25,10 @@ void pcb::SimpleObject::preRenderAction() const {}
 void pcb::SimpleObject::postRenderAction() const {}
 
 void pcb::SimpleObject::setPosition(GLfloat x, GLfloat y, GLfloat z) {
-	this->x = x;
-	this->y = y;
-	this->z = z;
+	modelMatrix = glm::translate(glm::mat4(1), glm::vec3(x, y, z));		// Order: Translate/rotate/scale.
 }
 
-pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::GLBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::GLBufferObject& vboTextureCoordinates) : SimpleObject(vboVertexCoordinates), texture(texture), textureCoordinates(vboTextureCoordinates) {}
+pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::VertexBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::VertexBufferObject& vboTextureCoordinates) : SimpleObject(vboVertexCoordinates), texture(texture), textureCoordinates(vboTextureCoordinates) {}
 
 pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::SimpleTexturedObject& other) : SimpleObject(other), texture(other.texture), textureCoordinates(other.textureCoordinates) {}
 
@@ -52,7 +45,7 @@ void pcb::SimpleTexturedObject::postRenderAction() const {
 	glDisable(GL_TEXTURE_2D);*/
 }
 
-pcb::SimpleColoredObject::SimpleColoredObject(const pcb::GLBufferObject& vboVertexCoordinates, const pcb::GLBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
+pcb::SimpleColoredObject::SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
 
 pcb::SimpleColoredObject::SimpleColoredObject(const pcb::SimpleColoredObject& other) : SimpleObject(other), colors(other.colors) {}
 

@@ -86,12 +86,14 @@
     <ClCompile Include="RenderObjectInstance.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="SimpleObject.cpp" />
     <ClCompile Include="NoiseGenerator.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="GLBufferObject.cpp" />
+    <ClCompile Include="VertexBufferObject.cpp" />
+    <ClCompile Include="VertexArrayObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp" />
@@ -109,12 +111,14 @@
     <ClInclude Include="RenderObjectInstance.hpp" />
     <ClInclude Include="Shader.hpp" />
     <ClInclude Include="ShaderProgram.hpp" />
+    <ClInclude Include="ShaderManager.hpp" />
     <ClInclude Include="SimpleObject.hpp" />
     <ClInclude Include="NoiseGenerator.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
     <ClInclude Include="Texture.hpp" />
-    <ClInclude Include="GLBufferObject.hpp" />
+    <ClInclude Include="VertexBufferObject.hpp" />
+    <ClInclude Include="VertexArrayObject.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
