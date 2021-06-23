@@ -8,7 +8,6 @@
 
 #include "Application.hpp"
 #include "BitmapLoader.hpp"
-#include "HeightmapGenerator.hpp"
 #include "LayeredTerrainGenerator.hpp"
 #include "VertexBufferObject.hpp"
 #include "ShaderProgram.hpp"
@@ -248,29 +247,43 @@ void pcb::Application::loadResources() {
 }
 
 void pcb::Application::prepareShaders() {
-	std::ifstream fileStreamVertex("Shaders\\Default.vert");
+	std::string shaderSource = loadShaderFromFile("Shaders\\Default.vert");
+	shaderManager.createVertexShader("defaultVertex", shaderSource);
+	shaderSource = loadShaderFromFile("Shaders\\Default.frag");
+	shaderManager.createFragmentShader("defaultFragment", shaderSource);
+	shaderManager.createProgram("defaultProgram", "defaultVertex", "defaultFragment");
+
+	shaderSource = loadShaderFromFile("Shaders\\Textured.vert");
+	shaderManager.createVertexShader("texturedVertex", shaderSource);
+	shaderSource = loadShaderFromFile("Shaders\\Textured.frag");
+	shaderManager.createFragmentShader("texturedFragment", shaderSource);
+	shaderManager.createProgram("texturedProgram", "texturedVertex", "texturedFragment");
+
+	shaderManager.useProgram("defaultProgram");
+}
+
+std::string pcb::Application::loadShaderFromFile(std::string filepath) const {
+	std::ifstream fileStreamVertex(filepath);
 	std::stringstream stringStreamVertex;
 	stringStreamVertex << fileStreamVertex.rdbuf();
 	fileStreamVertex.close();
 
-	std::string shaderSource = stringStreamVertex.str();
-	shaderManager.createVertexShader("defaultVertex", shaderSource);
-
-	std::ifstream fileStreamFragment("Shaders\\Default.frag");
-	std::stringstream stringStreamFragment;
-	stringStreamFragment << fileStreamFragment.rdbuf();
-	fileStreamFragment.close();
-
-	shaderSource = stringStreamFragment.str();
-	shaderManager.createFragmentShader("defaultFragment", shaderSource);
-	shaderManager.createProgram("defaultProgram", "defaultVertex", "defaultFragment");
-	shaderManager.useProgram("defaultProgram");
+	return stringStreamVertex.str();
 }
 
 void pcb::Application::drawTestShapes() const {
-	for (const SimpleObject* const object : renderObjects) {
+	/*for (const SimpleObject* const object : renderObjects) {
 		object->render();
-	}
+	}*/
+
+	shaderManager.useProgram("defaultProgram");
+	renderObjects[0]->render();
+
+	shaderManager.useProgram("texturedProgram");
+	renderObjects[1]->render();
+	renderObjects[2]->render();
+
+	shaderManager.useProgram("defaultProgram");
 
 	for (const pcb::SimpleColoredObject& terrainLayerObject : terrainLayerRenderObjects) {
 		terrainLayerObject.render();
@@ -290,6 +303,11 @@ void pcb::Application::render() {
 	viewMatrix = glm::rotate(viewMatrix, 90.0f + (0.1f * static_cast<GLfloat>(globalRotationX)), glm::vec3(1, 0, 0));
 	viewMatrix = glm::rotate(viewMatrix, 0.1f * static_cast<GLfloat>(globalRotationY), glm::vec3(0, 1, 0));
 
+	shaderManager.useProgram("defaultProgram");
+	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	shaderManager.useProgram("texturedProgram");
 	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 

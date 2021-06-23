@@ -11,6 +11,7 @@ namespace pcb {
 		~Texture();
 
 		void bind() const;
+		void unbind() const;
 
 	private:
 		GLuint name;

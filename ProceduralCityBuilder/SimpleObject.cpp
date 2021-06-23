@@ -32,16 +32,15 @@ pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::VertexPositionBufferO
 pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::SimpleTexturedObject& other) : SimpleObject(other), texture(other.texture), textureCoordinates(other.textureCoordinates) {}
 
 void pcb::SimpleTexturedObject::preRenderAction() const {
-	/*glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_FLOAT, 0, textureCoordinates);
-
-	glEnable(GL_TEXTURE_2D);
-	texture.bind();*/
+	textureCoordinates.enable();
+	glActiveTexture(GL_TEXTURE0);
+	texture.bind();
+	glUniform1i(3, 0);
 }
 
 void pcb::SimpleTexturedObject::postRenderAction() const {
-	/*glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisable(GL_TEXTURE_2D);*/
+	textureCoordinates.disable();
+	texture.unbind();
 }
 
 pcb::SimpleColoredObject::SimpleColoredObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}

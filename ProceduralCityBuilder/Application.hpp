@@ -54,6 +54,7 @@ namespace pcb {
 		void initializeGLUT(int argc, char* argv[]);
 		void loadResources();
 		void prepareShaders();
+		std::string loadShaderFromFile(std::string filepath) const;
 
 		void drawTestShapes() const;
 
