@@ -3,35 +3,40 @@
 #include <GL/glew.h>
 
 namespace pcb {
-	class VertexBufferObject {
-	public:
-		VertexBufferObject(GLfloat* vertices, int elementsPerVertex, int vertexCount);
-		~VertexBufferObject();
+	enum class VertexAttribute { Position = 0, Color = 1, TextureCoordinate = 2 };
 
-		void bind() const;
-		void enableAndSet() const;
+	class VertexBufferObject {
+	protected:
+		VertexBufferObject(GLuint attributeIndex, const GLfloat* const vertexData, int elementsPerVertex, int vertexCount);
+
+	public:
+		virtual ~VertexBufferObject();
+
+		void enable() const;
 		void disable() const;
 		int getVertexCount() const;
 
 	private:
+		GLuint attributeIndex;
 		GLuint name;
 		int elementsPerVertex;
 		int vertexCount;
+
+		void bind() const;
 	};
 
-	class VertexColorBufferObject {
+	class VertexPositionBufferObject : public VertexBufferObject {
 	public:
-		VertexColorBufferObject(GLfloat* vertexColors, int elementsPerVertex, int vertexCount);
-		~VertexColorBufferObject();
+		VertexPositionBufferObject(const GLfloat* const vertexData, int vertexCount);
+	};
 
-		void bind() const;
-		void enableAndSet() const;
-		void disable() const;
-		int getVertexCount() const;
+	class VertexColorBufferObject : public VertexBufferObject {
+	public:
+		VertexColorBufferObject(const GLfloat* const vertexData, int elementsPerVertex, int vertexCount);
+	};
 
-	private:
-		GLuint name;
-		int elementsPerVertex;
-		int vertexCount;
+	class VertexTextureCoordinateBufferObject : public VertexBufferObject {
+	public:
+		VertexTextureCoordinateBufferObject(const GLfloat* const vertexData, int vertexCount);
 	};
 }

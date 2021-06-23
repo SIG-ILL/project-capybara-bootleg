@@ -2,10 +2,10 @@
 
 #include <algorithm>
 
-pcb::VertexBufferObject::VertexBufferObject(GLfloat* vertices, int elementsPerVertex, int vertexCount) : name(0), elementsPerVertex(elementsPerVertex), vertexCount(vertexCount) {
+pcb::VertexBufferObject::VertexBufferObject(GLuint attributeIndex, const GLfloat* const vertexData, int elementsPerVertex, int vertexCount) : attributeIndex(attributeIndex), name(0), elementsPerVertex(elementsPerVertex), vertexCount(vertexCount) {
 	glGenBuffers(1, &name);
 	bind();
-	glBufferData(GL_ARRAY_BUFFER, elementsPerVertex * vertexCount * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, elementsPerVertex * vertexCount * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
 }
 
 pcb::VertexBufferObject::~VertexBufferObject() {
@@ -16,44 +16,23 @@ void pcb::VertexBufferObject::bind() const {
 	glBindBuffer(GL_ARRAY_BUFFER, name);
 }
 
-void pcb::VertexBufferObject::enableAndSet() const {
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, elementsPerVertex, GL_FLOAT, GL_FALSE, 0, 0);
+void pcb::VertexBufferObject::enable() const {
+	bind();
+	glEnableVertexAttribArray(attributeIndex);
+	glVertexAttribPointer(attributeIndex, elementsPerVertex, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 void pcb::VertexBufferObject::disable() const {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(attributeIndex);
 }
 
 int pcb::VertexBufferObject::getVertexCount() const {
 	return vertexCount;
 }
 
-pcb::VertexColorBufferObject::VertexColorBufferObject(GLfloat* vertexColors, int elementsPerVertex, int vertexCount) : name(0), elementsPerVertex(elementsPerVertex), vertexCount(vertexCount) {
-	glGenBuffers(1, &name);
-	bind();
-	glBufferData(GL_ARRAY_BUFFER, elementsPerVertex * vertexCount * sizeof(GLfloat), vertexColors, GL_STATIC_DRAW);
-}
+pcb::VertexPositionBufferObject::VertexPositionBufferObject(const GLfloat* const vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Position), vertexData, 3, vertexCount) {}
 
-pcb::VertexColorBufferObject::~VertexColorBufferObject() {
-	glDeleteBuffers(1, &name);
-}
+pcb::VertexColorBufferObject::VertexColorBufferObject(const GLfloat* const vertexData, int elementsPerVertex, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Color), vertexData, elementsPerVertex, vertexCount) {}
 
-void pcb::VertexColorBufferObject::bind() const {
-	glBindBuffer(GL_ARRAY_BUFFER, name);
-}
-
-void pcb::VertexColorBufferObject::enableAndSet() const {
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, elementsPerVertex, GL_FLOAT, GL_FALSE, 0, 0);
-}
-
-void pcb::VertexColorBufferObject::disable() const {
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDisableVertexAttribArray(1);
-}
-
-int pcb::VertexColorBufferObject::getVertexCount() const {
-	return vertexCount;
-}
+pcb::VertexTextureCoordinateBufferObject::VertexTextureCoordinateBufferObject(const GLfloat* const vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::TextureCoordinate), vertexData, 2, vertexCount) {}

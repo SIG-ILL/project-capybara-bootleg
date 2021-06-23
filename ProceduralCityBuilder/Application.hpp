@@ -46,7 +46,6 @@ namespace pcb {
 		std::vector<Terrain> terrainLayers;
 		std::vector<SimpleColoredObject> terrainLayerRenderObjects;
 		std::vector<VertexBufferObject*> vbos;
-		std::vector<VertexColorBufferObject*> colorVbos;
 		ShaderManager shaderManager;
 		glm::mat4 projectionMatrix;
 

@@ -9,7 +9,7 @@
 namespace pcb {
 	class SimpleObject {
 	public:
-		SimpleObject(const pcb::VertexBufferObject& vertices);
+		SimpleObject(const pcb::VertexPositionBufferObject& vertices);
 		SimpleObject(const pcb::SimpleObject& other);
 
 		void render() const;
@@ -20,13 +20,13 @@ namespace pcb {
 		virtual void postRenderAction() const;
 
 	private:
-		const pcb::VertexBufferObject& vertices;
+		const pcb::VertexPositionBufferObject& vertices;
 		glm::mat4 modelMatrix;
 	};
 
 	class SimpleTexturedObject final : public SimpleObject {
 	public:
-		SimpleTexturedObject(const pcb::VertexBufferObject& vboVertexCoordinates, const Texture& texture, const pcb::VertexBufferObject& vboTextureCoordinates);
+		SimpleTexturedObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::Texture& texture, const pcb::VertexTextureCoordinateBufferObject& VertexTextureCoordinateBufferObject);
 		SimpleTexturedObject(const pcb::SimpleTexturedObject& other);
 
 	protected:
@@ -35,12 +35,12 @@ namespace pcb {
 
 	private:
 		const Texture& texture;
-		const pcb::VertexBufferObject& textureCoordinates;
+		const pcb::VertexTextureCoordinateBufferObject& textureCoordinates;
 	};
 
 	class SimpleColoredObject final : public SimpleObject {
 	public:
-		SimpleColoredObject(const pcb::VertexBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors);
+		SimpleColoredObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors);
 		SimpleColoredObject(const pcb::SimpleColoredObject& other);
 
 	protected:
