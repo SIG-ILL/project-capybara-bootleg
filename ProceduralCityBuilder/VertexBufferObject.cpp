@@ -19,7 +19,7 @@ void pcb::VertexBufferObject::bind() const {
 void pcb::VertexBufferObject::enable() const {
 	bind();
 	glEnableVertexAttribArray(attributeIndex);
-	glVertexAttribPointer(attributeIndex, elementsPerVertex, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(attributeIndex, elementsPerVertex, GL_FLOAT, GL_FALSE, 0, nullptr);
 }
 
 void pcb::VertexBufferObject::disable() const {

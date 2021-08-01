@@ -74,7 +74,7 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 	glutInitWindowSize(1280, 1280);
 	glutInitWindowPosition(320, 180);
 
-	glutCreateWindow("Procedural City Builder");
+	glutCreateWindow("Project Capybara Bootleg / Procedural City Builder");
 
 	mouseWindowX = glutGet(GLUT_WINDOW_WIDTH) / 2;
 	mouseWindowY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
@@ -221,11 +221,12 @@ void pcb::Application::loadResources() {
 	vbos.push_back(heightMapImageObjectTextureCoordinates);
 
 	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(*terrainVertices, *terrainColors);
-	terrainObject->setPosition(-0.2f, 0, -0.5f);
+	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
+	terrainObject->setScale(5.0f, 1.0f, 5.0f);
 	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *heightmapTexture, *heightMapImageObjectTextureCoordinates);
-	heightmapImageObject->setPosition(-0.5f, 1, -0.3f);
+	heightmapImageObject->setPosition(-0.5f, 0, -0.3f);
 	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
-	generatedHeightmapObject->setPosition(-0.5f, 1, 0.3f);
+	generatedHeightmapObject->setPosition(-0.5f, 0, 0.3f);
 
 	renderObjects[0] = terrainObject;
 	renderObjects[1] = heightmapImageObject;
@@ -240,7 +241,8 @@ void pcb::Application::loadResources() {
 		vbos.push_back(terrainLayerColors);
 		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
-		object.setPosition(-0.2f, static_cast<GLfloat>(i + 1), -0.5f);
+		object.setPosition(-0.2f, static_cast<float>(i + 1), -0.5f);
+		object.setScale(5.0f, 1.0f, 5.0f);
 	}
 
 	delete terrain;
@@ -299,8 +301,8 @@ void pcb::Application::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 identityMatrix(1);
-	glm::mat4 viewMatrix = glm::translate(identityMatrix, glm::vec3(-translationX, -translationY, static_cast<GLfloat>(-2 + zoom)));
-	viewMatrix = glm::rotate(viewMatrix, 90.0f + (0.1f * static_cast<GLfloat>(globalRotationX)), glm::vec3(1, 0, 0));
+	glm::mat4 viewMatrix = glm::translate(identityMatrix, glm::vec3(-translationX, -translationY, static_cast<GLfloat>(zoom)));
+	viewMatrix = glm::rotate(viewMatrix, 0.1f * static_cast<GLfloat>(globalRotationX), glm::vec3(1, 0, 0));
 	viewMatrix = glm::rotate(viewMatrix, 0.1f * static_cast<GLfloat>(globalRotationY), glm::vec3(0, 1, 0));
 
 	shaderManager.useProgram("defaultProgram");
@@ -325,16 +327,16 @@ void pcb::Application::reshape(int width, int height) {
 void pcb::Application::handleKeyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case 'a':
-		translationX -= 0.01f;
+		translationX -= 0.1f;
 		break;
 	case 'd':
-		translationX += 0.01f;
+		translationX += 0.1f;
 		break;
 	case 'w':
-		translationY += 0.01f;
+		translationY += 0.1f;
 		break;
 	case 's':
-		translationY -= 0.01f;
+		translationY -= 0.1f;
 		break;
 	case 'q':
 		rotationZ -= 1;
@@ -372,5 +374,5 @@ void pcb::Application::handleMouseMotion(int x, int y) {
 }
 
 void pcb::Application::handleMouseWheel(int button, int dir, int x, int y) {
-	zoom += (0.05 * dir);
+	zoom += (0.5 * dir);
 }

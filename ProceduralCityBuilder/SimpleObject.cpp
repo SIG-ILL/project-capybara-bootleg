@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
-pcb::SimpleObject::SimpleObject(const pcb::VertexPositionBufferObject& vertices) : vertices(vertices), modelMatrix(1) {}
+pcb::SimpleObject::SimpleObject(const pcb::VertexPositionBufferObject& vertices) : vertices(vertices), position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f), modelMatrix(1.0f) {}
 
-pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertices(other.vertices), modelMatrix(other.modelMatrix) {}
+pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertices(other.vertices), position(other.position), rotation(other.rotation), scale(other.scale), modelMatrix(other.modelMatrix) {}
 
 void pcb::SimpleObject::render() const {
 	glUniformMatrix4fv(2, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -23,8 +23,29 @@ void pcb::SimpleObject::preRenderAction() const {}
 
 void pcb::SimpleObject::postRenderAction() const {}
 
-void pcb::SimpleObject::setPosition(GLfloat x, GLfloat y, GLfloat z) {
-	modelMatrix = glm::translate(glm::mat4(1), glm::vec3(x, y, z));		// Order: Translate/rotate/scale.
+void pcb::SimpleObject::setPosition(float x, float y, float z) {
+	position = glm::vec3(x, y, z);
+	updateModelMatrix();
+}
+
+void pcb::SimpleObject::setRotation(float x, float y, float z) {
+	rotation = glm::vec3(x, y, z);
+	updateModelMatrix();
+}
+
+void pcb::SimpleObject::setScale(float x, float y, float z) {
+	scale = glm::vec3(x, y, z);
+	updateModelMatrix();
+}
+
+void pcb::SimpleObject::updateModelMatrix() {
+	glm::mat4 identityMatrix(1);
+
+	modelMatrix = glm::translate(identityMatrix, position);
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0, 1, 0));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0, 0, 1));
+	modelMatrix = glm::scale(modelMatrix, scale);
 }
 
 pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::Texture& texture, const pcb::VertexTextureCoordinateBufferObject& vboTextureCoordinates) : SimpleObject(vboVertexCoordinates), texture(texture), textureCoordinates(vboTextureCoordinates) {}

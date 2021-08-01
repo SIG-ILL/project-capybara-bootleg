@@ -13,7 +13,9 @@ namespace pcb {
 		SimpleObject(const pcb::SimpleObject& other);
 
 		void render() const;
-		void setPosition(GLfloat x, GLfloat y, GLfloat z);
+		void setPosition(float x, float y, float z);
+		void setRotation(float x, float y, float z);
+		void setScale(float x, float y, float z);
 
 	protected:
 		virtual void preRenderAction() const;
@@ -21,7 +23,12 @@ namespace pcb {
 
 	private:
 		const pcb::VertexPositionBufferObject& vertices;
+		glm::vec3 position;
+		glm::vec3 rotation;
+		glm::vec3 scale;
 		glm::mat4 modelMatrix;
+
+		void updateModelMatrix();
 	};
 
 	class SimpleTexturedObject final : public SimpleObject {
