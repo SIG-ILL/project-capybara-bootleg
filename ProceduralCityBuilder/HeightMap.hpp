@@ -20,15 +20,26 @@ namespace pcb {
 		unsigned char getValueAt(int x, int y) const;
 		virtual int getWidth() const;
 		virtual int getHeight() const;
+		int getLowestElevation() const;
 		int getHighestElevation() const;
 
-	protected:
 		void add(const pcb::Heightmap& other);
 		void subtract(const pcb::Heightmap& other);
+		void raiseToLevel(const unsigned char level);
+		void lowerToLevel(const unsigned char level);
+		void clamp(const unsigned char lowerLevel, const unsigned char upperLevel);
+		void mask(const pcb::Heightmap& mask);		// Normalized multiplication based on mask.
+		void scale(const double factor);
+		void invert();
+		void scaleAmplitude(const double factor);	// Scales amplitude measured from current (lowest + (0.5 * (highest - lowest))) elevation value
 
 	private:
+		const unsigned char MIN_ELEVATION_VALUE = 0;
+		const unsigned char MAX_ELEVATION_VALUE = 255;
+
 		int width;
 		int height;
+		unsigned char lowestElevation;
 		unsigned char highestElevation;
 		unsigned char* elevationValues;
 	};

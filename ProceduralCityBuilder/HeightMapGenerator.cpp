@@ -30,7 +30,7 @@ void pcb::HeightmapGenerator::generateAndAddNoiseMap(unsigned char* noiseMap, do
 		for (int x = 0; x < mapWidth; x++) {
 			double noiseInputX = x * noiseModifier;
 			double noiseInputY = y * noiseModifier;
-			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(std::min(noiseMap[(y * mapWidth) + x] + static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY))), 255));
+			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(std::min(noiseMap[(y * mapWidth) + x] + static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateElevationForNoiseCoordinates(noiseInputX, noiseInputY))), 255));
 		}
 	}
 }
@@ -47,11 +47,11 @@ void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(unsigned char* noiseMa
 		for (int x = 0; x < mapWidth; x++) {
 			double noiseInputX = x * noiseModifier;
 			double noiseInputY = y * noiseModifier;
-			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(std::max(0, noiseMap[(y * mapWidth) + x] - static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateValueForCoordinates(noiseInputX, noiseInputY)))));
+			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(std::max(0, noiseMap[(y * mapWidth) + x] - static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateElevationForNoiseCoordinates(noiseInputX, noiseInputY)))));
 		}
 	}
 }
 
-double pcb::HeightmapGenerator::generateValueForCoordinates(double x, double y) const {
+double pcb::HeightmapGenerator::generateElevationForNoiseCoordinates(double x, double y) const {
 	return 127.5 * (1 + noiseGenerator.getValueForCoordinates(x, y));
 }

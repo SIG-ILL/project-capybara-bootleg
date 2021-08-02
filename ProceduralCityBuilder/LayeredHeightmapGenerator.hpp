@@ -17,7 +17,7 @@ namespace pcb {
 		int mapHeight;
 		pcb::NoiseGenerator noiseGenerator;
 
-		pcb::Heightmap generateHeightmap(double noiseModifier, double multiplier, double maxValueFactor) const;
-		double generateValueForCoordinates(double x, double y) const;
+		pcb::Heightmap generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		double generateElevationForNoiseCoordinates(double x, double y) const;
 	};
 }

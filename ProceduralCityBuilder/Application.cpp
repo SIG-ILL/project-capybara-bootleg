@@ -241,7 +241,7 @@ void pcb::Application::loadResources() {
 		vbos.push_back(terrainLayerColors);
 		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
-		object.setPosition(-0.2f, static_cast<float>(i + 1), -0.5f);
+		object.setPosition(10.0f, static_cast<float>(i + 1), -0.5f);
 		object.setScale(5.0f, 1.0f, 5.0f);
 	}
 
@@ -261,6 +261,10 @@ void pcb::Application::prepareShaders() {
 	shaderManager.createFragmentShader("texturedFragment", shaderSource);
 	shaderManager.createProgram("texturedProgram", "texturedVertex", "texturedFragment");
 
+	shaderSource = loadShaderFromFile("Shaders\\TempElevationColors.vert");
+	shaderManager.createVertexShader("tempElevationColorsVertex", shaderSource);
+	shaderManager.createProgram("tempElevationColorsProgram", "tempElevationColorsVertex", "defaultFragment");
+
 	shaderManager.useProgram("defaultProgram");
 }
 
@@ -278,7 +282,8 @@ void pcb::Application::drawTestShapes() const {
 		object->render();
 	}*/
 
-	shaderManager.useProgram("defaultProgram");
+	//shaderManager.useProgram("defaultProgram");
+	shaderManager.useProgram("tempElevationColorsProgram");
 	renderObjects[0]->render();
 
 	shaderManager.useProgram("texturedProgram");
@@ -310,6 +315,10 @@ void pcb::Application::render() {
 	glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
 	shaderManager.useProgram("texturedProgram");
+	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+	shaderManager.useProgram("tempElevationColorsProgram");
 	glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 

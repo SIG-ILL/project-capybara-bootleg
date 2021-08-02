@@ -11,7 +11,7 @@ namespace pcb {
 	public:
 		void createVertexShader(const std::string& name, const std::string& sourceCode);
 		void createFragmentShader(const std::string& name, const std::string& sourceCode);
-		void createProgram(const std::string&, const std::string& vertexShaderName, const std::string& fragmentShaderName);
+		void createProgram(const std::string& name, const std::string& vertexShaderName, const std::string& fragmentShaderName);
 
 		void useProgram(const std::string& name) const;
 
