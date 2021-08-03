@@ -2,37 +2,14 @@
 
 #include <cmath>
 
+#include "MaskGenerator.hpp"
+
 pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
-
-pcb::Heightmap generateMask(int width, int height, int unaffectedCircleRadiusInPixels, int fadingRingWidthInPixels) {
-	unsigned char* maskData = new unsigned char[width * height];
-
-	const float centerX = width / 2.0f;
-	const float centerY = height / 2.0f;
-
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			unsigned char value = 255;
-			float horizontalDistance = std::abs(x - centerX);
-			float verticalDistance = std::abs(y - centerY);
-			float distanceToCenter = std::floor(std::sqrt((horizontalDistance * horizontalDistance) + (verticalDistance * verticalDistance)));
-			if (distanceToCenter > unaffectedCircleRadiusInPixels) {
-				float progressIntoFadingRing = std::min(((distanceToCenter - unaffectedCircleRadiusInPixels) / fadingRingWidthInPixels), 1.0f);
-				value = static_cast<unsigned char>(255 - (progressIntoFadingRing * 255));
-			}
-			maskData[(y * width) + x] = value;
-		}
-	}
-
-	pcb::Heightmap mask(width, height, maskData);
-	delete[] maskData;
-
-	return mask;
-}
 
 pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNew() const {
 	std::vector<Heightmap> heightmapLayers;
-	heightmapLayers.emplace_back(generateMask(mapWidth, mapHeight, 30, 98));
+	MaskGenerator maskGenerator;
+	heightmapLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, 30, 98));
 
 	heightmapLayers.emplace_back(generateHeightmap(128, 128, 0, 0));
 	heightmapLayers.back().lowerToLevel(175);
@@ -43,7 +20,6 @@ pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNew() const {
 	heightmapLayers.back().scale(0.5);
 	heightmapLayers.back().scaleAmplitude(2);	
 	heightmapLayers.back().mask(heightmapLayers.at(0));
-
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Addition);
 
 	heightmapLayers.emplace_back(generateHeightmap(32, 32, 0, 8));

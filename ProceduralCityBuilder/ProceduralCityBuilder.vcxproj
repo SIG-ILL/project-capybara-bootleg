@@ -84,6 +84,7 @@
     <ClCompile Include="LayeredHeightmapGenerator.cpp" />
     <ClCompile Include="LayeredTerrain.cpp" />
     <ClCompile Include="LayeredTerrainGenerator.cpp" />
+    <ClCompile Include="MaskGenerator.cpp" />
     <ClCompile Include="RenderObjectData.cpp" />
     <ClCompile Include="RenderObjectInstance.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="LayeredHeightmapGenerator.hpp" />
     <ClInclude Include="LayeredTerrain.hpp" />
     <ClInclude Include="LayeredTerrainGenerator.hpp" />
+    <ClInclude Include="MaskGenerator.hpp" />
     <ClInclude Include="RenderObjectData.hpp" />
     <ClInclude Include="RenderObjectInstance.hpp" />
     <ClInclude Include="Shader.hpp" />

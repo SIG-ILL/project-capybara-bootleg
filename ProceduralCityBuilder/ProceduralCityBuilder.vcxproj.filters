@@ -93,6 +93,9 @@
     <ClCompile Include="VertexArrayObject.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="MaskGenerator.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="VertexArrayObject.hpp">
       <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="MaskGenerator.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
