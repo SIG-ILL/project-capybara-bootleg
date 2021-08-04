@@ -11,6 +11,7 @@ namespace pcb {
 		LayeredHeightmapGenerator(int mapWidth, int mapHeight);
 
 		pcb::LayeredHeightmap* generateNew() const;
+		pcb::LayeredHeightmap* generateNewRandom() const;
 
 	private:
 		int mapWidth;

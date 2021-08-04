@@ -10,6 +10,9 @@ pcb::LayeredTerrain::LayeredTerrain(const pcb::LayeredHeightmap& layeredHeightma
 		else if (heightmapLayer.mode == pcb::LayerMode::Subtraction) {
 			layers.back().setHeightBasedColorGradient(0, 0, 0, 1, 0, 0, true);
 		}
+		else if (heightmapLayer.mode == LayerMode::Mask) {
+			layers.back().setHeightBasedColorGradient(0, 0, 0, 0, 0, 1, true);
+		}
 	}
 }
 

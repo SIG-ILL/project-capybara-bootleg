@@ -27,6 +27,7 @@ namespace pcb {
 		static void idleCallback();
 		static void mouseMotionCallback(int x, int y);
 		static void mouseWheelCallback(int button, int dir, int x, int y);
+		static void mouseCallback(int button, int state, int x, int y);
 
 		float translationX;
 		float translationY;
@@ -64,5 +65,6 @@ namespace pcb {
 		void idleUpdate() const;
 		void handleMouseMotion(int x, int y);
 		void handleMouseWheel(int button, int dir, int x, int y);
+		void handleMouse(int button, int state, int x, int y);
 	};
 }

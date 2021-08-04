@@ -18,6 +18,16 @@ pcb::LayeredTerrain* pcb::LayeredTerrainGenerator::generateNew() {
 	return terrain;
 }
 
+pcb::LayeredTerrain* pcb::LayeredTerrainGenerator::generateNewRandom() {
+	pcb::LayeredHeightmapGenerator heightmapGenerator(mapWidth, mapHeight);
+	delete heightmap;
+	heightmap = heightmapGenerator.generateNewRandom();
+
+	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(*heightmap, scale / mapWidth);
+
+	return terrain;
+}
+
 pcb::Image* pcb::LayeredTerrainGenerator::getHeightmap24BitImageNew() const {
 	return heightmap->to24BitImageNew();
 }

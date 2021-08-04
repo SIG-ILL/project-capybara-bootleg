@@ -38,6 +38,10 @@ void pcb::Application::mouseWheelCallback(int button, int dir, int x, int y) {
 	instance->handleMouseWheel(button, dir, x, y);
 }
 
+void pcb::Application::mouseCallback(int button, int state, int x, int y) {
+	instance->handleMouse(button, state, x, y);
+}
+
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
 isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
 renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
@@ -71,8 +75,8 @@ void pcb::Application::run(Application* instance, int argc, char* argv[]) {
 void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(1280, 1280);
-	glutInitWindowPosition(320, 180);
+	glutInitWindowSize(1920, 1280);
+	glutInitWindowPosition(320, 50);
 
 	glutCreateWindow("Project Capybara Bootleg / Procedural City Builder");
 
@@ -86,8 +90,9 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 	glutKeyboardFunc(Application::keyboardCallback);
 	glutMotionFunc(Application::mouseMotionCallback);
 	glutMouseWheelFunc(Application::mouseWheelCallback);
+	glutMouseFunc(Application::mouseCallback);
 
-	glClearColor(0, 0, 1, 0);
+	glClearColor(1, 0, 1, 0);
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum glewError = glewInit();
@@ -100,7 +105,8 @@ void pcb::Application::loadResources() {
 	prepareShaders();
 
 	LayeredTerrainGenerator terrainGenerator(256, 256, 1);
-	Terrain* terrain = terrainGenerator.generateNew();
+	//Terrain* terrain = terrainGenerator.generateNew();
+	Terrain* terrain = terrainGenerator.generateNewRandom();
 
 	Image* heightmapImage = terrainGenerator.getHeightmap24BitImageNew();
 	heightmapTexture = new Texture(heightmapImage);
@@ -384,4 +390,9 @@ void pcb::Application::handleMouseMotion(int x, int y) {
 
 void pcb::Application::handleMouseWheel(int button, int dir, int x, int y) {
 	zoom += (0.5 * dir);
+}
+
+void pcb::Application::handleMouse(int button, int state, int x, int y) {
+	mouseWindowX = x;
+	mouseWindowY = y;
 }

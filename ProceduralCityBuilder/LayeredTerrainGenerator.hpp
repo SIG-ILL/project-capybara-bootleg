@@ -9,6 +9,7 @@ namespace pcb {
 		~LayeredTerrainGenerator();
 
 		pcb::LayeredTerrain* generateNew();
+		pcb::LayeredTerrain* generateNewRandom();
 		pcb::Image* getHeightmap24BitImageNew() const;
 		std::vector<pcb::Image*> getHeightmapLayers24BitImagesNew() const;
 

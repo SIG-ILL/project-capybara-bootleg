@@ -33,13 +33,16 @@ int pcb::LayeredHeightmap::getHeight() const {
 }
 
 void pcb::LayeredHeightmap::addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode) {
-	layers.push_back(pcb::HeightmapLayer{ heightmap, mode });
+	layers.push_back(HeightmapLayer{ heightmap, mode });
 
-	if (mode == pcb::LayerMode::Addition) {
+	if (mode == LayerMode::Addition) {
 		add(heightmap);
 	}
-	else if (mode == pcb::LayerMode::Subtraction) {
+	else if (mode == LayerMode::Subtraction) {
 		subtract(heightmap);
+	}
+	else if (mode == LayerMode::Mask) {
+		mask(heightmap);
 	}
 }
 

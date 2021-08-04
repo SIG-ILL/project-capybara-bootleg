@@ -11,6 +11,9 @@ layout(location = 2) uniform mat4 uModelMatrix;
 
 void main() {
 	color = vec3(0, 0.5, 1);
+	if(aPosition.y > 0.1){
+		color = vec3(0.9, 0.85, 0.45);
+	}
 	if(aPosition.y > 0.2){
 		color = vec3(0, 1, 0);
 	}
