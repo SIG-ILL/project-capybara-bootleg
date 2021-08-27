@@ -47,7 +47,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glm;E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -63,7 +63,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glm;E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -85,6 +85,10 @@
     <ClCompile Include="LayeredTerrain.cpp" />
     <ClCompile Include="LayeredTerrainGenerator.cpp" />
     <ClCompile Include="MaskGenerator.cpp" />
+    <ClCompile Include="RandomBinary.cpp" />
+    <ClCompile Include="RandomHeightmapGenerator.cpp" />
+    <ClCompile Include="RandomUniformInt.cpp" />
+    <ClCompile Include="RandomUniformReal.cpp" />
     <ClCompile Include="RenderObjectData.cpp" />
     <ClCompile Include="RenderObjectInstance.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -111,6 +115,10 @@
     <ClInclude Include="LayeredTerrain.hpp" />
     <ClInclude Include="LayeredTerrainGenerator.hpp" />
     <ClInclude Include="MaskGenerator.hpp" />
+    <ClInclude Include="RandomBinary.hpp" />
+    <ClInclude Include="RandomHeightmapGenerator.hpp" />
+    <ClInclude Include="RandomUniformInt.hpp" />
+    <ClInclude Include="RandomUniformReal.hpp" />
     <ClInclude Include="RenderObjectData.hpp" />
     <ClInclude Include="RenderObjectInstance.hpp" />
     <ClInclude Include="Shader.hpp" />

@@ -47,20 +47,7 @@ isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapT
 renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
 
 pcb::Application::~Application() {
-	delete heightmapTexture;
-	delete generatedHeightmapTexture;
-
-	for (SimpleObject* object : renderObjects) {
-		delete object;
-	}
-
-	for (GLfloat* renderObjectDataPointer : renderObjectsDataPointers) {
-		delete[] renderObjectDataPointer;
-	}
-
-	for (VertexBufferObject* vbo : vbos) {
-		delete vbo;
-	}
+	deleteResources();
 }
 
 void pcb::Application::run(Application* instance, int argc, char* argv[]) {
@@ -103,7 +90,10 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 
 void pcb::Application::loadResources() {
 	prepareShaders();
+	generateTerrainResources();
+}
 
+void pcb::Application::generateTerrainResources() {
 	LayeredTerrainGenerator terrainGenerator(256, 256, 1);
 	//Terrain* terrain = terrainGenerator.generateNew();
 	Terrain* terrain = terrainGenerator.generateNewRandom();
@@ -117,7 +107,7 @@ void pcb::Application::loadResources() {
 	generatedHeightmapTexture = new Texture(generatedHeightmapImage);
 	delete generatedHeightmapImage;
 
-	GLfloat* vertices = new GLfloat[72] {
+	GLfloat* vertices = new GLfloat[72]{
 		-0.25, -0.25, -0.25,
 		0.25, -0.25, -0.25,
 		0.25, 0.25, -0.25,
@@ -149,7 +139,7 @@ void pcb::Application::loadResources() {
 		-0.25, -0.25, 0.25
 	};
 
-	GLfloat* colors = new GLfloat[72] {
+	GLfloat* colors = new GLfloat[72]{
 		1, 0, 0,
 		1, 0, 0,
 		1, 0, 0,
@@ -181,7 +171,7 @@ void pcb::Application::loadResources() {
 		0, 0, 0.5
 	};
 
-	GLfloat* textureCoordinates = new GLfloat[48] {
+	GLfloat* textureCoordinates = new GLfloat[48]{
 		0.0, 0.0,
 		0.0, 1.0,
 		1.0, 1.0,
@@ -252,6 +242,33 @@ void pcb::Application::loadResources() {
 	}
 
 	delete terrain;
+}
+
+void pcb::Application::deleteResources() {
+	delete heightmapTexture;
+	heightmapTexture = nullptr;
+	delete generatedHeightmapTexture;
+	generatedHeightmapTexture = nullptr;
+
+	for (SimpleObject* object : renderObjects) {
+		delete object;
+	}
+
+	renderObjects = { nullptr, nullptr, nullptr };
+
+	for (GLfloat* renderObjectDataPointer : renderObjectsDataPointers) {
+		delete[] renderObjectDataPointer;
+	}
+
+	renderObjectsDataPointers = { nullptr, nullptr, nullptr };
+
+	terrainLayers.clear();
+	terrainLayerRenderObjects.clear();
+
+	for (VertexBufferObject* vbo : vbos) {
+		delete vbo;
+	}
+	vbos.clear();
 }
 
 void pcb::Application::prepareShaders() {
@@ -364,6 +381,10 @@ void pcb::Application::handleKeyboard(unsigned char key, int x, int y) {
 		break;
 	case 'x':
 		scale += 0.05f;
+		break;
+	case 'g':
+		deleteResources();
+		generateTerrainResources();
 		break;
 	}
 }

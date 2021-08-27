@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Rendering">
       <UniqueIdentifier>{2e81b383-b9a6-45c0-b267-33574d905b4f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utility">
+      <UniqueIdentifier>{c746c4aa-11e8-4e03-8f4b-f76fc9ab92d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utility">
+      <UniqueIdentifier>{deff0b3b-d61c-4750-90a9-95a25b697907}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -95,6 +101,18 @@
     </ClCompile>
     <ClCompile Include="MaskGenerator.cpp">
       <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomHeightmapGenerator.cpp">
+      <Filter>Source Files\Terrain Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomUniformInt.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomUniformReal.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomBinary.cpp">
+      <Filter>Source Files\Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +187,18 @@
     </ClInclude>
     <ClInclude Include="MaskGenerator.hpp">
       <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomHeightmapGenerator.hpp">
+      <Filter>Header Files\Terrain Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomUniformInt.hpp">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomUniformReal.hpp">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomBinary.hpp">
+      <Filter>Header Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

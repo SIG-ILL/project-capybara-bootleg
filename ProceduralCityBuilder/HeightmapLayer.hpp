@@ -7,6 +7,8 @@ namespace pcb {
 
 	class HeightmapLayer final {
 	public:
+		HeightmapLayer(Heightmap heightmap, LayerMode layerMode) : heightmap(heightmap), mode(layerMode) {}
+
 		pcb::Heightmap heightmap;
 		pcb::LayerMode mode;
 	};

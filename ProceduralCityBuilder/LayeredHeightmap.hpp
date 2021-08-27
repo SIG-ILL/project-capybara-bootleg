@@ -8,6 +8,7 @@
 namespace pcb {
 	class LayeredHeightmap final : public pcb::Heightmap {
 	public:
+		LayeredHeightmap(int width, int height);
 		LayeredHeightmap(int width, int height, unsigned char* elevationValues);
 		LayeredHeightmap(const pcb::Heightmap& baseHeightmap);
 
@@ -15,9 +16,6 @@ namespace pcb {
 		pcb::LayeredHeightmap& operator+=(const pcb::Heightmap& other);
 		pcb::LayeredHeightmap& operator-=(const pcb::LayeredHeightmap& other);		
 		pcb::LayeredHeightmap& operator-=(const pcb::Heightmap& other);
-
-		int getWidth() const override;
-		int getHeight() const override;
 
 		void addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode);
 		int getLayerCount() const;

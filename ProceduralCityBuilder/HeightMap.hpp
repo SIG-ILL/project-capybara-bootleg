@@ -9,6 +9,7 @@ namespace pcb {
 	*/
 	class Heightmap {
 	public:
+		Heightmap(const int width, const int height);
 		Heightmap(const int width, const int height, const unsigned char* elevationValues);
 		Heightmap(const pcb::Heightmap& other);
 		virtual ~Heightmap();
@@ -18,8 +19,8 @@ namespace pcb {
 
 		pcb::Image* to24BitImageNew() const;
 		unsigned char getValueAt(int x, int y) const;
-		virtual int getWidth() const;
-		virtual int getHeight() const;
+		int getWidth() const;
+		int getHeight() const;
 		int getLowestElevation() const;
 		int getHighestElevation() const;
 
@@ -32,6 +33,8 @@ namespace pcb {
 		void scale(const double factor);
 		void invert();
 		void scaleAmplitude(const double factor);	// Scales amplitude measured from current (lowest + (0.5 * (highest - lowest))) elevation value
+		void raise(const unsigned char amount);
+		void lower(const unsigned char amount);
 
 	private:
 		const unsigned char MIN_ELEVATION_VALUE = 0;

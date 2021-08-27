@@ -5,6 +5,12 @@
 #include <stdexcept>
 #include <cmath>
 
+pcb::Heightmap::Heightmap(const int width, const int height) : width(width), height(height), lowestElevation(MIN_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(new unsigned char[width * height]) {
+	for (int i = 0; i < width * height; i++) {
+		this->elevationValues[i] = MIN_ELEVATION_VALUE;
+	}
+}
+
 pcb::Heightmap::Heightmap(const int width, const int height, const unsigned char* elevationValues) : width(width), height(height), lowestElevation(MAX_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(new unsigned char[width * height]) {
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -181,6 +187,9 @@ void pcb::Heightmap::invert() {
 	for (int i = 0; i < (width * height); i++) {
 		elevationValues[i] = static_cast<unsigned char>(-1 * (elevationValues[i] - MAX_ELEVATION_VALUE));
 	}
+
+	lowestElevation = static_cast<unsigned char>(-1 * (highestElevation - MAX_ELEVATION_VALUE));
+	highestElevation = static_cast<unsigned char>(-1 * (lowestElevation - MAX_ELEVATION_VALUE));
 }
 
 void pcb::Heightmap::scaleAmplitude(const double factor) {
@@ -196,4 +205,30 @@ void pcb::Heightmap::scaleAmplitude(const double factor) {
 	std::pair minMaxElevation = std::minmax_element(this->elevationValues, this->elevationValues + (width * height));
 	lowestElevation = *(minMaxElevation.first);
 	highestElevation = *(minMaxElevation.second);
+}
+
+void pcb::Heightmap::raise(const unsigned char amount) {
+	if (amount < 0) {
+		throw std::invalid_argument("Amount is not allowed to be negative!");
+	}
+
+	for (int i = 0; i < (width * height); i++) {
+		elevationValues[i] = static_cast<unsigned char>(std::min(elevationValues[i] + amount, static_cast<int>(MAX_ELEVATION_VALUE)));
+	}
+
+	lowestElevation = static_cast<unsigned char>(std::min(lowestElevation + amount, static_cast<int>(MAX_ELEVATION_VALUE)));
+	highestElevation = static_cast<unsigned char>(std::min(highestElevation + amount, static_cast<int>(MAX_ELEVATION_VALUE)));
+}
+
+void pcb::Heightmap::lower(const unsigned char amount) {
+	if (amount < 0) {
+		throw std::invalid_argument("Amount is not allowed to be negative!");
+	}
+
+	for (int i = 0; i < (width * height); i++) {
+		elevationValues[i] = static_cast<unsigned char>(std::max(elevationValues[i] - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
+	}
+
+	lowestElevation = static_cast<unsigned char>(std::max(lowestElevation - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
+	highestElevation = static_cast<unsigned char>(std::max(highestElevation - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
 }

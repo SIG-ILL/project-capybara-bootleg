@@ -4,6 +4,7 @@
 #include <random>
 
 #include "MaskGenerator.hpp"
+#include "RandomHeightmapGenerator.hpp"
 
 pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
@@ -49,113 +50,8 @@ pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNew() const {
 }
 
 pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNewRandom() const {
-	std::random_device randomDevice;
-	std::mt19937 randomGenerator(randomDevice());
-	std::uniform_int_distribution<> distribution(1, 10);
-	std::uniform_int_distribution<> halfDistribution(1, 5);
-
-	int numberOfLayers = distribution(randomGenerator);
-
-	std::uniform_int_distribution<> binaryDistribution(0, 1);
-	std::uniform_int_distribution<> maskChanceDistribution(0, 2);
-	std::uniform_real_distribution<> multiplicationDistribution(0.0, 1.0);
-
-	MaskGenerator maskGenerator;
-	std::vector<Heightmap> heightmapLayers;
-	for (int i = 0; i < numberOfLayers; i++) {
-		int frequencyX = 12 * distribution(randomGenerator);
-		int frequencyY = 12 * distribution(randomGenerator);
-		heightmapLayers.emplace_back(generateHeightmap(frequencyX, frequencyY, distribution(randomGenerator) * distribution(randomGenerator), distribution(randomGenerator) * distribution(randomGenerator)));
-		heightmapLayers.back().scale(0.5f - (i * 0.03));	// This isn't useful for masks (in fact it's bothersome as 'later' masks will nullify any work done before). This shows that we need to determine the layer types beforehand, and apply rules to them based on their position in the stack.
-
-		int choice = binaryDistribution(randomGenerator);
-		choice = maskChanceDistribution(randomGenerator);
-		if (choice == 0) {
-			choice = binaryDistribution(randomGenerator);
-			if (choice == 0) {
-				heightmapLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapHeight)));
-			}
-			else {
-				heightmapLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.25f * mapHeight), multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapHeight)));
-			}
-
-			choice = maskChanceDistribution(randomGenerator);
-			if (choice == 0) {
-				heightmapLayers.back().invert();
-			}
-
-			heightmapLayers.at(heightmapLayers.size() - 2).mask(heightmapLayers.back());
-			heightmapLayers.pop_back();
-		}
-	}
-
-	pcb::LayeredHeightmap* heightmap = new LayeredHeightmap(generateHeightmap(128, 128, distribution(randomGenerator) * distribution(randomGenerator), distribution(randomGenerator) * distribution(randomGenerator)));
-	std::uniform_int_distribution<> layerModeCorrectionDistribution(7, 10);
-	for (int i = 0, additionCounter = 0, additionLimit = 2, subtractionCounter = 0, maskCounter = 0; i < heightmapLayers.size(); i++) {
-		int selectionValue = distribution(randomGenerator);
-		if (additionCounter == additionLimit) {
-			additionCounter = 0;
-			additionLimit++;
-			selectionValue = layerModeCorrectionDistribution(randomGenerator);
-		}
-		if (subtractionCounter == 1) {
-			subtractionCounter = 0;
-			if (binaryDistribution(randomGenerator) == 0) {
-				selectionValue = 1;
-			}
-			else {
-				selectionValue = 10;
-			}
-		}
-		if (maskCounter == 1) {
-			maskCounter = 0;
-			selectionValue = 1;
-		}
-		if (i == heightmapLayers.size() - 1 && (selectionValue == 7 || selectionValue == 8)) {
-			if (binaryDistribution(randomGenerator) == 0) {
-				selectionValue = 1;
-			}
-			else {
-				selectionValue = 10;
-			}
-		}
-
-		LayerMode layerMode;
-		if (selectionValue == 7 || selectionValue == 8) {
-			layerMode = LayerMode::Subtraction;
-			subtractionCounter++;
-		}
-		else if(selectionValue == 9 || selectionValue == 10) {
-			layerMode = LayerMode::Mask;
-			maskCounter++;
-		}
-		else {
-			layerMode = LayerMode::Addition;
-			additionCounter++;
-		}
-
-		heightmap->addLayer(heightmapLayers.at(i), layerMode);
-	}
-
-	int applyFinalMask = halfDistribution(randomGenerator);
-	if (applyFinalMask == 1) {
-		heightmap->addLayer(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapHeight)), LayerMode::Mask);
-	}
-	if (applyFinalMask == 2) {
-		heightmap->addLayer(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.25f * mapHeight), multiplicationDistribution(randomGenerator) * (0.25f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapWidth), multiplicationDistribution(randomGenerator) * (0.66f * mapHeight)), LayerMode::Mask);
-	}
-
-	
-	if (heightmap->getHighestElevation() - heightmap->getLowestElevation() > 220) {
-		std::uniform_real_distribution<> scaleAmplitudeFactorDistribution(0.45, 0.75);
-		heightmap->scaleAmplitude(scaleAmplitudeFactorDistribution(randomGenerator));
-	}
-	else if (heightmap->getHighestElevation() - heightmap->getLowestElevation() < 100) {
-		std::uniform_real_distribution<> scaleAmplitudeFactorDistribution(1.5, 2.2);
-		heightmap->scaleAmplitude(scaleAmplitudeFactorDistribution(randomGenerator));
-	}
-
-	return heightmap;
+	RandomHeightmapGenerator generator(mapWidth, mapHeight);
+	return generator.generateNew();
 }
 
 pcb::Heightmap pcb::LayeredHeightmapGenerator::generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
