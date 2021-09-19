@@ -71,6 +71,7 @@ namespace pcb {
 			int offsetY;
 			int unaffectedRadiusX;
 			int unaffectedRadiusY;
+			int falloffWidth;
 		};
 #pragma endregion
 	};

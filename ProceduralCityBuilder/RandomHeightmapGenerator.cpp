@@ -51,8 +51,8 @@ pcb::LayeredHeightmap* pcb::RandomHeightmapGenerator::generateNew() const {
 		}
 	}
 
-	RandomUniformInt finalMaskChanceValues(0, 2);
-	if (/*finalMaskChanceValues.generate() == 0*/ true) {
+	RandomBinary finalMaskChanceValues(0.33);
+	if (finalMaskChanceValues.generate()) {
 		Heightmap finalMask = generateFinalMask();
 		layers.emplace_back(finalMask, LayerMode::Mask);
 	}
@@ -196,7 +196,7 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 	RandomUniformReal radiusMultiplicationValues(0.25, 1.0);
 	RandomUniformReal falloffMultiplicationValues(0.3, 1.0);
 	std::vector<Heightmap> maskLayers;
-	RandomUniformInt layerCountValues(/*1, 3*/ 2, 3);
+	RandomUniformInt layerCountValues(2, 5);
 	int amountOfLayers = layerCountValues.generate();
 	RandomBinary maskTypeValues;
 
@@ -241,7 +241,7 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 			std::cout << "offsetFromPrevious: " << (distanceMultiplier * cosAngle * maximumDistance) << "; " << (distanceMultiplier * sinAngle * maximumDistance) << "\n";
 			std::cout << "offset: " << offsetX << "; " << offsetY << "\n";
 
-			// TODO: Check if offsets are in map range!
+			// TODO: Check if offsets are in map range!?
 		}
 		else {
 			std::cout << "offset: " << offsetX << "; " << offsetY << "\n";
@@ -258,7 +258,7 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 			std::cout << "RECTANGLE\n";
 		}
 
-		maskShapeData.push_back({offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY});
+		maskShapeData.push_back({ offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY, falloffWidth });
 	}
 
 	Heightmap mask = maskLayers.front();

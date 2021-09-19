@@ -94,7 +94,8 @@ void pcb::Application::loadResources() {
 }
 
 void pcb::Application::generateTerrainResources() {
-	LayeredTerrainGenerator terrainGenerator(256, 256, 1);
+	int terrainSize = /*256*/512;
+	LayeredTerrainGenerator terrainGenerator(terrainSize, terrainSize, 1);
 	//Terrain* terrain = terrainGenerator.generateNew();
 	Terrain* terrain = terrainGenerator.generateNewRandom();
 
