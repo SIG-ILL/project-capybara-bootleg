@@ -74,5 +74,5 @@ pcb::Heightmap pcb::LayeredHeightmapGenerator::generateHeightmap(double noiseSam
 }
 
 double pcb::LayeredHeightmapGenerator::generateElevationForNoiseCoordinates(double x, double y) const {
-	return std::round(127.5 * (1 + noiseGenerator.getValueForCoordinates(x, y)));
+	return std::round(127.5 * (1 + noiseGenerator.getValueForCoordinate(x, y)));
 }

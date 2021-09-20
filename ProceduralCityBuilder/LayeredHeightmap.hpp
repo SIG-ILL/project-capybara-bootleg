@@ -17,6 +17,7 @@ namespace pcb {
 		pcb::LayeredHeightmap& operator-=(const pcb::LayeredHeightmap& other);		
 		pcb::LayeredHeightmap& operator-=(const pcb::Heightmap& other);
 
+		void addLayer(const pcb::HeightmapLayer& heightmapLayer);
 		void addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode);
 		int getLayerCount() const;
 		std::vector<pcb::HeightmapLayer> getLayers() const;

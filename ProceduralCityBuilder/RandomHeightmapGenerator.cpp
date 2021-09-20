@@ -7,79 +7,81 @@
 #include "RandomUniformReal.hpp"
 #include "RandomBinary.hpp"
 
-#include <iostream>
+#include "Logger.hpp"
 
-pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
+pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {
+	properties.amountOfLayersBounds = { 1, 10 };
+	properties.noiseOffsetValueBounds = { 1, 10 };
+	properties.absoluteNoiseValuesChance = 0.33;
+
+	properties.applyMaskOnLayerChance = 0.33;
+	properties.maskAmountOfLayersBounds = { 1, 3 };
+	properties.maskOffsetMultiplicationValueBounds = { 0.0, 1.0 };
+	properties.maskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
+	properties.maskFalloffMultiplicationValueBounds = { 0.1, 1.0 };
+	properties.maskAbsoluteNoiseValuesChance = 0.33;
+
+	properties.applyFinalMaskChance = 0.33;
+	properties.finalMaskAmountOfLayersBounds = { 2, 5 };
+	properties.finalMaskOffsetMultiplicationValueBounds = { 0.0, 1.0 };
+	properties.finalMaskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
+	properties.finalMaskFalloffMultiplicationValueBounds = { 0.3, 1.0 };
+	properties.finalMaskCompositeMaskShapesDistanceMultiplierBounds = { 0.5, 1.0 };
+
+	properties.adjustmentLoweringThresholds = { 50, 230 };
+	properties.adjustmentLoweringValue = 30;
+	properties.adjustmentScaleDownAmplitudeThreshold = 220;
+	properties.adjustmentScaleDownAmplitudeValueBounds = { 0.45, 0.75 };
+	properties.adjustmentScaleUpAmplitudeThreshold = 100;
+	properties.adjustmentScaleUpAmplitudeValueBounds = { 1.5, 2.2 };
+}
+
+pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties) : mapWidth(mapWidth), mapHeight(mapHeight), properties(properties), noiseGenerator() {}
 
 // TODO: Rotation of layers (lack of rotation is especially noticeable with 'stretched' noise).
 pcb::LayeredHeightmap* pcb::RandomHeightmapGenerator::generateNew() const {
-	RandomUniformInt layerAmountValues(1, 10);
-	int numberOfLayers = layerAmountValues.generate();
-	std::vector<LayerMode> layerModes = generateLayerModes(numberOfLayers);
+	LayeredHeightmap* heightmap = generateLayeredHeightmapNew();
+	adjustLayeredHeightmap(heightmap);
 
-	RandomUniformInt noiseOffsetValues(1, 10);
-	RandomUniformInt maskChanceValues(0, 2);
-	pcb::LayeredHeightmap* heightmap = new LayeredHeightmap(mapWidth, mapHeight);
-	std::vector<HeightmapLayer> layers;
+	return heightmap;
+}
 
-	for (int i = 0; i < layerModes.size(); i++) {
-		int frequencyX = 128 - (10 * i);
-		int frequencyY = 128 - (10 * i);
-		int noiseOffsetX = noiseOffsetValues.generate() * noiseOffsetValues.generate();
-		int noiseOffsetY = noiseOffsetValues.generate() * noiseOffsetValues.generate();
-
-		switch (layerModes.at(i)) {
-		case LayerMode::Addition:
-			layers.emplace_back(generateHeightmap(frequencyX, frequencyY, noiseOffsetX, noiseOffsetY), layerModes.at(i));
-			layers.back().heightmap.scale(0.5f - (i * 0.04));
-			break;
-		case LayerMode::Subtraction:
-			layers.emplace_back(generateHeightmap(frequencyX, frequencyY, noiseOffsetX, noiseOffsetY), layerModes.at(i));
-			layers.back().heightmap.scale(0.5f - (i * 0.04));
-			break;
-		case LayerMode::Mask:
-			layers.emplace_back(generateHeightmap(frequencyX, frequencyY, noiseOffsetX, noiseOffsetY), layerModes.at(i));
-			layers.back().heightmap.raise(i * 5);
-			break;
-		}
-
-		std::cout << "Layer index " << i << "\n";
-
-		if (maskChanceValues.generate() == 0) {
-			Heightmap mask = generateMask();
-			layers.back().heightmap.mask(mask);
-		}
-	}
-
-	RandomBinary finalMaskChanceValues(0.33);
-	if (finalMaskChanceValues.generate()) {
-		Heightmap finalMask = generateFinalMask();
-		layers.emplace_back(finalMask, LayerMode::Mask);
-	}
+pcb::LayeredHeightmap* pcb::RandomHeightmapGenerator::generateLayeredHeightmapNew() const {
+	LayeredHeightmap* heightmap = new LayeredHeightmap(mapWidth, mapHeight);
+	std::vector<HeightmapLayer> layers = generateLayers();
 
 	for (const HeightmapLayer& layer : layers) {
-		heightmap->addLayer(layer.heightmap, layer.mode);
-	}
-
-	if (heightmap->getLowestElevation() > 50 && heightmap->getHighestElevation() > 230) {
-		heightmap->lower(30);
-	}
-
-	if (heightmap->getHighestElevation() - heightmap->getLowestElevation() > 220) {
-		RandomUniformReal scaleAmplitudeFactorValues(0.45, 0.75);
-		heightmap->scaleAmplitude(scaleAmplitudeFactorValues.generate());
-	}
-	else if (heightmap->getHighestElevation() - heightmap->getLowestElevation() < 100) {
-		RandomUniformReal scaleAmplitudeFactorValues(1.5, 2.2);
-		heightmap->scaleAmplitude(scaleAmplitudeFactorValues.generate());
+		heightmap->addLayer(layer);
 	}
 
 	return heightmap;
 }
 
-std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes(const int numberOfLayers) const {
-	std::vector<LayerData*> layerData;
-	layerData.emplace_back(new AdditionLayerData());
+std::vector<pcb::HeightmapLayer> pcb::RandomHeightmapGenerator::generateLayers() const {
+	std::vector<LayerMode> layerModes = generateLayerModes();
+	std::vector<HeightmapLayer> layers;
+	Logger logger;
+
+	for (int i = 0; i < layerModes.size(); i++) {
+		logger << "Layer index " << i << "\n";
+		layers.emplace_back(generateLayer(i, layerModes.at(i)));
+	}
+
+	RandomBinary finalMaskChanceValues(properties.applyFinalMaskChance);
+	bool applyFinalMask = finalMaskChanceValues.generate();
+	if (applyFinalMask) {
+		Heightmap finalMask = generateFinalMask();
+		layers.emplace_back(finalMask, LayerMode::Mask);
+	}
+
+	return layers;
+}
+
+std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes() const {
+	RandomUniformInt layerAmountValues(properties.amountOfLayersBounds);
+	int numberOfLayers = layerAmountValues.generate();
+	std::vector<LayerData*> layerData{ new AdditionLayerData };
+
 	for (int i = 0; i < numberOfLayers; i++) {
 		const std::vector<LayerMode> allowedModes = layerData.back()->getAllowedNextModes(layerData);
 		int amountOfAvailableModes = allowedModes.size();
@@ -88,15 +90,15 @@ std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes(co
 		LayerMode layerMode = allowedModes.at(layerModeIndex);
 
 		switch (layerMode) {
-			case LayerMode::Addition:
-				layerData.emplace_back(new AdditionLayerData());
-				break;
-			case LayerMode::Subtraction:
-				layerData.emplace_back(new SubtractionLayerData());
-				break;
-			case LayerMode::Mask:
-				layerData.emplace_back(new MaskLayerData());
-				break;
+		case LayerMode::Addition:
+			layerData.emplace_back(new AdditionLayerData());
+			break;
+		case LayerMode::Subtraction:
+			layerData.emplace_back(new SubtractionLayerData());
+			break;
+		case LayerMode::Mask:
+			layerData.emplace_back(new MaskLayerData());
+			break;
 		}
 	}
 
@@ -113,15 +115,56 @@ std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes(co
 	return layerModes;
 }
 
-pcb::Heightmap pcb::RandomHeightmapGenerator::generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
+pcb::HeightmapLayer pcb::RandomHeightmapGenerator::generateLayer(int layerIndex, LayerMode layerMode) const {
+	int symmetricalFrequency = 128 - (10 * layerIndex);
+	int noiseOffsetX = generateNoiseOffset();
+	int noiseOffsetY = generateNoiseOffset();
+
+	RandomBinary absoluteNoiseChance(properties.absoluteNoiseValuesChance);
+	bool generateAbsoluteNoise = absoluteNoiseChance.generate();
+
+	std::vector<HeightmapLayer> layerTempScopingSolution;		// TODO: This is a temporary solution to fix a scoping issue. Implement proper solution!
+	if (generateAbsoluteNoise) {
+		layerTempScopingSolution.emplace_back(generateAbsoluteNoiseHeightmap(symmetricalFrequency, symmetricalFrequency, noiseOffsetX, noiseOffsetY), layerMode);
+	}
+	else {
+		layerTempScopingSolution.emplace_back(generateDefaultNoiseHeightmap(symmetricalFrequency, symmetricalFrequency, noiseOffsetX, noiseOffsetY), layerMode);
+	}
+
+	HeightmapLayer layer(layerTempScopingSolution.back().heightmap, layerTempScopingSolution.back().mode);
+	layerTempScopingSolution.clear();
+	
+	if (layerMode == LayerMode::Mask) {
+		layer.heightmap.raise(layerIndex * 5);
+	}
+	else {
+		layer.heightmap.scale(0.5f - (layerIndex * 0.04));
+	}	
+
+	RandomBinary maskChance(properties.applyMaskOnLayerChance);
+	bool applyMask = maskChance.generate();
+	if (applyMask) {
+		Heightmap mask = generateMask();
+		layer.heightmap.mask(mask);
+	}
+
+	return layer;
+}
+
+int pcb::RandomHeightmapGenerator::generateNoiseOffset() const {
+	RandomUniformInt noiseOffsetValues(properties.noiseOffsetValueBounds);
+	return noiseOffsetValues.generate() * noiseOffsetValues.generate();
+}
+
+pcb::Heightmap pcb::RandomHeightmapGenerator::generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
 	unsigned char* noiseMap = new unsigned char[mapWidth * mapHeight];
-	const double samplingFrequencyToSamplingDistanceModifierX = 1.0 / noiseSamplingFrequencyX;
-	const double samplingFrequencyToSamplingDistanceModifierY = 1.0 / noiseSamplingFrequencyY;
+	const double samplingDistanceX = 1.0 / noiseSamplingFrequencyX;
+	const double samplingDistanceY = 1.0 / noiseSamplingFrequencyY;
 
 	for (int y = 0; y < mapHeight; y++) {
 		for (int x = 0; x < mapWidth; x++) {
-			double noiseInputX = xOffset + (x * samplingFrequencyToSamplingDistanceModifierX);
-			double noiseInputY = yOffset + (y * samplingFrequencyToSamplingDistanceModifierY);
+			double noiseInputX = xOffset + (x * samplingDistanceX);
+			double noiseInputY = yOffset + (y * samplingDistanceY);
 			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(generateElevationForNoiseCoordinates(noiseInputX, noiseInputY));
 		}
 	}
@@ -132,22 +175,50 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateHeightmap(double noiseSamp
 	return heightmap;
 }
 
+pcb::Heightmap pcb::RandomHeightmapGenerator::generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
+	unsigned char* noiseMap = new unsigned char[mapWidth * mapHeight];
+	const double samplingDistanceX = 1.0 / noiseSamplingFrequencyX;
+	const double samplingDistanceY = 1.0 / noiseSamplingFrequencyY;
+
+	for (int y = 0; y < mapHeight; y++) {
+		for (int x = 0; x < mapWidth; x++) {
+			double noiseInputX = xOffset + (x * samplingDistanceX);
+			double noiseInputY = yOffset + (y * samplingDistanceY);
+			noiseMap[(y * mapWidth) + x] = static_cast<unsigned char>(generateElevationForNoiseCoordinatesWithAbsoluteModifier(noiseInputX, noiseInputY));
+		}
+	}
+
+	pcb::Heightmap heightmap(mapWidth, mapHeight, noiseMap);
+	delete[] noiseMap;
+
+	return heightmap;
+}
+
 double pcb::RandomHeightmapGenerator::generateElevationForNoiseCoordinates(double x, double y) const {
-	return std::round(127.5 * (1 + noiseGenerator.getValueForCoordinates(x, y)));
+	return generateElevationFromNoiseValue(noiseGenerator.getValueForCoordinate(x, y));
+}
+
+double pcb::RandomHeightmapGenerator::generateElevationForNoiseCoordinatesWithAbsoluteModifier(double x, double y) const {
+	return generateElevationFromNoiseValue(noiseGenerator.getAbsoluteValueForCoordinate(x, y));
+}
+
+double pcb::RandomHeightmapGenerator::generateElevationFromNoiseValue(double noiseValue) const {
+	return std::round(127.5 * (1 + noiseValue));
 }
 
 pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 	MaskGenerator maskGenerator;
 	RandomBinary binaryChance;
-	RandomUniformReal offsetMultiplicationValues(0.0, 1.0);
-	RandomUniformReal radiusMultiplicationValues(0.25, 1.0);
-	RandomUniformReal falloffMultiplicationValues(0.1, 1.0);
-	std::vector<Heightmap> maskLayers;
-	RandomUniformInt layerCountValues(1, 3);
+	RandomUniformInt layerCountValues(properties.maskAmountOfLayersBounds);
 	int amountOfLayers = layerCountValues.generate();
+	RandomUniformReal offsetMultiplicationValues(properties.maskOffsetMultiplicationValueBounds);
+	RandomUniformReal radiusMultiplicationValues(properties.maskRadiusMultiplicationValueBounds);
+	RandomUniformReal falloffMultiplicationValues(properties.maskFalloffMultiplicationValueBounds);
+	std::vector<Heightmap> maskLayers;
 	RandomUniformInt maskTypeValues(0, 2);
 
-	std::cout << "Amount of mask layers: " << amountOfLayers << "\n";
+	Logger logger;
+	logger << "Amount of mask layers: " << amountOfLayers << "\n";
 
 	for (int i = 0; i < amountOfLayers; i++) {
 		int offsetXModifier = binaryChance.generate() == true ? 1 : -1;
@@ -159,18 +230,30 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 		int falloffWidth = falloffMultiplicationValues.generate() * (0.25f * mapWidth);
 
 		int maskTypeValue = maskTypeValues.generate();
-		std::cout << "MaskTypeValue: " << maskTypeValue << "\n";
 		if (maskTypeValue == 0) {
+			logger << "MaskType: Circle\n";
 			maskLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));
 		}
 		else if(maskTypeValue == 1) {
+			logger << "MaskType: Rectangle\n";
 			maskLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
 		}
 		else {
+			logger << "MaskType: Noise - ";
 			RandomUniformInt noiseFrequencyValues(1, 2);
 			int frequencyX = 128 * (noiseFrequencyValues.generate() / 2.0f);
 			int frequencyY = 128 * (noiseFrequencyValues.generate() / 2.0f);
-			maskLayers.emplace_back(generateHeightmap(frequencyX, frequencyY, offsetX, offsetY));
+			RandomBinary absoluteNoiseChance(properties.maskAbsoluteNoiseValuesChance);
+			bool generateAbsoluteNoise = absoluteNoiseChance.generate();
+
+			if (generateAbsoluteNoise) {
+				logger << "Absolute\n";
+				maskLayers.emplace_back(generateAbsoluteNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
+			}
+			else {
+				logger << "Default\n";
+				maskLayers.emplace_back(generateDefaultNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
+			}			
 		}		
 	}
 
@@ -179,12 +262,13 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 		mask.add(maskLayers.at(i));
 	}
 
-	if (binaryChance.generate() == true) {
-		std::cout << "INVERTED!" << "\n";
+	bool invertMask = binaryChance.generate();
+	if (invertMask) {
+		logger << "Inverted mask!\n";
 		mask.invert();
 	}
 
-	std::cout << "\n";
+	logger << "\n";
 
 	return mask;
 }
@@ -192,17 +276,18 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 	MaskGenerator maskGenerator;
 	RandomBinary binaryChance;
-	RandomUniformReal offsetMultiplicationValues(0.0, 1.0);
-	RandomUniformReal radiusMultiplicationValues(0.25, 1.0);
-	RandomUniformReal falloffMultiplicationValues(0.3, 1.0);
-	std::vector<Heightmap> maskLayers;
-	RandomUniformInt layerCountValues(2, 5);
+	RandomUniformInt layerCountValues(properties.finalMaskAmountOfLayersBounds);
 	int amountOfLayers = layerCountValues.generate();
-	RandomBinary maskTypeValues;
+	RandomUniformReal offsetMultiplicationValues(properties.finalMaskOffsetMultiplicationValueBounds);
+	RandomUniformReal radiusMultiplicationValues(properties.finalMaskRadiusMultiplicationValueBounds);
+	RandomUniformReal falloffMultiplicationValues(properties.finalMaskFalloffMultiplicationValueBounds);
+	std::vector<Heightmap> maskLayers;	
+	RandomBinary maskTypeSelector;
 
 	std::vector<MaskShapeData> maskShapeData;
+	Logger logger;
 
-	std::cout << "\n\n";
+	logger << "\n\n";
 
 	for (int i = 0; i < amountOfLayers; i++) {
 		int offsetXModifier = binaryChance.generate() == true ? 1 : -1;
@@ -225,37 +310,38 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 
 			int minimumRadius = std::min(unaffectedRadiusX, unaffectedRadiusY);
 			int maximumDistance = minimumRadius + falloffWidth + std::min(previousShape.unaffectedRadiusX, previousShape.unaffectedRadiusY);
-			RandomUniformReal distanceMultiplierValues(0.5, 1.0);
+			RandomUniformReal distanceMultiplierValues(properties.finalMaskCompositeMaskShapesDistanceMultiplierBounds);
 			double distanceMultiplier = distanceMultiplierValues.generate();
 			offsetX = (distanceMultiplier * cosAngle * maximumDistance) + previousShape.offsetX;
 			offsetY = (distanceMultiplier * sinAngle * maximumDistance) + previousShape.offsetY;
 
-			std::cout << "\n\n";
-			std::cout << "PreviousShapeIndex: " << previousShapeIndex << "\n";
-			std::cout << "AngleFromPreviousShapeToNewShape: " << angleFromPreviousShapeToNewShape * (180 / std::numbers::pi) << "\n";
-			std::cout << "cosAngle: " << cosAngle << "\n";
-			std::cout << "sinAngle: " << sinAngle << "\n";
-			std::cout << "minimumRadius: " << minimumRadius << "\n";
-			std::cout << "maximumDistance: " << maximumDistance << "\n";
-			std::cout << "distanceMultiplier: " << distanceMultiplier << "\n";
-			std::cout << "offsetFromPrevious: " << (distanceMultiplier * cosAngle * maximumDistance) << "; " << (distanceMultiplier * sinAngle * maximumDistance) << "\n";
-			std::cout << "offset: " << offsetX << "; " << offsetY << "\n";
+			logger << "\n\n";
+			logger << "PreviousShapeIndex: " << previousShapeIndex << "\n";
+			logger << "AngleFromPreviousShapeToNewShape: " << angleFromPreviousShapeToNewShape * (180 / std::numbers::pi) << "\n";
+			logger << "cosAngle: " << cosAngle << "\n";
+			logger << "sinAngle: " << sinAngle << "\n";
+			logger << "minimumRadius: " << minimumRadius << "\n";
+			logger << "maximumDistance: " << maximumDistance << "\n";
+			logger << "distanceMultiplier: " << distanceMultiplier << "\n";
+			logger << "offsetFromPrevious: " << (distanceMultiplier * cosAngle * maximumDistance) << "; " << (distanceMultiplier * sinAngle * maximumDistance) << "\n";
+			logger << "offset: " << offsetX << "; " << offsetY << "\n";
 
 			// TODO: Check if offsets are in map range!?
 		}
 		else {
-			std::cout << "offset: " << offsetX << "; " << offsetY << "\n";
-			std::cout << "RadiusX: " << unaffectedRadiusX << ", RadiusY: " << unaffectedRadiusY << "\n";
-			std::cout << "Falloff: " << falloffWidth << "\n";
+			logger << "offset: " << offsetX << "; " << offsetY << "\n";
+			logger << "RadiusX: " << unaffectedRadiusX << ", RadiusY: " << unaffectedRadiusY << "\n";
+			logger << "Falloff: " << falloffWidth << "\n";
 		}
 
-		if (maskTypeValues.generate() == true) {
-			maskLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));
-			std::cout << "CIRCLE\n";
+		bool maskTypeIsCircle = maskTypeSelector.generate();
+		if (maskTypeIsCircle) {
+			logger << "MaskType: Circle\n";
+			maskLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));			
 		}
 		else {
-			maskLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
-			std::cout << "RECTANGLE\n";
+			logger << "MaskType: Rectangle\n";
+			maskLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));			
 		}
 
 		maskShapeData.push_back({ offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY, falloffWidth });
@@ -270,7 +356,31 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 		mask.invert();
 	}
 
+	logger << "\n";
+
 	return mask;
+}
+
+void pcb::RandomHeightmapGenerator::adjustLayeredHeightmap(LayeredHeightmap* const heightmap) const {
+	Logger logger;
+
+	if (heightmap->getLowestElevation() > properties.adjustmentLoweringThresholds.lower && heightmap->getHighestElevation() > properties.adjustmentLoweringThresholds.upper) {
+		logger << "ADJUSTMENT: Lowering heightmap\n";
+		heightmap->lower(properties.adjustmentLoweringValue);
+	}
+
+	if (heightmap->getHighestElevation() - heightmap->getLowestElevation() > properties.adjustmentScaleDownAmplitudeThreshold) {
+		logger << "ADJUSTMENT: Scaling down heightmap amplitude\n";
+		RandomUniformReal scaleAmplitudeFactorValues(properties.adjustmentScaleDownAmplitudeValueBounds);
+		heightmap->scaleAmplitude(scaleAmplitudeFactorValues.generate());
+	}
+	else if (heightmap->getHighestElevation() - heightmap->getLowestElevation() < properties.adjustmentScaleUpAmplitudeThreshold) {
+		logger << "ADJUSTMENT: Scaling up heightmap amplitude\n";
+		RandomUniformReal scaleAmplitudeFactorValues(properties.adjustmentScaleUpAmplitudeValueBounds);
+		heightmap->scaleAmplitude(scaleAmplitudeFactorValues.generate());
+	}
+
+	logger << "\n";
 }
 
 #pragma region Layer_Data

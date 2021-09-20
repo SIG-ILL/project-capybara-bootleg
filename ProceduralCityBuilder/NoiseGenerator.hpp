@@ -21,7 +21,13 @@ namespace pcb {
 		/*
 		* Returns a value [-1; 1] for the given coordinate.
 		*/
-		double getValueForCoordinates(double x, double y) const;
+		double getValueForCoordinate(double x, double y) const;
+
+		/*
+		* Returns a value [0; 1] for the given coordinate.
+		* Where regular noise would produce a negative value, this function produces the absolute value, creating a ridge-like appearance.
+		*/
+		double getAbsoluteValueForCoordinate(double x, double y) const;
 
 	private:
 		const double F;

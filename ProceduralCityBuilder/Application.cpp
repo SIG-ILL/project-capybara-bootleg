@@ -1,6 +1,5 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,6 +10,8 @@
 #include "LayeredTerrainGenerator.hpp"
 #include "VertexBufferObject.hpp"
 #include "ShaderProgram.hpp"
+
+#include "Logger.hpp"
 
 pcb::Application* pcb::Application::instance;
 
@@ -84,7 +85,8 @@ void pcb::Application::initializeGLUT(int argc, char* argv[]) {
 
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
-		std::cout << "GLEW INIT FAILED WITH ERROR" << glewError << "\n";
+		Logger logger;
+		logger << "GLEW INIT FAILED WITH ERROR" << glewError << "\n";
 	}
 }
 

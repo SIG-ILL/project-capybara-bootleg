@@ -2,10 +2,13 @@
 
 #include <random>
 
+#include "BoundsPair.hpp"
+
 namespace pcb {
 	class RandomUniformReal final {
 	public:
 		RandomUniformReal(double min, double max);
+		RandomUniformReal(BoundsPair<double> bounds);
 
 		double generate();
 

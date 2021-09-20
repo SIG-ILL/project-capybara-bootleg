@@ -5,6 +5,8 @@ pcb::RandomUniformReal::RandomUniformReal(double min, double max) : distribution
 	generator = std::mt19937(device());
 }
 
+pcb::RandomUniformReal::RandomUniformReal(BoundsPair<double> bounds) : RandomUniformReal(bounds.lower, bounds.upper) {}
+
 double pcb::RandomUniformReal::generate() {
 	return distribution(generator);
 }

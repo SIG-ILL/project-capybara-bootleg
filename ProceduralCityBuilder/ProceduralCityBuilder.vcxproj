@@ -84,6 +84,7 @@
     <ClCompile Include="LayeredHeightmapGenerator.cpp" />
     <ClCompile Include="LayeredTerrain.cpp" />
     <ClCompile Include="LayeredTerrainGenerator.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MaskGenerator.cpp" />
     <ClCompile Include="RandomBinary.cpp" />
     <ClCompile Include="RandomHeightmapGenerator.cpp" />
@@ -106,6 +107,7 @@
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BitmapLoader.hpp" />
     <ClInclude Include="BitshiftingUtility.hpp" />
+    <ClInclude Include="BoundsPair.hpp" />
     <ClInclude Include="Heightmap.hpp" />
     <ClInclude Include="HeightmapGenerator.hpp" />
     <ClInclude Include="HeightmapLayer.hpp" />
@@ -114,6 +116,7 @@
     <ClInclude Include="LayeredHeightmapGenerator.hpp" />
     <ClInclude Include="LayeredTerrain.hpp" />
     <ClInclude Include="LayeredTerrainGenerator.hpp" />
+    <ClInclude Include="Logger.hpp" />
     <ClInclude Include="MaskGenerator.hpp" />
     <ClInclude Include="RandomBinary.hpp" />
     <ClInclude Include="RandomHeightmapGenerator.hpp" />

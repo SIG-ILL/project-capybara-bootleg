@@ -4,25 +4,67 @@
 
 #include "LayeredHeightmap.hpp"
 #include "NoiseGenerator.hpp"
+#include "BoundsPair.hpp"
 
 namespace pcb {
+#pragma region Random_Generation_Control_Properties
+	class RandomGenerationControlProperties final {
+	public:
+		BoundsPair<unsigned int> amountOfLayersBounds;
+		BoundsPair<int> noiseOffsetValueBounds;
+		double absoluteNoiseValuesChance;
+
+		double applyMaskOnLayerChance;
+		BoundsPair<unsigned int> maskAmountOfLayersBounds;
+		BoundsPair<double> maskOffsetMultiplicationValueBounds;
+		BoundsPair<double> maskRadiusMultiplicationValueBounds;
+		BoundsPair<double> maskFalloffMultiplicationValueBounds;
+		double maskAbsoluteNoiseValuesChance;
+
+		double applyFinalMaskChance;
+		BoundsPair<unsigned int> finalMaskAmountOfLayersBounds;
+		BoundsPair<double> finalMaskOffsetMultiplicationValueBounds;
+		BoundsPair<double> finalMaskRadiusMultiplicationValueBounds;
+		BoundsPair<double> finalMaskFalloffMultiplicationValueBounds;
+		BoundsPair<double> finalMaskCompositeMaskShapesDistanceMultiplierBounds;
+
+		BoundsPair<unsigned int> adjustmentLoweringThresholds;
+		unsigned int adjustmentLoweringValue;
+		unsigned int adjustmentScaleDownAmplitudeThreshold;
+		BoundsPair<double> adjustmentScaleDownAmplitudeValueBounds;
+		unsigned int adjustmentScaleUpAmplitudeThreshold;
+		BoundsPair<double> adjustmentScaleUpAmplitudeValueBounds;
+	};
+#pragma endregion
+
 	class RandomHeightmapGenerator final {
 	public:
 		RandomHeightmapGenerator(int mapWidth, int mapHeight);
+		RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties);
 
 		LayeredHeightmap* generateNew() const;
 
 	private:
 		int mapWidth;
 		int mapHeight;
-		pcb::NoiseGenerator noiseGenerator;
+		RandomGenerationControlProperties properties;
+		NoiseGenerator noiseGenerator;
 
-		std::vector<LayerMode> generateLayerModes(const int numberOfLayers) const;
-		pcb::Heightmap generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		LayeredHeightmap* generateLayeredHeightmapNew() const;
+		std::vector<HeightmapLayer> generateLayers() const;
+		std::vector<LayerMode> generateLayerModes() const;
+		HeightmapLayer generateLayer(int layerIndex, LayerMode layerMode) const;
+		int generateNoiseOffset() const;
+		Heightmap generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		Heightmap generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
 		double generateElevationForNoiseCoordinates(double x, double y) const;
+		double generateElevationForNoiseCoordinatesWithAbsoluteModifier(double x, double y) const;
+		double generateElevationFromNoiseValue(double noiseValue) const;
 		Heightmap generateMask() const;
 		Heightmap generateFinalMask() const;
+		void adjustLayeredHeightmap(LayeredHeightmap* const heightmap) const;
 
+#pragma region Inner_Classes
 #pragma region Layer_Data
 		class LayerData {
 		public:
@@ -73,6 +115,7 @@ namespace pcb {
 			int unaffectedRadiusY;
 			int falloffWidth;
 		};
+#pragma endregion
 #pragma endregion
 	};
 }

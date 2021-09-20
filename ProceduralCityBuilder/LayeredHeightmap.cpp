@@ -26,18 +26,22 @@ pcb::LayeredHeightmap& pcb::LayeredHeightmap::operator-=(const pcb::LayeredHeigh
 	return *this;
 }
 
-void pcb::LayeredHeightmap::addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode) {
-	layers.push_back(HeightmapLayer{ heightmap, mode });
+void pcb::LayeredHeightmap::addLayer(const pcb::HeightmapLayer& heightmapLayer) {
+	layers.push_back(heightmapLayer);
 
-	if (mode == LayerMode::Addition) {
-		add(heightmap);
+	if (heightmapLayer.mode == LayerMode::Addition) {
+		add(heightmapLayer.heightmap);
 	}
-	else if (mode == LayerMode::Subtraction) {
-		subtract(heightmap);
+	else if (heightmapLayer.mode == LayerMode::Subtraction) {
+		subtract(heightmapLayer.heightmap);
 	}
-	else if (mode == LayerMode::Mask) {
-		mask(heightmap);
+	else if (heightmapLayer.mode == LayerMode::Mask) {
+		mask(heightmapLayer.heightmap);
 	}
+}
+
+void pcb::LayeredHeightmap::addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode) {
+	addLayer(HeightmapLayer{ heightmap, mode });
 }
 
 int pcb::LayeredHeightmap::getLayerCount() const {

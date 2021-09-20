@@ -53,5 +53,5 @@ void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(unsigned char* noiseMa
 }
 
 double pcb::HeightmapGenerator::generateElevationForNoiseCoordinates(double x, double y) const {
-	return 127.5 * (1 + noiseGenerator.getValueForCoordinates(x, y));
+	return 127.5 * (1 + noiseGenerator.getValueForCoordinate(x, y));
 }
