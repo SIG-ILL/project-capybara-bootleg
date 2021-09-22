@@ -219,9 +219,10 @@ void pcb::Application::generateTerrainResources() {
 	pcb::VertexTextureCoordinateBufferObject* heightMapImageObjectTextureCoordinates = new VertexTextureCoordinateBufferObject(textureCoordinates, 24);
 	vbos.push_back(heightMapImageObjectTextureCoordinates);
 
+	float terrainScale = 2.5f;
 	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(*terrainVertices, *terrainColors);
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
-	terrainObject->setScale(5.0f, 1.0f, 5.0f);
+	terrainObject->setScale(terrainScale, terrainScale, terrainScale);
 	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *heightmapTexture, *heightMapImageObjectTextureCoordinates);
 	heightmapImageObject->setPosition(-0.5f, 0, -0.3f);
 	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
@@ -241,7 +242,7 @@ void pcb::Application::generateTerrainResources() {
 		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
 		object.setPosition(10.0f, static_cast<float>(i + 1), -0.5f);
-		object.setScale(5.0f, 1.0f, 5.0f);
+		object.setScale(terrainScale, terrainScale, terrainScale);
 	}
 
 	delete terrain;

@@ -97,3 +97,37 @@ pcb::Heightmap pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width,
 
 	return mask;
 }
+
+pcb::Heightmap pcb::MaskGenerator::generateLinearGradientMask(int width, int height, GradientDirection direction) const {
+	if (width < 0 || height < 0) {
+		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
+	}
+
+	unsigned char* maskData = new unsigned char[width * height];
+
+	for (int y = 0; y < height; y++) {
+		unsigned char gradientValue;
+		if (direction == GradientDirection::Up) {
+			gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((y / static_cast<float>(height)) * MAX_MASK_VALUE));			
+		}
+		else if (direction == GradientDirection::Down) {
+			gradientValue = static_cast<unsigned char>(std::round((y / static_cast<float>(height)) * MAX_MASK_VALUE));
+		}	
+
+		for (int x = 0; x < width; x++) {
+			if (direction == GradientDirection::Left) {
+				gradientValue = static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
+			}
+			else if (direction == GradientDirection::Right) {
+				gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
+			}
+
+			maskData[(y * width) + x] = gradientValue;
+		}
+	}
+
+	Heightmap mask(width, height, maskData);
+	delete[] maskData;
+
+	return mask;
+}

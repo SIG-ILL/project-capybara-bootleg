@@ -51,6 +51,12 @@ pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNew() const {
 
 pcb::LayeredHeightmap* pcb::LayeredHeightmapGenerator::generateNewRandom() const {
 	RandomHeightmapGenerator generator(mapWidth, mapHeight);
+	RandomGenerationControlProperties properties = generator.getDefaultControlProperties();
+
+	properties.layerBaseNoiseFrequency = 256;
+	properties.layerNoiseFrequencyAdditionalLayerModifier = 20;
+
+	generator.setControlProperties(properties);
 	return generator.generateNew();
 }
 

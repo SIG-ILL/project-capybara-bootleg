@@ -11,15 +11,25 @@ namespace pcb {
 	class RandomGenerationControlProperties final {
 	public:
 		BoundsPair<unsigned int> amountOfLayersBounds;
+		double layerBaseNoiseFrequency;
+		double layerNoiseFrequencyAdditionalLayerModifier;
+		double layerScalingBaseValue;
+		double layerScalingAdditionalLayerModifier;
 		BoundsPair<int> noiseOffsetValueBounds;
-		double absoluteNoiseValuesChance;
+		double defaultNoiseInversionChance;
+		double absoluteNoiseChance;
+		double absoluteNoiseFrequencyModifier;
+		double absoluteNoiseInversionChance;
 
 		double applyMaskOnLayerChance;
 		BoundsPair<unsigned int> maskAmountOfLayersBounds;
 		BoundsPair<double> maskOffsetMultiplicationValueBounds;
 		BoundsPair<double> maskRadiusMultiplicationValueBounds;
 		BoundsPair<double> maskFalloffMultiplicationValueBounds;
-		double maskAbsoluteNoiseValuesChance;
+		double maskDefaultNoiseInversionChance;
+		double maskAbsoluteNoiseChance;
+		double maskAbsoluteNoiseFrequencyModifier;
+		double maskAbsoluteNoiseInversionChance;
 
 		double applyFinalMaskChance;
 		BoundsPair<unsigned int> finalMaskAmountOfLayersBounds;
@@ -43,6 +53,8 @@ namespace pcb {
 		RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties);
 
 		LayeredHeightmap* generateNew() const;
+		RandomGenerationControlProperties getDefaultControlProperties() const;
+		void setControlProperties(const RandomGenerationControlProperties& properties);
 
 	private:
 		int mapWidth;

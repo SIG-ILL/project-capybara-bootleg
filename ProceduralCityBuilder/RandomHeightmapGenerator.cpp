@@ -1,6 +1,7 @@
 #include "RandomHeightmapGenerator.hpp"
 
 #include <numbers>
+#include <array>
 
 #include "MaskGenerator.hpp"
 #include "RandomUniformInt.hpp"
@@ -10,30 +11,7 @@
 #include "Logger.hpp"
 
 pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {
-	properties.amountOfLayersBounds = { 1, 10 };
-	properties.noiseOffsetValueBounds = { 1, 10 };
-	properties.absoluteNoiseValuesChance = 0.33;
-
-	properties.applyMaskOnLayerChance = 0.33;
-	properties.maskAmountOfLayersBounds = { 1, 3 };
-	properties.maskOffsetMultiplicationValueBounds = { 0.0, 1.0 };
-	properties.maskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
-	properties.maskFalloffMultiplicationValueBounds = { 0.1, 1.0 };
-	properties.maskAbsoluteNoiseValuesChance = 0.33;
-
-	properties.applyFinalMaskChance = 0.33;
-	properties.finalMaskAmountOfLayersBounds = { 2, 5 };
-	properties.finalMaskOffsetMultiplicationValueBounds = { 0.0, 1.0 };
-	properties.finalMaskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
-	properties.finalMaskFalloffMultiplicationValueBounds = { 0.3, 1.0 };
-	properties.finalMaskCompositeMaskShapesDistanceMultiplierBounds = { 0.5, 1.0 };
-
-	properties.adjustmentLoweringThresholds = { 50, 230 };
-	properties.adjustmentLoweringValue = 30;
-	properties.adjustmentScaleDownAmplitudeThreshold = 220;
-	properties.adjustmentScaleDownAmplitudeValueBounds = { 0.45, 0.75 };
-	properties.adjustmentScaleUpAmplitudeThreshold = 100;
-	properties.adjustmentScaleUpAmplitudeValueBounds = { 1.5, 2.2 };
+	properties = getDefaultControlProperties();
 }
 
 pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties) : mapWidth(mapWidth), mapHeight(mapHeight), properties(properties), noiseGenerator() {}
@@ -44,6 +22,51 @@ pcb::LayeredHeightmap* pcb::RandomHeightmapGenerator::generateNew() const {
 	adjustLayeredHeightmap(heightmap);
 
 	return heightmap;
+}
+
+pcb::RandomGenerationControlProperties pcb::RandomHeightmapGenerator::getDefaultControlProperties() const {
+	RandomGenerationControlProperties defaultProperties;
+
+	defaultProperties.amountOfLayersBounds = { 1, 10 };
+	defaultProperties.layerBaseNoiseFrequency = 128;
+	defaultProperties.layerNoiseFrequencyAdditionalLayerModifier = 10;
+	defaultProperties.layerScalingBaseValue = 0.5;
+	defaultProperties.layerScalingAdditionalLayerModifier = 0.04;
+	defaultProperties.noiseOffsetValueBounds = { 1, 10 };
+	defaultProperties.defaultNoiseInversionChance = 0.5;
+	defaultProperties.absoluteNoiseChance = 0.33;
+	defaultProperties.absoluteNoiseFrequencyModifier = 2;
+	defaultProperties.absoluteNoiseInversionChance = 0.5;
+
+	defaultProperties.applyMaskOnLayerChance = 0.33;
+	defaultProperties.maskAmountOfLayersBounds = { 1, 3 };
+	defaultProperties.maskOffsetMultiplicationValueBounds = { 0.0, 1.0 };
+	defaultProperties.maskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
+	defaultProperties.maskFalloffMultiplicationValueBounds = { 0.1, 1.0 };
+	defaultProperties.maskDefaultNoiseInversionChance = 0.5;
+	defaultProperties.maskAbsoluteNoiseChance = 0.33;
+	defaultProperties.maskAbsoluteNoiseFrequencyModifier = 2;
+	defaultProperties.maskAbsoluteNoiseInversionChance = 0.5;
+
+	defaultProperties.applyFinalMaskChance = 0.33;
+	defaultProperties.finalMaskAmountOfLayersBounds = { 2, 5 };
+	defaultProperties.finalMaskOffsetMultiplicationValueBounds = { 0.0, 1.0 };
+	defaultProperties.finalMaskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
+	defaultProperties.finalMaskFalloffMultiplicationValueBounds = { 0.3, 1.0 };
+	defaultProperties.finalMaskCompositeMaskShapesDistanceMultiplierBounds = { 0.5, 1.0 };
+
+	defaultProperties.adjustmentLoweringThresholds = { 50, 230 };
+	defaultProperties.adjustmentLoweringValue = 30;
+	defaultProperties.adjustmentScaleDownAmplitudeThreshold = 220;
+	defaultProperties.adjustmentScaleDownAmplitudeValueBounds = { 0.45, 0.75 };
+	defaultProperties.adjustmentScaleUpAmplitudeThreshold = 100;
+	defaultProperties.adjustmentScaleUpAmplitudeValueBounds = { 1.5, 2.2 };
+
+	return defaultProperties;
+}
+
+void pcb::RandomHeightmapGenerator::setControlProperties(const RandomGenerationControlProperties& properties) {
+	this->properties = properties;
 }
 
 pcb::LayeredHeightmap* pcb::RandomHeightmapGenerator::generateLayeredHeightmapNew() const {
@@ -65,11 +88,13 @@ std::vector<pcb::HeightmapLayer> pcb::RandomHeightmapGenerator::generateLayers()
 	for (int i = 0; i < layerModes.size(); i++) {
 		logger << "Layer index " << i << "\n";
 		layers.emplace_back(generateLayer(i, layerModes.at(i)));
+		logger << "\n";
 	}
 
 	RandomBinary finalMaskChanceValues(properties.applyFinalMaskChance);
 	bool applyFinalMask = finalMaskChanceValues.generate();
 	if (applyFinalMask) {
+		logger << "Layer index " << layerModes.size() << " - Final mask\n";
 		Heightmap finalMask = generateFinalMask();
 		layers.emplace_back(finalMask, LayerMode::Mask);
 	}
@@ -116,34 +141,56 @@ std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes() 
 }
 
 pcb::HeightmapLayer pcb::RandomHeightmapGenerator::generateLayer(int layerIndex, LayerMode layerMode) const {
-	int symmetricalFrequency = 128 - (10 * layerIndex);
+	double symmetricalFrequency = properties.layerBaseNoiseFrequency - (properties.layerNoiseFrequencyAdditionalLayerModifier * layerIndex);
 	int noiseOffsetX = generateNoiseOffset();
 	int noiseOffsetY = generateNoiseOffset();
 
-	RandomBinary absoluteNoiseChance(properties.absoluteNoiseValuesChance);
+	RandomBinary absoluteNoiseChance(properties.absoluteNoiseChance);
 	bool generateAbsoluteNoise = absoluteNoiseChance.generate();
 
-	std::vector<HeightmapLayer> layerTempScopingSolution;		// TODO: This is a temporary solution to fix a scoping issue. Implement proper solution!
+	Logger logger;
+	logger << "Generating layer, noise type: ";
+
+	Heightmap heightmap(0, 0, nullptr);		// 'Empty' object that gets assigned values in the if/else block below.
+	bool invertLayer = false;
 	if (generateAbsoluteNoise) {
-		layerTempScopingSolution.emplace_back(generateAbsoluteNoiseHeightmap(symmetricalFrequency, symmetricalFrequency, noiseOffsetX, noiseOffsetY), layerMode);
+		logger << "Absolute\n";
+		symmetricalFrequency *= properties.absoluteNoiseFrequencyModifier;
+		heightmap = generateAbsoluteNoiseHeightmap(symmetricalFrequency, symmetricalFrequency, noiseOffsetX, noiseOffsetY);
+
+		RandomBinary invertChance(properties.absoluteNoiseInversionChance);
+		invertLayer = invertChance.generate();
 	}
 	else {
-		layerTempScopingSolution.emplace_back(generateDefaultNoiseHeightmap(symmetricalFrequency, symmetricalFrequency, noiseOffsetX, noiseOffsetY), layerMode);
+		logger << "Default\n";
+		heightmap = generateDefaultNoiseHeightmap(symmetricalFrequency, symmetricalFrequency, noiseOffsetX, noiseOffsetY);
+
+		RandomBinary invertChance(properties.defaultNoiseInversionChance);
+		invertLayer = invertChance.generate();
 	}
 
-	HeightmapLayer layer(layerTempScopingSolution.back().heightmap, layerTempScopingSolution.back().mode);
-	layerTempScopingSolution.clear();
+	if (invertLayer) {
+		logger << "Inverting noise layer\n";
+		heightmap.invert();
+	}
+
+	HeightmapLayer layer(heightmap, layerMode);
 	
 	if (layerMode == LayerMode::Mask) {
-		layer.heightmap.raise(layerIndex * 5);
+		unsigned char raiseAmount = layerIndex * 5;
+		logger << "Raising layer by " << raiseAmount << " as it is a mask\n";
+		layer.heightmap.raise(raiseAmount);
 	}
 	else {
-		layer.heightmap.scale(0.5f - (layerIndex * 0.04));
+		double scalingFactor = properties.layerScalingBaseValue - (layerIndex * properties.layerScalingAdditionalLayerModifier);
+		logger << "Scaling layer by " << scalingFactor << " as it is not a mask\n";
+		layer.heightmap.scale(scalingFactor);
 	}	
 
 	RandomBinary maskChance(properties.applyMaskOnLayerChance);
 	bool applyMask = maskChance.generate();
 	if (applyMask) {
+		logger << "Applying mask to layer\n";
 		Heightmap mask = generateMask();
 		layer.heightmap.mask(mask);
 	}
@@ -215,7 +262,8 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 	RandomUniformReal radiusMultiplicationValues(properties.maskRadiusMultiplicationValueBounds);
 	RandomUniformReal falloffMultiplicationValues(properties.maskFalloffMultiplicationValueBounds);
 	std::vector<Heightmap> maskLayers;
-	RandomUniformInt maskTypeValues(0, 2);
+	RandomUniformInt maskTypeValues(0, 3);
+	std::array<GradientDirection, 4> gradientDirections = { GradientDirection::Up, GradientDirection::Left, GradientDirection::Down, GradientDirection::Right };
 
 	Logger logger;
 	logger << "Amount of mask layers: " << amountOfLayers << "\n";
@@ -238,22 +286,43 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 			logger << "MaskType: Rectangle\n";
 			maskLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
 		}
+		else if (maskTypeValue == 2) {		// TODO: If there already is a linear gradient in the vector, don't add the gradient that goes the opposite way as they will cancel each other out and producte a mask that doesn't do anything (or masks *everything* if it's inverted).
+			logger << "MaskType: Linear Gradient";
+			RandomUniformInt gradientDirectionValues(0, 3);
+			int gradientDirectionIndex = gradientDirectionValues.generate();
+			logger << " - DirectionIndex " << gradientDirectionIndex << "\n";
+			maskLayers.emplace_back(maskGenerator.generateLinearGradientMask(mapWidth, mapHeight, gradientDirections[gradientDirectionIndex]));
+		}
 		else {
 			logger << "MaskType: Noise - ";
 			RandomUniformInt noiseFrequencyValues(1, 2);
 			int frequencyX = 128 * (noiseFrequencyValues.generate() / 2.0f);
 			int frequencyY = 128 * (noiseFrequencyValues.generate() / 2.0f);
-			RandomBinary absoluteNoiseChance(properties.maskAbsoluteNoiseValuesChance);
+			RandomBinary absoluteNoiseChance(properties.maskAbsoluteNoiseChance);
 			bool generateAbsoluteNoise = absoluteNoiseChance.generate();
+			bool invertLayer = false;
 
 			if (generateAbsoluteNoise) {
 				logger << "Absolute\n";
+				frequencyX *= properties.maskAbsoluteNoiseFrequencyModifier;
+				frequencyY *= properties.maskAbsoluteNoiseFrequencyModifier;
 				maskLayers.emplace_back(generateAbsoluteNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
+
+				RandomBinary invertChance(properties.maskAbsoluteNoiseInversionChance);
+				invertLayer = invertChance.generate();
 			}
 			else {
 				logger << "Default\n";
 				maskLayers.emplace_back(generateDefaultNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
-			}			
+
+				RandomBinary invertChance(properties.maskDefaultNoiseInversionChance);
+				invertLayer = invertChance.generate();
+			}
+
+			if (invertLayer) {
+				logger << "Inverting mask noise layer\n";
+				maskLayers.back().invert();
+			}
 		}		
 	}
 
@@ -267,8 +336,6 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 		logger << "Inverted mask!\n";
 		mask.invert();
 	}
-
-	logger << "\n";
 
 	return mask;
 }
@@ -352,7 +419,9 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 		mask.add(maskLayers.at(i));
 	}
 
-	if (binaryChance.generate() == true) {
+	bool invertMask = binaryChance.generate();
+	if (invertMask) {
+		logger << "Inverted mask!\n";
 		mask.invert();
 	}
 

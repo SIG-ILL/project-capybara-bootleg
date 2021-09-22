@@ -34,6 +34,24 @@ pcb::Heightmap::~Heightmap() {
 	delete[] elevationValues;
 }
 
+pcb::Heightmap& pcb::Heightmap::operator=(const pcb::Heightmap& other) {
+	width = other.width;
+	height = other.height;
+	lowestElevation = other.lowestElevation;
+	highestElevation = other.highestElevation;
+
+	delete[] elevationValues;
+	elevationValues = new unsigned char[width * height];
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int index = (y * width) + x;
+			elevationValues[index] = other.elevationValues[index];
+		}
+	}
+
+	return *this;
+}
+
 pcb::Heightmap& pcb::Heightmap::operator+=(const pcb::Heightmap& other) {
 	add(other);
 	return *this;
