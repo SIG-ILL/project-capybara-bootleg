@@ -13,7 +13,8 @@ pcb::LayeredTerrain* pcb::LayeredTerrainGenerator::generateNew() {
 	delete heightmap;
 	heightmap = heightmapGenerator.generateNew();
 
-	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(*heightmap, (1.0f / 255) /*scale / mapWidth*/);
+	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
+	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(*heightmap, terrainScale);
 
 	return terrain;
 }
@@ -23,7 +24,8 @@ pcb::LayeredTerrain* pcb::LayeredTerrainGenerator::generateNewRandom() {
 	delete heightmap;
 	heightmap = heightmapGenerator.generateNewRandom();
 
-	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(*heightmap, (1.0f / 255) /*scale / mapWidth*/);
+	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
+	pcb::LayeredTerrain* terrain = new pcb::LayeredTerrain(*heightmap, terrainScale);
 
 	return terrain;
 }

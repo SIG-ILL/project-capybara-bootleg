@@ -96,7 +96,7 @@ void pcb::Application::loadResources() {
 }
 
 void pcb::Application::generateTerrainResources() {
-	int terrainSize = /*256*/512;
+	int terrainSize = 512;
 	LayeredTerrainGenerator terrainGenerator(terrainSize, terrainSize, 1);
 	//Terrain* terrain = terrainGenerator.generateNew();
 	Terrain* terrain = terrainGenerator.generateNewRandom();
@@ -148,10 +148,14 @@ void pcb::Application::generateTerrainResources() {
 	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(*terrainVertices, *terrainColors);
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
 	terrainObject->setScale(terrainScale, terrainScale, terrainScale);
+
+	float heightmapHorizontalScale = 1.0f / (static_cast<float>(glutGet(GLUT_WINDOW_WIDTH)) / static_cast<float>(glutGet(GLUT_WINDOW_HEIGHT)));
 	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *heightmapTexture, *heightMapImageObjectTextureCoordinates);
 	heightmapImageObject->setPosition(1.0f, 1.0f, -1.0f);
+	heightmapImageObject->setScale(heightmapHorizontalScale, 1.0f, 1.0f);
 	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
 	generatedHeightmapObject->setPosition(1.0f, 0.74f, -1.0f);
+	generatedHeightmapObject->setScale(heightmapHorizontalScale, 1.0f, 1.0f);
 
 	renderObjects[0] = terrainObject;
 	renderObjects[1] = heightmapImageObject;
