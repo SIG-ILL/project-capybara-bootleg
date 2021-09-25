@@ -111,96 +111,21 @@ void pcb::Application::loadResources() {
 	generatedHeightmapTexture = new Texture(generatedHeightmapImage);
 	delete generatedHeightmapImage;
 
-	GLfloat* vertices = new GLfloat[72] {
-		-0.25, -0.25, -0.25,
-		0.25, -0.25, -0.25,
-		0.25, 0.25, -0.25,
-		-0.25, 0.25, -0.25,
-
-		-0.25, -0.25, 0.25,
-		0.25, -0.25, 0.25,
-		0.25, 0.25, 0.25,
-		-0.25, 0.25, 0.25,
-
-		-0.25, 0.25, -0.25,
-		-0.25, 0.25, 0.25,
-		-0.25, -0.25, 0.25,
-		-0.25, -0.25, -0.25,
-
-		0.25, 0.25, -0.25,
-		0.25, 0.25, 0.25,
-		0.25, -0.25, 0.25,
-		0.25, -0.25, -0.25,
-
-		-0.25, 0.25, -0.25,
-		0.25, 0.25, -0.25,
-		0.25, 0.25, 0.25,
-		-0.25, 0.25, 0.25,
-
-		-0.25, -0.25, -0.25,
-		0.25, -0.25, -0.25,
-		0.25, -0.25, 0.25,
-		-0.25, -0.25, 0.25
+	GLfloat* vertices = new GLfloat[12] {
+		-0.25f, -0.25f, 0.0f,
+		0.0f, -0.25f, 0.0f,
+		0.0f, 0.0f, 0.0f,
+		-0.25f, 0.0f, 0.0f
 	};
 
-	GLfloat* colors = new GLfloat[72] {
+	GLfloat* colors = new GLfloat[12] {
 		1, 0, 0,
 		1, 0, 0,
 		1, 0, 0,
-		1, 0, 0,
-
-		0, 1, 0,
-		0, 1, 0,
-		0, 1, 0,
-		0, 1, 0,
-
-		0, 0, 1,
-		0, 0, 1,
-		0, 0, 1,
-		0, 0, 1,
-
-		0.5, 0, 0,
-		0.5, 0, 0,
-		0.5, 0, 0,
-		0.5, 0, 0,
-
-		0, 0.5, 0,
-		0, 0.5, 0,
-		0, 0.5, 0,
-		0, 0.5, 0,
-
-		0, 0, 0.5,
-		0, 0, 0.5,
-		0, 0, 0.5,
-		0, 0, 0.5
+		1, 0, 0
 	};
 
-	GLfloat* textureCoordinates = new GLfloat[48] {
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0,
-
-		0.0, 0.0,
-		1.0, 0.0,
-		1.0, 1.0,
-		0.0, 1.0,
-
+	GLfloat* textureCoordinates = new GLfloat[8] {
 		0.0, 0.0,
 		0.0, 1.0,
 		1.0, 1.0,
@@ -224,9 +149,9 @@ void pcb::Application::loadResources() {
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
 	terrainObject->setScale(5.0f, 1.0f, 5.0f);
 	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *heightmapTexture, *heightMapImageObjectTextureCoordinates);
-	heightmapImageObject->setPosition(-0.5f, 0, -0.3f);
+	heightmapImageObject->setPosition(1.0f, 1.0f, -1.0f);
 	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
-	generatedHeightmapObject->setPosition(-0.5f, 0, 0.3f);
+	generatedHeightmapObject->setPosition(1.0f, 0.74f, -1.0f);
 
 	renderObjects[0] = terrainObject;
 	renderObjects[1] = heightmapImageObject;
@@ -265,6 +190,10 @@ void pcb::Application::prepareShaders() {
 	shaderManager.createVertexShader("tempElevationColorsVertex", shaderSource);
 	shaderManager.createProgram("tempElevationColorsProgram", "tempElevationColorsVertex", "defaultFragment");
 
+	shaderSource = loadShaderFromFile("Shaders\\UI.vert");
+	shaderManager.createVertexShader("userInterfaceProgramVertex", shaderSource);
+	shaderManager.createProgram("userInterfaceProgram", "userInterfaceProgramVertex", "texturedFragment");
+
 	shaderManager.useProgram("defaultProgram");
 }
 
@@ -286,7 +215,7 @@ void pcb::Application::drawTestShapes() const {
 	shaderManager.useProgram("tempElevationColorsProgram");
 	renderObjects[0]->render();
 
-	shaderManager.useProgram("texturedProgram");
+	shaderManager.useProgram("userInterfaceProgram");
 	renderObjects[1]->render();
 	renderObjects[2]->render();
 
