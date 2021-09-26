@@ -1,21 +1,16 @@
 #pragma once
 
+#include "LayeredTerrainGenerator.hpp"
 #include "Terrain.hpp"
 #include "Heightmap.hpp"
+#include "HeightmapImage.hpp"
 
 namespace pcb {
-	class TerrainGenerator final {
+	class TerrainGenerator final : public LayeredTerrainGenerator {
 	public:
 		TerrainGenerator(int mapWidth, int mapHeight, double scale);
-		~TerrainGenerator();
 
-		pcb::Terrain* generateNew();
-		pcb::Image* getHeightmap24BitImageNew() const;
-
-	private:
-		int mapWidth;
-		int mapHeight;
-		double scale;
-		pcb::Heightmap* heightmap;
+		std::unique_ptr<LayeredTerrain> generate() override;
+		std::unique_ptr<HeightmapImage> getHeightmap24BitImage() const override;	
 	};
 }

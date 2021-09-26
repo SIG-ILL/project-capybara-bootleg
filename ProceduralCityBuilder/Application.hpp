@@ -43,7 +43,6 @@ namespace pcb {
 		Texture* heightmapTexture;
 		Texture* generatedHeightmapTexture;
 		std::array<SimpleObject*, 3> renderObjects;
-		std::array<GLfloat*, 3> renderObjectsDataPointers;
 		std::vector<Terrain> terrainLayers;
 		std::vector<SimpleColoredObject> terrainLayerRenderObjects;
 		std::vector<VertexBufferObject*> vbos;

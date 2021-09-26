@@ -110,6 +110,7 @@
     <ClInclude Include="BoundsPair.hpp" />
     <ClInclude Include="Heightmap.hpp" />
     <ClInclude Include="HeightmapGenerator.hpp" />
+    <ClInclude Include="HeightmapImage.hpp" />
     <ClInclude Include="HeightmapLayer.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="LayeredHeightmap.hpp" />

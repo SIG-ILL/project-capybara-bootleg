@@ -7,7 +7,7 @@
 namespace pcb {
 	class Texture final {
 	public:
-		Texture(Image* sourceImage);
+		Texture(const Image& sourceImage);
 		~Texture();
 
 		void bind() const;

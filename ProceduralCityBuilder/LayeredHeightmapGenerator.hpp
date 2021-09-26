@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "LayeredHeightmap.hpp"
 #include "NoiseGenerator.hpp"
@@ -10,15 +11,15 @@ namespace pcb {
 	public:
 		LayeredHeightmapGenerator(int mapWidth, int mapHeight);
 
-		pcb::LayeredHeightmap* generateNew() const;
-		pcb::LayeredHeightmap* generateNewRandom() const;
+		LayeredHeightmap generate() const;
+		LayeredHeightmap generateRandom() const;
 
 	private:
 		int mapWidth;
 		int mapHeight;
-		pcb::NoiseGenerator noiseGenerator;
+		NoiseGenerator noiseGenerator;
 
-		pcb::Heightmap generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		Heightmap generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
 		double generateElevationForNoiseCoordinates(double x, double y) const;
 	};
 }

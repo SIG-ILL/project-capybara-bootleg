@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "LayeredHeightmap.hpp"
 #include "NoiseGenerator.hpp"
@@ -52,7 +53,7 @@ namespace pcb {
 		RandomHeightmapGenerator(int mapWidth, int mapHeight);
 		RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties);
 
-		LayeredHeightmap* generateNew() const;
+		LayeredHeightmap generate() const;
 		RandomGenerationControlProperties getDefaultControlProperties() const;
 		void setControlProperties(const RandomGenerationControlProperties& properties);
 
@@ -62,7 +63,7 @@ namespace pcb {
 		RandomGenerationControlProperties properties;
 		NoiseGenerator noiseGenerator;
 
-		LayeredHeightmap* generateLayeredHeightmapNew() const;
+		LayeredHeightmap generateLayeredHeightmap() const;
 		std::vector<HeightmapLayer> generateLayers() const;
 		std::vector<LayerMode> generateLayerModes() const;
 		HeightmapLayer generateLayer(int layerIndex, LayerMode layerMode) const;
@@ -74,20 +75,20 @@ namespace pcb {
 		double generateElevationFromNoiseValue(double noiseValue) const;
 		Heightmap generateMask() const;
 		Heightmap generateFinalMask() const;
-		void adjustLayeredHeightmap(LayeredHeightmap* const heightmap) const;
+		void adjustLayeredHeightmap(LayeredHeightmap& heightmap) const;
 
 #pragma region Inner_Classes
 #pragma region Layer_Data
 		class LayerData {
 		public:
-			const std::vector<LayerMode> getAllowedNextModes(const std::vector<LayerData*> previousLayers) const;
+			const std::vector<LayerMode> getAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const;
 			const LayerMode getMode() const;
 
 		protected:
 			LayerData(const LayerMode layerMode);
 
-			virtual std::vector<LayerMode> determineAllowedNextModes(const std::vector<LayerData*> previousLayers) const = 0;
-			int countAmountOfConsecutiveLayerModesAtEnd(const std::vector<LayerData*> previousLayers, pcb::LayerMode layerMode) const;
+			virtual std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const = 0;
+			int countAmountOfConsecutiveLayerModesAtEnd(const std::vector<std::unique_ptr<LayerData>>& previousLayers, pcb::LayerMode layerMode) const;
 
 		private:
 			LayerMode layerMode;
@@ -98,7 +99,7 @@ namespace pcb {
 			AdditionLayerData();
 
 		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<LayerData*> previousLayers) const override;
+			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
 		};
 
 		class SubtractionLayerData final : public LayerData {
@@ -106,7 +107,7 @@ namespace pcb {
 			SubtractionLayerData();
 
 		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<LayerData*> previousLayers) const override;
+			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
 		};
 
 		class MaskLayerData final : public LayerData {
@@ -114,7 +115,7 @@ namespace pcb {
 			MaskLayerData();
 
 		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<LayerData*> previousLayers) const override;
+			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
 		};
 #pragma endregion
 

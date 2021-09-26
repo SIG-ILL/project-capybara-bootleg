@@ -9,7 +9,8 @@ pcb::Heightmap pcb::MaskGenerator::generateCircleLinearFalloffMask(int width, in
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	unsigned char* maskData = new unsigned char[width * height];
+	std::vector<unsigned char> maskData;
+	maskData.reserve(width * height);
 
 	const float centerX = (width - 1) / 2.0f;
 	const float centerY = (height - 1) / 2.0f;
@@ -26,25 +27,24 @@ pcb::Heightmap pcb::MaskGenerator::generateCircleLinearFalloffMask(int width, in
 				value = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
-			maskData[(y * width) + x] = value;
+			maskData.push_back(value);
 		}
 	}
 
-	unsigned char* offsettedData = new unsigned char[width * height];
+	std::vector<unsigned char> offsettedData;
+	offsettedData.reserve(width * height);
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
-				offsettedData[(y * width) + x] = 0;
+				offsettedData.push_back(0);
 			}
 			else {
-				offsettedData[(y * width) + x] = maskData[((y - offsetY) * width) + (x - offsetX)];
+				offsettedData.push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
 			}			
 		}
 	}
 
 	pcb::Heightmap mask(width, height, offsettedData);
-	delete[] maskData;
-	delete[] offsettedData;
 
 	return mask;
 }
@@ -54,7 +54,8 @@ pcb::Heightmap pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width,
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	unsigned char* maskData = new unsigned char[width * height];
+	std::vector<unsigned char> maskData;
+	maskData.reserve(width * height);
 
 	const float centerX = (width - 1) / 2.0f;
 	const float centerY = (height - 1) / 2.0f;
@@ -75,25 +76,24 @@ pcb::Heightmap pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width,
 				verticalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
-			maskData[(y * width) + x] = std::min(horizontalValue, verticalValue);
+			maskData.push_back(std::min(horizontalValue, verticalValue));
 		}
 	}
 
-	unsigned char* offsettedData = new unsigned char[width * height];
+	std::vector<unsigned char> offsettedData;
+	offsettedData.reserve(width * height);
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
-				offsettedData[(y * width) + x] = 0;
+				offsettedData.push_back(0);
 			}
 			else {
-				offsettedData[(y * width) + x] = maskData[((y - offsetY) * width) + (x - offsetX)];
+				offsettedData.push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
 			}
 		}
 	}
 
 	pcb::Heightmap mask(width, height, offsettedData);
-	delete[] maskData;
-	delete[] offsettedData;
 
 	return mask;
 }
@@ -103,7 +103,8 @@ pcb::Heightmap pcb::MaskGenerator::generateLinearGradientMask(int width, int hei
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	unsigned char* maskData = new unsigned char[width * height];
+	std::vector<unsigned char> maskData;
+	maskData.reserve(width * height);
 
 	for (int y = 0; y < height; y++) {
 		unsigned char gradientValue;
@@ -122,12 +123,11 @@ pcb::Heightmap pcb::MaskGenerator::generateLinearGradientMask(int width, int hei
 				gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
 			}
 
-			maskData[(y * width) + x] = gradientValue;
+			maskData.push_back(gradientValue);
 		}
 	}
 
 	Heightmap mask(width, height, maskData);
-	delete[] maskData;
 
 	return mask;
 }

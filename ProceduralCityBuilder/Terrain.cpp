@@ -53,13 +53,8 @@ pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : gridWidth
 }
 
 pcb::Terrain::Terrain(const pcb::Terrain& other) : gridWidthInVertices(other.gridWidthInVertices), gridHeightInVertices(other.gridHeightInVertices), quadsVertexCount(other.quadsVertexCount), quadsVertexCoordinates(new GLfloat[3 * quadsVertexCount]), quadsColors(new GLfloat[3 * quadsVertexCount]), highestElevation(other.highestElevation) {
-	for (int i = 0; i < (3 * quadsVertexCount); i++) {
-		quadsVertexCoordinates[i] = other.quadsVertexCoordinates[i];
-	}
-
-	for (int i = 0; i < (3 * quadsVertexCount); i++) {
-		quadsColors[i] = other.quadsColors[i];
-	}
+	std::copy(other.quadsVertexCoordinates, other.quadsVertexCoordinates + (3 * other.quadsVertexCount), quadsVertexCoordinates);
+	std::copy(other.quadsColors, other.quadsColors + (3 * other.quadsVertexCount), quadsColors);
 }
 
 pcb::Terrain::~Terrain() {
@@ -122,7 +117,7 @@ pcb::Heightmap pcb::Terrain::generateHeightmap() const {
 	}
 	elevationValues.push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (4 * 3 * (maxLoopWidthIndex - 1)) + (3 * 2) + 1]), 255)));
 
-	pcb::Heightmap heightmap(gridWidthInVertices, gridHeightInVertices, elevationValues.data());
+	pcb::Heightmap heightmap(gridWidthInVertices, gridHeightInVertices, elevationValues);
 
 	return heightmap;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "Image.hpp"
 
 namespace pcb {
@@ -10,15 +12,12 @@ namespace pcb {
 	class Heightmap {
 	public:
 		Heightmap(const int width, const int height);
-		Heightmap(const int width, const int height, const unsigned char* elevationValues);
-		Heightmap(const Heightmap& other);
-		virtual ~Heightmap();
+		Heightmap(const int width, const int height, const std::vector<unsigned char> elevationValues);
 
-		Heightmap& operator=(const Heightmap& other);
 		Heightmap& operator+=(const Heightmap& other);
 		Heightmap& operator-=(const Heightmap& other);
 
-		pcb::Image* to24BitImageNew() const;
+		pcb::Image to24BitImage() const;
 		unsigned char getValueAt(int x, int y) const;
 		int getWidth() const;
 		int getHeight() const;
@@ -45,6 +44,6 @@ namespace pcb {
 		int height;
 		unsigned char lowestElevation;
 		unsigned char highestElevation;
-		unsigned char* elevationValues;
+		std::vector<unsigned char> elevationValues;
 	};
 }

@@ -2,7 +2,7 @@
 
 pcb::LayeredHeightmap::LayeredHeightmap(int width, int height) : Heightmap(width, height), layers() {}
 
-pcb::LayeredHeightmap::LayeredHeightmap(int width, int height, unsigned char* elevationValues) : Heightmap(width, height, elevationValues), layers(1, pcb::HeightmapLayer{pcb::Heightmap(width, height, elevationValues), pcb::LayerMode::Addition}) {}
+pcb::LayeredHeightmap::LayeredHeightmap(int width, int height, const std::vector<unsigned char> elevationValues) : Heightmap(width, height, elevationValues), layers(1, pcb::HeightmapLayer{pcb::Heightmap(width, height, elevationValues), pcb::LayerMode::Addition}) {}
 
 pcb::LayeredHeightmap::LayeredHeightmap(const pcb::Heightmap& baseHeightmap) : Heightmap(baseHeightmap), layers(1, pcb::HeightmapLayer{ baseHeightmap, pcb::LayerMode::Addition }) {}
 

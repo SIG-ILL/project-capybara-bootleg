@@ -2,6 +2,7 @@
 #include <GL/freeglut.h>
 #include <fstream>
 #include <sstream>
+#include <array>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -45,7 +46,7 @@ void pcb::Application::mouseCallback(int button, int state, int x, int y) {
 
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
 isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-renderObjectsDataPointers{ nullptr, nullptr, nullptr }, terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
+terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
 
 pcb::Application::~Application() {
 	deleteResources();
@@ -98,50 +99,37 @@ void pcb::Application::loadResources() {
 void pcb::Application::generateTerrainResources() {
 	int terrainSize = 512;
 	LayeredTerrainGenerator terrainGenerator(terrainSize, terrainSize, 1);
-	//Terrain* terrain = terrainGenerator.generateNew();
-	Terrain* terrain = terrainGenerator.generateNewRandom();
+	//std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generate();
+	std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generateRandom();
 
-	Image* heightmapImage = terrainGenerator.getHeightmap24BitImageNew();
-	heightmapTexture = new Texture(heightmapImage);
-	delete heightmapImage;
+	std::unique_ptr<HeightmapImage> heightmapImage = terrainGenerator.getHeightmap24BitImage();
+	heightmapTexture = new Texture(heightmapImage->finalImage);
 
 	Heightmap generatedHeightmap = terrain->generateHeightmap();
-	Image* generatedHeightmapImage = generatedHeightmap.to24BitImageNew();
+	Image generatedHeightmapImage = generatedHeightmap.to24BitImage();
 	generatedHeightmapTexture = new Texture(generatedHeightmapImage);
-	delete generatedHeightmapImage;
 
-	GLfloat* vertices = new GLfloat[12] {
+	std::array<GLfloat, 12> vertices = {
 		-0.25f, -0.25f, 0.0f,
 		0.0f, -0.25f, 0.0f,
 		0.0f, 0.0f, 0.0f,
 		-0.25f, 0.0f, 0.0f
 	};
 
-	GLfloat* colors = new GLfloat[12] {
-		1, 0, 0,
-		1, 0, 0,
-		1, 0, 0,
-		1, 0, 0
-	};
-
-	GLfloat* textureCoordinates = new GLfloat[8] {
+	std::array<GLfloat, 8> textureCoordinates = {
 		0.0, 0.0,
 		0.0, 1.0,
 		1.0, 1.0,
 		1.0, 0.0
 	};
 
-	renderObjectsDataPointers[0] = vertices;
-	renderObjectsDataPointers[1] = colors;
-	renderObjectsDataPointers[2] = textureCoordinates;
-
 	pcb::VertexPositionBufferObject* terrainVertices = new VertexPositionBufferObject(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
 	vbos.push_back(terrainVertices);
 	pcb::VertexColorBufferObject* terrainColors = new VertexColorBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
 	vbos.push_back(terrainColors);
-	pcb::VertexPositionBufferObject* heightMapImageObjectVertices = new VertexPositionBufferObject(vertices, 24);
+	pcb::VertexPositionBufferObject* heightMapImageObjectVertices = new VertexPositionBufferObject(vertices.data(), vertices.size() / 3);
 	vbos.push_back(heightMapImageObjectVertices);
-	pcb::VertexTextureCoordinateBufferObject* heightMapImageObjectTextureCoordinates = new VertexTextureCoordinateBufferObject(textureCoordinates, 24);
+	pcb::VertexTextureCoordinateBufferObject* heightMapImageObjectTextureCoordinates = new VertexTextureCoordinateBufferObject(textureCoordinates.data(), textureCoordinates.size() / 2);
 	vbos.push_back(heightMapImageObjectTextureCoordinates);
 
 	float terrainScale = 2.5f;
@@ -161,7 +149,7 @@ void pcb::Application::generateTerrainResources() {
 	renderObjects[1] = heightmapImageObject;
 	renderObjects[2] = generatedHeightmapObject;
 
-	terrainLayers = static_cast<pcb::LayeredTerrain*>(terrain)->getLayers();
+	terrainLayers = terrain->getLayers();
 	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
 		Terrain& terrainLayer = terrainLayers.at(i);
 		pcb::VertexPositionBufferObject* terrainlayerVertices = new pcb::VertexPositionBufferObject(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount());
@@ -173,8 +161,6 @@ void pcb::Application::generateTerrainResources() {
 		object.setPosition(10.0f, static_cast<float>(i + 1), -0.5f);
 		object.setScale(terrainScale, terrainScale, terrainScale);
 	}
-
-	delete terrain;
 }
 
 void pcb::Application::deleteResources() {
@@ -188,12 +174,6 @@ void pcb::Application::deleteResources() {
 	}
 
 	renderObjects = { nullptr, nullptr, nullptr };
-
-	for (GLfloat* renderObjectDataPointer : renderObjectsDataPointers) {
-		delete[] renderObjectDataPointer;
-	}
-
-	renderObjectsDataPointers = { nullptr, nullptr, nullptr };
 
 	terrainLayers.clear();
 	terrainLayerRenderObjects.clear();

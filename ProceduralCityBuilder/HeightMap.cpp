@@ -5,51 +5,12 @@
 #include <stdexcept>
 #include <cmath>
 
-pcb::Heightmap::Heightmap(const int width, const int height) : width(width), height(height), lowestElevation(MIN_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(new unsigned char[width * height]) {
-	for (int i = 0; i < width * height; i++) {
-		this->elevationValues[i] = MIN_ELEVATION_VALUE;
-	}
-}
+pcb::Heightmap::Heightmap(const int width, const int height) : width(width), height(height), lowestElevation(MIN_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(width * height, MIN_ELEVATION_VALUE) {}
 
-pcb::Heightmap::Heightmap(const int width, const int height, const unsigned char* elevationValues) : width(width), height(height), lowestElevation(MAX_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(new unsigned char[width * height]) {
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			int index = (y * width) + x;
-			unsigned char elevationValue = elevationValues[index];
-			this->elevationValues[index] = elevationValue;
-
-			if (elevationValue < lowestElevation) {
-				lowestElevation = elevationValue;
-			}
-			if (elevationValue > highestElevation) {
-				highestElevation = elevationValue;
-			}
-		}
-	}
-}
-
-pcb::Heightmap::Heightmap(const pcb::Heightmap& other) : Heightmap(other.width, other.height, other.elevationValues) {}
-
-pcb::Heightmap::~Heightmap() {
-	delete[] elevationValues;
-}
-
-pcb::Heightmap& pcb::Heightmap::operator=(const pcb::Heightmap& other) {
-	width = other.width;
-	height = other.height;
-	lowestElevation = other.lowestElevation;
-	highestElevation = other.highestElevation;
-
-	delete[] elevationValues;
-	elevationValues = new unsigned char[width * height];
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			int index = (y * width) + x;
-			elevationValues[index] = other.elevationValues[index];
-		}
-	}
-
-	return *this;
+pcb::Heightmap::Heightmap(const int width, const int height, const std::vector<unsigned char> elevationValues) : width(width), height(height), lowestElevation(MAX_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(elevationValues) {
+	std::pair minMaxElevation = std::minmax_element(elevationValues.begin(), elevationValues.end());
+	lowestElevation = *(minMaxElevation.first);
+	highestElevation = *(minMaxElevation.second);
 }
 
 pcb::Heightmap& pcb::Heightmap::operator+=(const pcb::Heightmap& other) {
@@ -62,26 +23,27 @@ pcb::Heightmap& pcb::Heightmap::operator-=(const pcb::Heightmap& other) {
 	return *this;
 }
 
-pcb::Image* pcb::Heightmap::to24BitImageNew() const {
-	int arraySize = 3 * width * height;
+pcb::Image pcb::Heightmap::to24BitImage() const {
+	int vectorSize = 3 * width * height;
 	std::vector<char> sourcePixels;
-	sourcePixels.reserve(arraySize);
+	sourcePixels.reserve(vectorSize);
+
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			unsigned char elevationValue = elevationValues[(y * width) + x];
+			unsigned char elevationValue = elevationValues.at((y * width) + x);
 			sourcePixels.push_back(elevationValue);
 			sourcePixels.push_back(elevationValue);
 			sourcePixels.push_back(elevationValue);
 		}
 	}
 
-	Image* image = new Image(sourcePixels.data(), arraySize, width, height, pcb::PixelDataFormat::RGB);
+	Image image(sourcePixels, width, height, pcb::PixelDataFormat::RGB);
 
 	return image;
 }
 
 unsigned char pcb::Heightmap::getValueAt(int x, int y) const {
-	return elevationValues[(y * width) + x];
+	return elevationValues.at((y * width) + x);
 }
 
 int pcb::Heightmap::getWidth() const {
@@ -106,15 +68,15 @@ void pcb::Heightmap::add(const pcb::Heightmap& other) {
 
 	for (int y = 0; y < heightConditionValue; y++) {
 		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues[(y * width) + x] = static_cast<unsigned char>(std::min(this->elevationValues[(y * width) + x] + other.elevationValues[(y * other.width) + x], 255));
+			this->elevationValues.at((y * width) + x) = static_cast<unsigned char>(std::min(this->elevationValues.at((y * width) + x) + other.elevationValues.at((y * other.width) + x), 255));
 
-			if (this->elevationValues[(y * width) + x] > highestElevation) {
-				highestElevation = this->elevationValues[(y * width) + x];
+			if (this->elevationValues.at((y * width) + x) > highestElevation) {
+				highestElevation = this->elevationValues.at((y * width) + x);
 			}
 		}
 	}
 
-	lowestElevation = *std::min_element(this->elevationValues, this->elevationValues + (width * height));
+	lowestElevation = *std::min_element(this->elevationValues.begin(), this->elevationValues.end());
 }
 
 void pcb::Heightmap::subtract(const pcb::Heightmap& other) {
@@ -123,7 +85,7 @@ void pcb::Heightmap::subtract(const pcb::Heightmap& other) {
 
 	for (int y = 0; y < heightConditionValue; y++) {
 		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues[(y * width) + x] = static_cast<unsigned char>(std::max(0, this->elevationValues[(y * width) + x] - other.elevationValues[(y * other.width) + x]));
+			this->elevationValues.at((y * width) + x) = static_cast<unsigned char>(std::max(0, this->elevationValues.at((y * width) + x) - other.elevationValues.at((y * other.width) + x)));
 
 			if (this->elevationValues[(y * width) + x] < lowestElevation) {
 				lowestElevation = this->elevationValues[(y * width) + x];
@@ -131,7 +93,7 @@ void pcb::Heightmap::subtract(const pcb::Heightmap& other) {
 		}
 	}
 
-	highestElevation = *std::max_element(this->elevationValues, this->elevationValues + (width * height));
+	highestElevation = *std::max_element(this->elevationValues.begin(), this->elevationValues.end());
 }
 
 void pcb::Heightmap::raiseToLevel(const unsigned char level) {
@@ -140,7 +102,7 @@ void pcb::Heightmap::raiseToLevel(const unsigned char level) {
 	}
 
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = std::max(elevationValues[i], level);
+		elevationValues.at(i) = std::max(elevationValues.at(i), level);
 	}
 
 	if (lowestElevation < level) {
@@ -154,7 +116,7 @@ void pcb::Heightmap::lowerToLevel(const unsigned char level) {
 	}
 
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = std::min(elevationValues[i], level);
+		elevationValues.at(i) = std::min(elevationValues.at(i), level);
 	}
 
 	if (highestElevation > level) {
@@ -178,11 +140,11 @@ void pcb::Heightmap::mask(const pcb::Heightmap& mask) {
 
 	for (int y = 0; y < heightConditionValue; y++) {
 		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues[(y * width) + x] = std::clamp(static_cast<unsigned char>(std::round(mask.elevationValues[(y * mask.width) + x] * (maskNormalizationValue * this->elevationValues[(y * width) + x]))), MIN_ELEVATION_VALUE, MAX_ELEVATION_VALUE);
+			this->elevationValues.at((y * width) + x) = std::clamp(static_cast<unsigned char>(std::round(mask.elevationValues.at((y * mask.width) + x) * (maskNormalizationValue * this->elevationValues.at((y * width) + x)))), MIN_ELEVATION_VALUE, MAX_ELEVATION_VALUE);
 		}
 	}
 
-	std::pair minMaxElevation = std::minmax_element(this->elevationValues, this->elevationValues + (width * height));
+	std::pair minMaxElevation = std::minmax_element(this->elevationValues.begin(), this->elevationValues.end());
 	lowestElevation = *(minMaxElevation.first);
 	highestElevation = *(minMaxElevation.second);
 }
@@ -193,17 +155,17 @@ void pcb::Heightmap::scale(const double factor) {
 	}
 
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = static_cast<unsigned char>(std::min(std::round(factor * elevationValues[i]), static_cast<double>(MAX_ELEVATION_VALUE)));
+		elevationValues.at(i) = static_cast<unsigned char>(std::min(std::round(factor * elevationValues.at(i)), static_cast<double>(MAX_ELEVATION_VALUE)));
 	}
 
-	std::pair minMaxElevation = std::minmax_element(this->elevationValues, this->elevationValues + (width * height));
+	std::pair minMaxElevation = std::minmax_element(this->elevationValues.begin(), this->elevationValues.end());
 	lowestElevation = *(minMaxElevation.first);
 	highestElevation = *(minMaxElevation.second);
 }
 
 void pcb::Heightmap::invert() {
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = static_cast<unsigned char>(-1 * (elevationValues[i] - MAX_ELEVATION_VALUE));
+		elevationValues.at(i) = static_cast<unsigned char>(-1 * (elevationValues.at(i) - MAX_ELEVATION_VALUE));
 	}
 
 	lowestElevation = static_cast<unsigned char>(-1 * (highestElevation - MAX_ELEVATION_VALUE));
@@ -217,10 +179,10 @@ void pcb::Heightmap::scaleAmplitude(const double factor) {
 
 	double scalingAxisValue = lowestElevation + (0.5 * (highestElevation - lowestElevation));
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = static_cast<unsigned char>(std::clamp(std::round((factor * (elevationValues[i] - scalingAxisValue)) + scalingAxisValue), static_cast<double>(MIN_ELEVATION_VALUE), static_cast<double>(MAX_ELEVATION_VALUE)));
+		elevationValues.at(i) = static_cast<unsigned char>(std::clamp(std::round((factor * (elevationValues.at(i) - scalingAxisValue)) + scalingAxisValue), static_cast<double>(MIN_ELEVATION_VALUE), static_cast<double>(MAX_ELEVATION_VALUE)));
 	}
 
-	std::pair minMaxElevation = std::minmax_element(this->elevationValues, this->elevationValues + (width * height));
+	std::pair minMaxElevation = std::minmax_element(this->elevationValues.begin(), this->elevationValues.end());
 	lowestElevation = *(minMaxElevation.first);
 	highestElevation = *(minMaxElevation.second);
 }
@@ -231,7 +193,7 @@ void pcb::Heightmap::raise(const unsigned char amount) {
 	}
 
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = static_cast<unsigned char>(std::min(elevationValues[i] + amount, static_cast<int>(MAX_ELEVATION_VALUE)));
+		elevationValues.at(i) = static_cast<unsigned char>(std::min(elevationValues.at(i) + amount, static_cast<int>(MAX_ELEVATION_VALUE)));
 	}
 
 	lowestElevation = static_cast<unsigned char>(std::min(lowestElevation + amount, static_cast<int>(MAX_ELEVATION_VALUE)));
@@ -244,7 +206,7 @@ void pcb::Heightmap::lower(const unsigned char amount) {
 	}
 
 	for (int i = 0; i < (width * height); i++) {
-		elevationValues[i] = static_cast<unsigned char>(std::max(elevationValues[i] - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
+		elevationValues.at(i) = static_cast<unsigned char>(std::max(elevationValues.at(i) - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
 	}
 
 	lowestElevation = static_cast<unsigned char>(std::max(lowestElevation - amount, static_cast<int>(MIN_ELEVATION_VALUE)));

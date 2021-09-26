@@ -2,22 +2,16 @@
 
 #include "HeightmapGenerator.hpp"
 
-pcb::TerrainGenerator::TerrainGenerator(int mapWidth, int mapHeight, double scale) : mapWidth(mapWidth), mapHeight(mapHeight), scale(scale), heightmap(nullptr) {}
+pcb::TerrainGenerator::TerrainGenerator(int mapWidth, int mapHeight, double scale) : LayeredTerrainGenerator(mapWidth, mapHeight, scale) {}
 
-pcb::TerrainGenerator::~TerrainGenerator() {
-	delete heightmap;
+std::unique_ptr<pcb::LayeredTerrain> pcb::TerrainGenerator::generate() {
+	HeightmapGenerator heightmapGenerator(mapWidth, mapHeight);
+	heightmap = std::make_unique<LayeredHeightmap>(heightmapGenerator.generate());
+
+	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
+	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);
 }
 
-pcb::Terrain* pcb::TerrainGenerator::generateNew() {
-	pcb::HeightmapGenerator heightmapGenerator(mapWidth, mapHeight);
-	delete heightmap;
-	heightmap = heightmapGenerator.generateNew();
-
-	pcb::Terrain* terrain = new pcb::Terrain(*heightmap, scale / mapWidth);
-
-	return terrain;
-}
-
-pcb::Image* pcb::TerrainGenerator::getHeightmap24BitImageNew() const {
-	return heightmap->to24BitImageNew();
+std::unique_ptr<pcb::HeightmapImage> pcb::TerrainGenerator::getHeightmap24BitImage() const {
+	return std::make_unique<HeightmapImage>(heightmap->to24BitImage(), std::vector<Image> { heightmap->to24BitImage() });
 }

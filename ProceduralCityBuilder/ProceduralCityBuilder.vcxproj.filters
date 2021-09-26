@@ -209,5 +209,8 @@
     <ClInclude Include="BoundsPair.hpp">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="HeightmapImage.hpp">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

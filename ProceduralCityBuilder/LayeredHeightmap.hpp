@@ -9,18 +9,18 @@ namespace pcb {
 	class LayeredHeightmap final : public pcb::Heightmap {
 	public:
 		LayeredHeightmap(int width, int height);
-		LayeredHeightmap(int width, int height, unsigned char* elevationValues);
-		LayeredHeightmap(const pcb::Heightmap& baseHeightmap);
+		LayeredHeightmap(int width, int height, const std::vector<unsigned char> elevationValues);
+		LayeredHeightmap(const Heightmap& baseHeightmap);
 
-		pcb::LayeredHeightmap& operator+=(const pcb::LayeredHeightmap& other);
-		pcb::LayeredHeightmap& operator+=(const pcb::Heightmap& other);
-		pcb::LayeredHeightmap& operator-=(const pcb::LayeredHeightmap& other);		
-		pcb::LayeredHeightmap& operator-=(const pcb::Heightmap& other);
+		LayeredHeightmap& operator+=(const LayeredHeightmap& other);
+		LayeredHeightmap& operator+=(const Heightmap& other);
+		LayeredHeightmap& operator-=(const LayeredHeightmap& other);		
+		LayeredHeightmap& operator-=(const Heightmap& other);
 
-		void addLayer(const pcb::HeightmapLayer& heightmapLayer);
-		void addLayer(const pcb::Heightmap& heightmap, pcb::LayerMode mode);
+		void addLayer(const HeightmapLayer& heightmapLayer);
+		void addLayer(const Heightmap& heightmap, LayerMode mode);
 		int getLayerCount() const;
-		std::vector<pcb::HeightmapLayer> getLayers() const;
+		std::vector<HeightmapLayer> getLayers() const;
 
 	private:
 		std::vector<HeightmapLayer> layers;
