@@ -7,7 +7,7 @@
 
 pcb::Heightmap::Heightmap(const int width, const int height) : width(width), height(height), lowestElevation(MIN_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(width * height, MIN_ELEVATION_VALUE) {}
 
-pcb::Heightmap::Heightmap(const int width, const int height, const std::vector<unsigned char> elevationValues) : width(width), height(height), lowestElevation(MAX_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(elevationValues) {
+pcb::Heightmap::Heightmap(const int width, const int height, const std::vector<unsigned char>& elevationValues) : width(width), height(height), lowestElevation(MAX_ELEVATION_VALUE), highestElevation(MIN_ELEVATION_VALUE), elevationValues(elevationValues) {
 	std::pair minMaxElevation = std::minmax_element(elevationValues.begin(), elevationValues.end());
 	lowestElevation = *(minMaxElevation.first);
 	highestElevation = *(minMaxElevation.second);

@@ -18,9 +18,9 @@ pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHei
 pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties) : mapWidth(mapWidth), mapHeight(mapHeight), properties(properties), noiseGenerator() {}
 
 // TODO: Rotation of layers (lack of rotation is especially noticeable with 'stretched' noise).
-pcb::LayeredHeightmap pcb::RandomHeightmapGenerator::generate() const {
-	LayeredHeightmap heightmap = generateLayeredHeightmap();
-	adjustLayeredHeightmap(heightmap);
+std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generate() const {
+	std::unique_ptr<LayeredHeightmap> heightmap = generateLayeredHeightmap();
+	adjustLayeredHeightmap(*heightmap);
 
 	return heightmap;
 }
@@ -70,40 +70,39 @@ void pcb::RandomHeightmapGenerator::setControlProperties(const RandomGenerationC
 	this->properties = properties;
 }
 
-pcb::LayeredHeightmap pcb::RandomHeightmapGenerator::generateLayeredHeightmap() const {
-	LayeredHeightmap heightmap(mapWidth, mapHeight);
-	std::vector<HeightmapLayer> layers = generateLayers();
+std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generateLayeredHeightmap() const {
+	std::unique_ptr<LayeredHeightmap> heightmap = std::make_unique<LayeredHeightmap>(mapWidth, mapHeight);
+	std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> layers = generateLayers();
 
-	for (const HeightmapLayer& layer : layers) {
-		heightmap.addLayer(layer);
+	for (int i = 0; i < layers->size(); i++) {
+		heightmap->addLayer(std::move(layers->at(i)));
 	}
 
 	return heightmap;
 }
 
-std::vector<pcb::HeightmapLayer> pcb::RandomHeightmapGenerator::generateLayers() const {
-	std::vector<LayerMode> layerModes = generateLayerModes();
-	std::vector<HeightmapLayer> layers;
+std::unique_ptr<std::vector<std::unique_ptr<pcb::HeightmapLayer>>> pcb::RandomHeightmapGenerator::generateLayers() const {
+	std::unique_ptr<std::vector<LayerMode>> layerModes = generateLayerModes();
+	std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> layers = std::make_unique<std::vector<std::unique_ptr<HeightmapLayer>>>();
 	Logger logger;
 
-	for (int i = 0; i < layerModes.size(); i++) {
+	for (int i = 0; i < layerModes->size(); i++) {
 		logger << "Layer index " << i << "\n";
-		layers.emplace_back(generateLayer(i, layerModes.at(i)));
+		layers->push_back(generateLayer(i, layerModes->at(i)));
 		logger << "\n";
 	}
 
 	RandomBinary finalMaskChanceValues(properties.applyFinalMaskChance);
 	bool applyFinalMask = finalMaskChanceValues.generate();
 	if (applyFinalMask) {
-		logger << "Layer index " << layerModes.size() << " - Final mask\n";
-		Heightmap finalMask = generateFinalMask();
-		layers.emplace_back(finalMask, LayerMode::Mask);
+		logger << "Layer index " << layerModes->size() << " - Final mask\n";
+		layers->push_back(std::make_unique<HeightmapLayer>(generateFinalMask() , LayerMode::Mask));
 	}
 
 	return layers;
 }
 
-std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes() const {
+std::unique_ptr<std::vector<pcb::LayerMode>> pcb::RandomHeightmapGenerator::generateLayerModes() const {
 	RandomUniformInt layerAmountValues(properties.amountOfLayersBounds);
 	int numberOfLayers = layerAmountValues.generate();
 	std::vector<std::unique_ptr<LayerData>> layerData;
@@ -129,9 +128,9 @@ std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes() 
 		}
 	}
 
-	std::vector<LayerMode> layerModes;
-	for (const std::unique_ptr<LayerData>& layerDataElement : layerData) {
-		layerModes.emplace_back(layerDataElement->getMode());
+	std::unique_ptr<std::vector<LayerMode>> layerModes = std::make_unique<std::vector<LayerMode>>();
+	for (int i = 0; i < layerData.size(); i++) {
+		layerModes->push_back(layerData.at(i)->getMode());
 	}
 
 	layerData.clear();
@@ -139,7 +138,7 @@ std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::generateLayerModes() 
 	return layerModes;
 }
 
-pcb::HeightmapLayer pcb::RandomHeightmapGenerator::generateLayer(int layerIndex, LayerMode layerMode) const {
+std::unique_ptr<pcb::HeightmapLayer> pcb::RandomHeightmapGenerator::generateLayer(int layerIndex, LayerMode layerMode) const {
 	double symmetricalFrequency = properties.layerBaseNoiseFrequency - (properties.layerNoiseFrequencyAdditionalLayerModifier * layerIndex);
 	int noiseOffsetX = generateNoiseOffset();
 	int noiseOffsetY = generateNoiseOffset();
@@ -150,7 +149,7 @@ pcb::HeightmapLayer pcb::RandomHeightmapGenerator::generateLayer(int layerIndex,
 	Logger logger;
 	logger << "Generating layer, noise type: ";
 
-	Heightmap heightmap(0, 0);		// 'Empty' object that gets assigned values in the if/else block below.
+	std::unique_ptr<Heightmap> heightmap;
 	bool invertLayer = false;
 	if (generateAbsoluteNoise) {
 		logger << "Absolute\n";
@@ -170,28 +169,28 @@ pcb::HeightmapLayer pcb::RandomHeightmapGenerator::generateLayer(int layerIndex,
 
 	if (invertLayer) {
 		logger << "Inverting noise layer\n";
-		heightmap.invert();
+		heightmap->invert();
 	}
 
-	HeightmapLayer layer(heightmap, layerMode);
+	std::unique_ptr<HeightmapLayer> layer = std::make_unique<HeightmapLayer>(std::move(heightmap), layerMode);
 	
 	if (layerMode == LayerMode::Mask) {
 		unsigned char raiseAmount = layerIndex * 5;
 		logger << "Raising layer by " << raiseAmount << " as it is a mask\n";
-		layer.heightmap.raise(raiseAmount);
+		layer->heightmap->raise(raiseAmount);
 	}
 	else {
 		double scalingFactor = properties.layerScalingBaseValue - (layerIndex * properties.layerScalingAdditionalLayerModifier);
 		logger << "Scaling layer by " << scalingFactor << " as it is not a mask\n";
-		layer.heightmap.scale(scalingFactor);
+		layer->heightmap->scale(scalingFactor);
 	}	
 
 	RandomBinary maskChance(properties.applyMaskOnLayerChance);
 	bool applyMask = maskChance.generate();
 	if (applyMask) {
 		logger << "Applying mask to layer\n";
-		Heightmap mask = generateMask();
-		layer.heightmap.mask(mask);
+		std::unique_ptr<Heightmap> mask = generateMask();
+		layer->heightmap->mask(*mask);
 	}
 
 	return layer;
@@ -202,7 +201,7 @@ int pcb::RandomHeightmapGenerator::generateNoiseOffset() const {
 	return noiseOffsetValues.generate() * noiseOffsetValues.generate();
 }
 
-pcb::Heightmap pcb::RandomHeightmapGenerator::generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
+std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
 	std::vector<unsigned char> noiseMap;
 	noiseMap.reserve(mapWidth * mapHeight);
 	const double samplingDistanceX = 1.0 / noiseSamplingFrequencyX;
@@ -216,12 +215,10 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateDefaultNoiseHeightmap(doub
 		}
 	}
 
-	pcb::Heightmap heightmap(mapWidth, mapHeight, noiseMap);
-
-	return heightmap;
+	return std::make_unique<Heightmap>(mapWidth, mapHeight, noiseMap);
 }
 
-pcb::Heightmap pcb::RandomHeightmapGenerator::generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
+std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
 	std::vector<unsigned char> noiseMap;
 	noiseMap.reserve(mapWidth * mapHeight);
 	const double samplingDistanceX = 1.0 / noiseSamplingFrequencyX;
@@ -235,9 +232,7 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateAbsoluteNoiseHeightmap(dou
 		}
 	}
 
-	pcb::Heightmap heightmap(mapWidth, mapHeight, noiseMap);
-
-	return heightmap;
+	return std::make_unique<Heightmap>(mapWidth, mapHeight, noiseMap);
 }
 
 double pcb::RandomHeightmapGenerator::generateElevationForNoiseCoordinates(double x, double y) const {
@@ -252,7 +247,7 @@ double pcb::RandomHeightmapGenerator::generateElevationFromNoiseValue(double noi
 	return std::round(127.5 * (1 + noiseValue));
 }
 
-pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
+std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateMask() const {
 	MaskGenerator maskGenerator;
 	RandomBinary binaryChance;
 	RandomUniformInt layerCountValues(properties.maskAmountOfLayersBounds);
@@ -260,7 +255,7 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 	RandomUniformReal offsetMultiplicationValues(properties.maskOffsetMultiplicationValueBounds);
 	RandomUniformReal radiusMultiplicationValues(properties.maskRadiusMultiplicationValueBounds);
 	RandomUniformReal falloffMultiplicationValues(properties.maskFalloffMultiplicationValueBounds);
-	std::vector<Heightmap> maskLayers;
+	std::vector<std::unique_ptr<Heightmap>> maskLayers;
 	RandomUniformInt maskTypeValues(0, 3);
 	std::array<GradientDirection, 4> gradientDirections = { GradientDirection::Up, GradientDirection::Left, GradientDirection::Down, GradientDirection::Right };
 
@@ -279,18 +274,18 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 		int maskTypeValue = maskTypeValues.generate();
 		if (maskTypeValue == 0) {
 			logger << "MaskType: Circle\n";
-			maskLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));
+			maskLayers.push_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));
 		}
 		else if(maskTypeValue == 1) {
 			logger << "MaskType: Rectangle\n";
-			maskLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
+			maskLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
 		}
 		else if (maskTypeValue == 2) {		// TODO: If there already is a linear gradient in the vector, don't add the gradient that goes the opposite way as they will cancel each other out and producte a mask that doesn't do anything (or masks *everything* if it's inverted).
 			logger << "MaskType: Linear Gradient";
 			RandomUniformInt gradientDirectionValues(0, 3);
 			int gradientDirectionIndex = gradientDirectionValues.generate();
 			logger << " - DirectionIndex " << gradientDirectionIndex << "\n";
-			maskLayers.emplace_back(maskGenerator.generateLinearGradientMask(mapWidth, mapHeight, gradientDirections[gradientDirectionIndex]));
+			maskLayers.push_back(maskGenerator.generateLinearGradientMask(mapWidth, mapHeight, gradientDirections[gradientDirectionIndex]));
 		}
 		else {
 			logger << "MaskType: Noise - ";
@@ -305,14 +300,14 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 				logger << "Absolute\n";
 				frequencyX *= properties.maskAbsoluteNoiseFrequencyModifier;
 				frequencyY *= properties.maskAbsoluteNoiseFrequencyModifier;
-				maskLayers.emplace_back(generateAbsoluteNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
+				maskLayers.push_back(generateAbsoluteNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
 
 				RandomBinary invertChance(properties.maskAbsoluteNoiseInversionChance);
 				invertLayer = invertChance.generate();
 			}
 			else {
 				logger << "Default\n";
-				maskLayers.emplace_back(generateDefaultNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
+				maskLayers.push_back(generateDefaultNoiseHeightmap(frequencyX, frequencyY, offsetX, offsetY));
 
 				RandomBinary invertChance(properties.maskDefaultNoiseInversionChance);
 				invertLayer = invertChance.generate();
@@ -320,26 +315,27 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateMask() const {
 
 			if (invertLayer) {
 				logger << "Inverting mask noise layer\n";
-				maskLayers.back().invert();
+				maskLayers.back()->invert();
 			}
 		}		
 	}
 
-	Heightmap mask = maskLayers.front();
-	for (int i = 1; i < maskLayers.size(); i++) {
-		mask.add(maskLayers.at(i));
+	std::unique_ptr<Heightmap> mask = std::move(maskLayers.front());
+	maskLayers.erase(maskLayers.begin());
+	for (int i = 0; i < maskLayers.size(); i++) {
+		mask->add(*(maskLayers.at(i)));
 	}
 
 	bool invertMask = binaryChance.generate();
 	if (invertMask) {
 		logger << "Inverted mask!\n";
-		mask.invert();
+		mask->invert();
 	}
 
 	return mask;
 }
 
-pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
+std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateFinalMask() const {
 	MaskGenerator maskGenerator;
 	RandomBinary binaryChance;
 	RandomUniformInt layerCountValues(properties.finalMaskAmountOfLayersBounds);
@@ -347,7 +343,7 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 	RandomUniformReal offsetMultiplicationValues(properties.finalMaskOffsetMultiplicationValueBounds);
 	RandomUniformReal radiusMultiplicationValues(properties.finalMaskRadiusMultiplicationValueBounds);
 	RandomUniformReal falloffMultiplicationValues(properties.finalMaskFalloffMultiplicationValueBounds);
-	std::vector<Heightmap> maskLayers;	
+	std::vector<std::unique_ptr<Heightmap>> maskLayers;	
 	RandomBinary maskTypeSelector;
 
 	std::vector<MaskShapeData> maskShapeData;
@@ -403,25 +399,26 @@ pcb::Heightmap pcb::RandomHeightmapGenerator::generateFinalMask() const {
 		bool maskTypeIsCircle = maskTypeSelector.generate();
 		if (maskTypeIsCircle) {
 			logger << "MaskType: Circle\n";
-			maskLayers.emplace_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));			
+			maskLayers.push_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, falloffWidth, offsetX, offsetY));			
 		}
 		else {
 			logger << "MaskType: Rectangle\n";
-			maskLayers.emplace_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));			
+			maskLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
 		}
 
-		maskShapeData.push_back({ offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY, falloffWidth });
+		maskShapeData.emplace_back(offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY, falloffWidth);
 	}
 
-	Heightmap mask = maskLayers.front();
-	for (int i = 1; i < maskLayers.size(); i++) {
-		mask.add(maskLayers.at(i));
+	std::unique_ptr<Heightmap> mask = std::move(maskLayers.front());
+	maskLayers.erase(maskLayers.begin());
+	for (int i = 0; i < maskLayers.size(); i++) {
+		mask->add(*(maskLayers.at(i)));
 	}
 
 	bool invertMask = binaryChance.generate();
 	if (invertMask) {
 		logger << "Inverted mask!\n";
-		mask.invert();
+		mask->invert();
 	}
 
 	logger << "\n";
@@ -454,11 +451,11 @@ void pcb::RandomHeightmapGenerator::adjustLayeredHeightmap(LayeredHeightmap& hei
 #pragma region Layer_Data
 pcb::RandomHeightmapGenerator::LayerData::LayerData(const LayerMode layerMode) : layerMode(layerMode) {}
 
-const std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::LayerData::getAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const {
+std::vector<pcb::LayerMode> pcb::RandomHeightmapGenerator::LayerData::getAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const {
 	return determineAllowedNextModes(previousLayers);
 }
 
-const pcb::LayerMode pcb::RandomHeightmapGenerator::LayerData::getMode() const {
+pcb::LayerMode pcb::RandomHeightmapGenerator::LayerData::getMode() const {
 	return layerMode;
 }
 

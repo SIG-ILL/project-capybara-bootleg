@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-pcb::Heightmap pcb::MaskGenerator::generateCircleLinearFalloffMask(int width, int height, int unaffectedCircleRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffMask(int width, int height, int unaffectedCircleRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
 	if (width < 0 || height < 0 || unaffectedCircleRadiusInPixels < 0 || falloffWidthInPixels < 0) {
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
@@ -44,12 +44,10 @@ pcb::Heightmap pcb::MaskGenerator::generateCircleLinearFalloffMask(int width, in
 		}
 	}
 
-	pcb::Heightmap mask(width, height, offsettedData);
-
-	return mask;
+	return std::make_unique<Heightmap>(width, height, offsettedData);
 }
 
-pcb::Heightmap pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width, int height, int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width, int height, int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
 	if (width < 0 || height < 0 || horizontalUnaffectedRadiusInPixels < 0 || verticalUnaffectedRadiusInPixels < 0 || falloffWidthInPixels < 0) {
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
@@ -93,12 +91,10 @@ pcb::Heightmap pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width,
 		}
 	}
 
-	pcb::Heightmap mask(width, height, offsettedData);
-
-	return mask;
+	return std::make_unique<Heightmap>(width, height, offsettedData);
 }
 
-pcb::Heightmap pcb::MaskGenerator::generateLinearGradientMask(int width, int height, GradientDirection direction) const {
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(int width, int height, GradientDirection direction) const {
 	if (width < 0 || height < 0) {
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
@@ -127,7 +123,5 @@ pcb::Heightmap pcb::MaskGenerator::generateLinearGradientMask(int width, int hei
 		}
 	}
 
-	Heightmap mask(width, height, maskData);
-
-	return mask;
+	return std::make_unique<Heightmap>(width, height, maskData);
 }

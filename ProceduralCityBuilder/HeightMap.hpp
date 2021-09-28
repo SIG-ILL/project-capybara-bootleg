@@ -12,7 +12,7 @@ namespace pcb {
 	class Heightmap {
 	public:
 		Heightmap(const int width, const int height);
-		Heightmap(const int width, const int height, const std::vector<unsigned char> elevationValues);
+		Heightmap(const int width, const int height, const std::vector<unsigned char>& elevationValues);
 
 		Heightmap& operator+=(const Heightmap& other);
 		Heightmap& operator-=(const Heightmap& other);

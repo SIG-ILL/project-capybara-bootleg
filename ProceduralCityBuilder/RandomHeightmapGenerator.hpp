@@ -53,7 +53,7 @@ namespace pcb {
 		RandomHeightmapGenerator(int mapWidth, int mapHeight);
 		RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlProperties& properties);
 
-		LayeredHeightmap generate() const;
+		std::unique_ptr<LayeredHeightmap> generate() const;
 		RandomGenerationControlProperties getDefaultControlProperties() const;
 		void setControlProperties(const RandomGenerationControlProperties& properties);
 
@@ -63,26 +63,26 @@ namespace pcb {
 		RandomGenerationControlProperties properties;
 		NoiseGenerator noiseGenerator;
 
-		LayeredHeightmap generateLayeredHeightmap() const;
-		std::vector<HeightmapLayer> generateLayers() const;
-		std::vector<LayerMode> generateLayerModes() const;
-		HeightmapLayer generateLayer(int layerIndex, LayerMode layerMode) const;
+		std::unique_ptr<LayeredHeightmap> generateLayeredHeightmap() const;
+		std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> generateLayers() const;
+		std::unique_ptr<std::vector<LayerMode>> generateLayerModes() const;
+		std::unique_ptr<HeightmapLayer> generateLayer(int layerIndex, LayerMode layerMode) const;
 		int generateNoiseOffset() const;
-		Heightmap generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
-		Heightmap generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		std::unique_ptr<Heightmap> generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		std::unique_ptr<Heightmap> generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
 		double generateElevationForNoiseCoordinates(double x, double y) const;
 		double generateElevationForNoiseCoordinatesWithAbsoluteModifier(double x, double y) const;
 		double generateElevationFromNoiseValue(double noiseValue) const;
-		Heightmap generateMask() const;
-		Heightmap generateFinalMask() const;
+		std::unique_ptr<Heightmap> generateMask() const;
+		std::unique_ptr<Heightmap> generateFinalMask() const;
 		void adjustLayeredHeightmap(LayeredHeightmap& heightmap) const;
 
 #pragma region Inner_Classes
 #pragma region Layer_Data
 		class LayerData {
 		public:
-			const std::vector<LayerMode> getAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const;
-			const LayerMode getMode() const;
+			std::vector<LayerMode> getAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const;
+			LayerMode getMode() const;
 
 		protected:
 			LayerData(const LayerMode layerMode);
