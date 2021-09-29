@@ -96,10 +96,10 @@ GLfloat* pcb::Terrain::getQuadsColors() const {
 	return quadsColors;
 }
 
-pcb::Heightmap pcb::Terrain::generateHeightmap() const {
+std::unique_ptr<pcb::Heightmap> pcb::Terrain::generateHeightmap() const {
 	double scale = getScale();
-	std::vector<unsigned char> elevationValues;
-	elevationValues.reserve(gridWidthInVertices * gridHeightInVertices);
+	std::shared_ptr<std::vector<unsigned char>> elevationValues = std::make_shared<std::vector<unsigned char>>();
+	elevationValues->reserve(gridWidthInVertices * gridHeightInVertices);
 
 	double inverseScale = 1.0 / scale;
 	int maxLoopWidthIndex = gridWidthInVertices - 1;
@@ -107,19 +107,17 @@ pcb::Heightmap pcb::Terrain::generateHeightmap() const {
 
 	for (int y = 0; y < maxLoopHeightIndex; y++) {
 		for (int x = 0; x < maxLoopWidthIndex; x++) {
-			elevationValues.push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * y * maxLoopWidthIndex) + (4 * 3 * x) + 1]), 255)));
+			elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * y * maxLoopWidthIndex) + (4 * 3 * x) + 1]), 255)));
 		}
-		elevationValues.push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * y * maxLoopWidthIndex) + (4 * 3 * (maxLoopWidthIndex - 1)) + 3 + 1]), 255)));
+		elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * y * maxLoopWidthIndex) + (4 * 3 * (maxLoopWidthIndex - 1)) + 3 + 1]), 255)));
 	}
 
 	for (int i = 0; i < maxLoopWidthIndex; i++) {
-		elevationValues.push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (4 * 3 * i) + (3 * 3) + 1]), 255)));
+		elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (4 * 3 * i) + (3 * 3) + 1]), 255)));
 	}
-	elevationValues.push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (4 * 3 * (maxLoopWidthIndex - 1)) + (3 * 2) + 1]), 255)));
+	elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates[(4 * 3 * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (4 * 3 * (maxLoopWidthIndex - 1)) + (3 * 2) + 1]), 255)));	
 
-	pcb::Heightmap heightmap(gridWidthInVertices, gridHeightInVertices, elevationValues);
-
-	return heightmap;
+	return std::make_unique<Heightmap>(gridWidthInVertices, gridHeightInVertices, elevationValues);
 }
 
 void pcb::Terrain::setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation) {

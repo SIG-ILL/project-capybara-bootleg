@@ -31,20 +31,20 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 		}
 	}
 
-	std::vector<unsigned char> offsettedData;
-	offsettedData.reserve(width * height);
+	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>();
+	offsettedData->reserve(width * height);
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
-				offsettedData.push_back(0);
+				offsettedData->push_back(0);
 			}
 			else {
-				offsettedData.push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
+				offsettedData->push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
 			}			
 		}
 	}
 
-	return std::make_unique<Heightmap>(width, height, offsettedData);
+	return std::make_unique<Heightmap>(width, height, std::move(offsettedData));
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width, int height, int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
@@ -78,20 +78,20 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFallo
 		}
 	}
 
-	std::vector<unsigned char> offsettedData;
-	offsettedData.reserve(width * height);
+	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>();
+	offsettedData->reserve(width * height);
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
-				offsettedData.push_back(0);
+				offsettedData->push_back(0);
 			}
 			else {
-				offsettedData.push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
+				offsettedData->push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
 			}
 		}
 	}
 
-	return std::make_unique<Heightmap>(width, height, offsettedData);
+	return std::make_unique<Heightmap>(width, height, std::move(offsettedData));
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(int width, int height, GradientDirection direction) const {
@@ -99,8 +99,8 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(i
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	std::vector<unsigned char> maskData;
-	maskData.reserve(width * height);
+	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>();
+	maskData->reserve(width * height);
 
 	for (int y = 0; y < height; y++) {
 		unsigned char gradientValue;
@@ -119,9 +119,9 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(i
 				gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
 			}
 
-			maskData.push_back(gradientValue);
+			maskData->push_back(gradientValue);
 		}
 	}
 
-	return std::make_unique<Heightmap>(width, height, maskData);
+	return std::make_unique<Heightmap>(width, height, std::move(maskData));
 }

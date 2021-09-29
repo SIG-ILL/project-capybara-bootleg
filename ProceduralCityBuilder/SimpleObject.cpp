@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
-pcb::SimpleObject::SimpleObject(const pcb::VertexPositionBufferObject& vertices) : vertices(vertices), position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f), modelMatrix(1.0f) {}
+pcb::SimpleObject::SimpleObject(std::shared_ptr<pcb::VertexPositionBufferObject> vertices) : vertices(vertices), position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f), modelMatrix(1.0f) {}
 
 pcb::SimpleObject::SimpleObject(const pcb::SimpleObject& other) : vertices(other.vertices), position(other.position), rotation(other.rotation), scale(other.scale), modelMatrix(other.modelMatrix) {}
 
@@ -12,9 +12,9 @@ void pcb::SimpleObject::render() const {
 
 	preRenderAction();
 
-	vertices.enable();
-	glDrawArrays(GL_QUADS, 0, vertices.getVertexCount());
-	vertices.disable();
+	vertices->enable();
+	glDrawArrays(GL_QUADS, 0, vertices->getVertexCount());
+	vertices->disable();
 
 	postRenderAction();
 }
@@ -48,30 +48,30 @@ void pcb::SimpleObject::updateModelMatrix() {
 	modelMatrix = glm::scale(modelMatrix, scale);
 }
 
-pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::Texture& texture, const pcb::VertexTextureCoordinateBufferObject& vboTextureCoordinates) : SimpleObject(vboVertexCoordinates), texture(texture), textureCoordinates(vboTextureCoordinates) {}
+pcb::SimpleTexturedObject::SimpleTexturedObject(std::shared_ptr<pcb::VertexPositionBufferObject> vboVertexCoordinates, const pcb::Texture& texture, std::shared_ptr<pcb::VertexTextureCoordinateBufferObject> vboTextureCoordinates) : SimpleObject(vboVertexCoordinates), texture(texture), textureCoordinates(vboTextureCoordinates) {}
 
 pcb::SimpleTexturedObject::SimpleTexturedObject(const pcb::SimpleTexturedObject& other) : SimpleObject(other), texture(other.texture), textureCoordinates(other.textureCoordinates) {}
 
 void pcb::SimpleTexturedObject::preRenderAction() const {
-	textureCoordinates.enable();
+	textureCoordinates->enable();
 	glActiveTexture(GL_TEXTURE0);
 	texture.bind();
 	glUniform1i(3, 0);
 }
 
 void pcb::SimpleTexturedObject::postRenderAction() const {
-	textureCoordinates.disable();
+	textureCoordinates->disable();
 	texture.unbind();
 }
 
-pcb::SimpleColoredObject::SimpleColoredObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
+pcb::SimpleColoredObject::SimpleColoredObject(std::shared_ptr<pcb::VertexPositionBufferObject> vboVertexCoordinates, std::shared_ptr<pcb::VertexColorBufferObject> vboVertexColors) : SimpleObject(vboVertexCoordinates), colors(vboVertexColors) {}
 
 pcb::SimpleColoredObject::SimpleColoredObject(const pcb::SimpleColoredObject& other) : SimpleObject(other), colors(other.colors) {}
 
 void pcb::SimpleColoredObject::preRenderAction() const {
-	colors.enable();
+	colors->enable();
 }
 
 void pcb::SimpleColoredObject::postRenderAction() const {
-	colors.disable();
+	colors->disable();
 }

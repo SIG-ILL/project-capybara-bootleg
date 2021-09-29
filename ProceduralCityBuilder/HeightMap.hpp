@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "Image.hpp"
 
@@ -12,24 +13,24 @@ namespace pcb {
 	class Heightmap {
 	public:
 		Heightmap(const int width, const int height);
-		Heightmap(const int width, const int height, const std::vector<unsigned char>& elevationValues);
+		Heightmap(const int width, const int height, std::shared_ptr<std::vector<unsigned char>> elevationValues);
 
 		Heightmap& operator+=(const Heightmap& other);
 		Heightmap& operator-=(const Heightmap& other);
 
-		pcb::Image to24BitImage() const;
+		std::unique_ptr<Image> to24BitImage() const;
 		unsigned char getValueAt(int x, int y) const;
 		int getWidth() const;
 		int getHeight() const;
 		int getLowestElevation() const;
 		int getHighestElevation() const;
 
-		void add(const pcb::Heightmap& other);
-		void subtract(const pcb::Heightmap& other);
+		void add(const Heightmap& other);
+		void subtract(const Heightmap& other);
 		void raiseToLevel(const unsigned char level);
 		void lowerToLevel(const unsigned char level);
 		void clamp(const unsigned char lowerLevel, const unsigned char upperLevel);
-		void mask(const pcb::Heightmap& mask);		// Normalized multiplication based on mask.
+		void mask(const Heightmap& mask);		// Normalized multiplication based on mask.
 		void scale(const double factor);
 		void invert();
 		void scaleAmplitude(const double factor);	// Scales amplitude measured from current (lowest + (0.5 * (highest - lowest))) elevation value
@@ -44,6 +45,6 @@ namespace pcb {
 		int height;
 		unsigned char lowestElevation;
 		unsigned char highestElevation;
-		std::vector<unsigned char> elevationValues;
+		std::shared_ptr<std::vector<unsigned char>> elevationValues;
 	};
 }

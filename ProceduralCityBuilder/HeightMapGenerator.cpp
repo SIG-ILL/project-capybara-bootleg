@@ -5,17 +5,17 @@
 pcb::HeightmapGenerator::HeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
 pcb::Heightmap pcb::HeightmapGenerator::generate() const {
-	std::vector<unsigned char> noiseMap(mapWidth * mapHeight, 0);
+	std::unique_ptr<std::vector<unsigned char>> noiseMap = std::make_unique<std::vector<unsigned char>>(mapWidth * mapHeight, 0);
 
-	generateAndAddNoiseMap(noiseMap, 0.025, 0.85, 1);
-	generateAndAddNoiseMap(noiseMap, 0.05, 0.25, 0.4);
-	generateAndAddNoiseMap(noiseMap, 0.1, 0.1, 0.3);
-	generateAndAddNoiseMap(noiseMap, 0.25, 0.15, 0.2);
-	generateAndSubtractNoiseMap(noiseMap, 0.05, 0.15, 0.2);
-	generateAndSubtractNoiseMap(noiseMap, 0.1, 0.3, 0.1);
-	generateAndSubtractNoiseMap(noiseMap, 0.25, 0.55, 0.4);
+	generateAndAddNoiseMap(*noiseMap, 0.025, 0.85, 1);
+	generateAndAddNoiseMap(*noiseMap, 0.05, 0.25, 0.4);
+	generateAndAddNoiseMap(*noiseMap, 0.1, 0.1, 0.3);
+	generateAndAddNoiseMap(*noiseMap, 0.25, 0.15, 0.2);
+	generateAndSubtractNoiseMap(*noiseMap, 0.05, 0.15, 0.2);
+	generateAndSubtractNoiseMap(*noiseMap, 0.1, 0.3, 0.1);
+	generateAndSubtractNoiseMap(*noiseMap, 0.25, 0.55, 0.4);
 
-	Heightmap heightmap(mapWidth, mapHeight, noiseMap);
+	Heightmap heightmap(mapWidth, mapHeight, std::move(noiseMap));
 	return heightmap;
 }
 

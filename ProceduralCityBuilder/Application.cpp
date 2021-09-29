@@ -14,7 +14,7 @@
 
 #include "Logger.hpp"
 
-pcb::Application* pcb::Application::instance;
+std::shared_ptr<pcb::Application> pcb::Application::instance;
 
 void pcb::Application::renderCallback() {
 	instance->render();
@@ -46,13 +46,13 @@ void pcb::Application::mouseCallback(int button, int state, int x, int y) {
 
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
 isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-terrainLayers(), terrainLayerRenderObjects(), vbos(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
+terrainLayers(), terrainLayerRenderObjects(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
 
 pcb::Application::~Application() {
 	deleteResources();
 }
 
-void pcb::Application::run(Application* instance, int argc, char* argv[]) {
+void pcb::Application::run(std::shared_ptr<Application> instance, int argc, char* argv[]) {
 	Application::instance = instance;
 
 	initializeGLUT(argc, argv);		// Create OpenGL context before doing anything else OpenGL-related (obviously, but sometimes a necessary reminder).
@@ -103,60 +103,53 @@ void pcb::Application::generateTerrainResources() {
 	std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generateRandom();
 
 	std::unique_ptr<HeightmapImage> heightmapImage = terrainGenerator.getHeightmap24BitImage();
-	heightmapTexture = new Texture(heightmapImage->finalImage);
+	heightmapTexture = std::make_unique<Texture>(*(heightmapImage->finalImage));
 
-	Heightmap generatedHeightmap = terrain->generateHeightmap();
-	Image generatedHeightmapImage = generatedHeightmap.to24BitImage();
-	generatedHeightmapTexture = new Texture(generatedHeightmapImage);
+	std::unique_ptr<Heightmap> generatedHeightmap = terrain->generateHeightmap();
+	std::unique_ptr<Image> generatedHeightmapImage = generatedHeightmap->to24BitImage();
+	generatedHeightmapTexture = std::make_unique<Texture>(*generatedHeightmapImage);
 
-	std::array<GLfloat, 12> vertices = {
+	std::array<GLfloat, 12> quadVertices = {
 		-0.25f, -0.25f, 0.0f,
 		0.0f, -0.25f, 0.0f,
 		0.0f, 0.0f, 0.0f,
 		-0.25f, 0.0f, 0.0f
 	};
 
-	std::array<GLfloat, 8> textureCoordinates = {
+	std::array<GLfloat, 8> quadTextureCoordinates = {
 		0.0, 0.0,
 		0.0, 1.0,
 		1.0, 1.0,
 		1.0, 0.0
 	};
 
-	pcb::VertexPositionBufferObject* terrainVertices = new VertexPositionBufferObject(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
-	vbos.push_back(terrainVertices);
-	pcb::VertexColorBufferObject* terrainColors = new VertexColorBufferObject(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
-	vbos.push_back(terrainColors);
-	pcb::VertexPositionBufferObject* heightMapImageObjectVertices = new VertexPositionBufferObject(vertices.data(), vertices.size() / 3);
-	vbos.push_back(heightMapImageObjectVertices);
-	pcb::VertexTextureCoordinateBufferObject* heightMapImageObjectTextureCoordinates = new VertexTextureCoordinateBufferObject(textureCoordinates.data(), textureCoordinates.size() / 2);
-	vbos.push_back(heightMapImageObjectTextureCoordinates);
-
+	std::unique_ptr<VertexPositionBufferObject> terrainVertices = std::make_unique<VertexPositionBufferObject>(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
+	std::unique_ptr<VertexColorBufferObject> terrainColors = std::make_unique<VertexColorBufferObject>(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
 	float terrainScale = 2.5f;
-	pcb::SimpleColoredObject* terrainObject = new SimpleColoredObject(*terrainVertices, *terrainColors);
+	std::unique_ptr<SimpleColoredObject> terrainObject = std::make_unique<SimpleColoredObject>(std::move(terrainVertices), std::move(terrainColors));
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
 	terrainObject->setScale(terrainScale, terrainScale, terrainScale);
 
+	std::shared_ptr<VertexPositionBufferObject> heightMapImageObjectVertices = std::make_shared<VertexPositionBufferObject>(quadVertices.data(), quadVertices.size() / 3);
+	std::shared_ptr<VertexTextureCoordinateBufferObject> heightMapImageObjectTextureCoordinates = std::make_shared<VertexTextureCoordinateBufferObject>(quadTextureCoordinates.data(), quadTextureCoordinates.size() / 2);
 	float heightmapHorizontalScale = 1.0f / (static_cast<float>(glutGet(GLUT_WINDOW_WIDTH)) / static_cast<float>(glutGet(GLUT_WINDOW_HEIGHT)));
-	pcb::SimpleTexturedObject* heightmapImageObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *heightmapTexture, *heightMapImageObjectTextureCoordinates);
+	std::unique_ptr<SimpleTexturedObject> heightmapImageObject = std::make_unique<SimpleTexturedObject>(heightMapImageObjectVertices, *heightmapTexture, heightMapImageObjectTextureCoordinates);
 	heightmapImageObject->setPosition(1.0f, 1.0f, -1.0f);
 	heightmapImageObject->setScale(heightmapHorizontalScale, 1.0f, 1.0f);
-	pcb::SimpleTexturedObject* generatedHeightmapObject = new SimpleTexturedObject(*heightMapImageObjectVertices, *generatedHeightmapTexture, *heightMapImageObjectTextureCoordinates);
+	std::unique_ptr<SimpleTexturedObject> generatedHeightmapObject = std::make_unique<SimpleTexturedObject>(heightMapImageObjectVertices, *generatedHeightmapTexture, heightMapImageObjectTextureCoordinates);
 	generatedHeightmapObject->setPosition(1.0f, 0.74f, -1.0f);
 	generatedHeightmapObject->setScale(heightmapHorizontalScale, 1.0f, 1.0f);
 
-	renderObjects[0] = terrainObject;
-	renderObjects[1] = heightmapImageObject;
-	renderObjects[2] = generatedHeightmapObject;
+	renderObjects[0] = std::move(terrainObject);
+	renderObjects[1] = std::move(heightmapImageObject);
+	renderObjects[2] = std::move(generatedHeightmapObject);
 
 	terrainLayers = terrain->getLayers();
 	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
-		Terrain& terrainLayer = terrainLayers.at(i);
-		pcb::VertexPositionBufferObject* terrainlayerVertices = new pcb::VertexPositionBufferObject(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount());
-		vbos.push_back(terrainlayerVertices);
-		pcb::VertexColorBufferObject* terrainLayerColors = new pcb::VertexColorBufferObject(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
-		vbos.push_back(terrainLayerColors);
-		terrainLayerRenderObjects.emplace_back(pcb::SimpleColoredObject(*terrainlayerVertices, *terrainLayerColors));
+		const Terrain& terrainLayer = *(terrainLayers.at(i));
+		std::shared_ptr<VertexPositionBufferObject> terrainlayerVertices = std::make_shared<VertexPositionBufferObject>(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount());
+		std::shared_ptr<VertexColorBufferObject> terrainLayerColors = std::make_shared<VertexColorBufferObject>(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
+		terrainLayerRenderObjects.emplace_back(terrainlayerVertices, terrainLayerColors);
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
 		object.setPosition(10.0f, static_cast<float>(i + 1), -0.5f);
 		object.setScale(terrainScale, terrainScale, terrainScale);
@@ -164,24 +157,8 @@ void pcb::Application::generateTerrainResources() {
 }
 
 void pcb::Application::deleteResources() {
-	delete heightmapTexture;
-	heightmapTexture = nullptr;
-	delete generatedHeightmapTexture;
-	generatedHeightmapTexture = nullptr;
-
-	for (SimpleObject* object : renderObjects) {
-		delete object;
-	}
-
-	renderObjects = { nullptr, nullptr, nullptr };
-
 	terrainLayers.clear();
 	terrainLayerRenderObjects.clear();
-
-	for (VertexBufferObject* vbo : vbos) {
-		delete vbo;
-	}
-	vbos.clear();
 }
 
 void pcb::Application::prepareShaders() {

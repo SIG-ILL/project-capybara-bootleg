@@ -1,8 +1,9 @@
 #pragma once
 
-#include <GL/glew.h>
 #include <array>
 #include <vector>
+#include <memory>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 
 #include "Texture.hpp"
@@ -16,10 +17,10 @@ namespace pcb {
 		Application();
 		~Application();
 
-		void run(Application* instance, int argc, char* argv[]);
+		void run(std::shared_ptr<Application> instance, int argc, char* argv[]);
 
 	private:
-		static Application* instance;
+		static std::shared_ptr<Application> instance;
 
 		static void renderCallback();
 		static void reshapeCallback(int width, int height);
@@ -40,12 +41,11 @@ namespace pcb {
 		bool isWarpingPointer;
 		double zoom;
 
-		Texture* heightmapTexture;
-		Texture* generatedHeightmapTexture;
-		std::array<SimpleObject*, 3> renderObjects;
-		std::vector<Terrain> terrainLayers;
+		std::unique_ptr<Texture> heightmapTexture;
+		std::unique_ptr<Texture> generatedHeightmapTexture;
+		std::array<std::unique_ptr<SimpleObject>, 3> renderObjects;
+		std::vector<std::shared_ptr<Terrain>> terrainLayers;
 		std::vector<SimpleColoredObject> terrainLayerRenderObjects;
-		std::vector<VertexBufferObject*> vbos;
 		ShaderManager shaderManager;
 		glm::mat4 projectionMatrix;
 

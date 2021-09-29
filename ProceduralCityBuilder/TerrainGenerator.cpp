@@ -13,5 +13,5 @@ std::unique_ptr<pcb::LayeredTerrain> pcb::TerrainGenerator::generate() {
 }
 
 std::unique_ptr<pcb::HeightmapImage> pcb::TerrainGenerator::getHeightmap24BitImage() const {
-	return std::make_unique<HeightmapImage>(heightmap->to24BitImage(), std::vector<Image> { heightmap->to24BitImage() });
+	return std::make_unique<HeightmapImage>(heightmap->to24BitImage(), std::vector<std::shared_ptr<Image>> { heightmap->to24BitImage() });
 }

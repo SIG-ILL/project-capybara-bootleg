@@ -11,7 +11,7 @@ namespace pcb {
 	public:
 		LayeredHeightmapGenerator(int mapWidth, int mapHeight);
 
-		LayeredHeightmap generate() const;
+		std::unique_ptr<LayeredHeightmap> generate() const;
 		std::unique_ptr<LayeredHeightmap> generateRandom() const;
 
 	private:
@@ -19,7 +19,7 @@ namespace pcb {
 		int mapHeight;
 		NoiseGenerator noiseGenerator;
 
-		Heightmap generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
+		std::unique_ptr<Heightmap> generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
 		double generateElevationForNoiseCoordinates(double x, double y) const;
 	};
 }

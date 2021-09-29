@@ -1,19 +1,20 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include "Terrain.hpp"
 #include "LayeredHeightmap.hpp"
 
 namespace pcb {
-	class LayeredTerrain final : public pcb::Terrain {
+	class LayeredTerrain final : public Terrain {
 	public:
-		LayeredTerrain(const pcb::LayeredHeightmap& layeredHeightmap, double scale);
+		LayeredTerrain(const LayeredHeightmap& layeredHeightmap, double scale);
 
-		std::vector<pcb::Terrain> getLayers() const;
+		std::vector<std::shared_ptr<Terrain>> getLayers() const;
 		int getLayerCount() const;
 
 	private:
-		std::vector<pcb::Terrain> layers;
+		std::vector<std::shared_ptr<Terrain>> layers;
 	};
 }

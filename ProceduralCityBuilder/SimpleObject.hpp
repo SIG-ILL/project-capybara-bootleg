@@ -2,6 +2,7 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <memory>
 
 #include "Texture.hpp"
 #include "VertexBufferObject.hpp"
@@ -9,8 +10,8 @@
 namespace pcb {
 	class SimpleObject {
 	public:
-		SimpleObject(const pcb::VertexPositionBufferObject& vertices);
-		SimpleObject(const pcb::SimpleObject& other);
+		SimpleObject(std::shared_ptr<VertexPositionBufferObject> vertices);
+		SimpleObject(const SimpleObject& other);
 
 		void render() const;
 		void setPosition(float x, float y, float z);
@@ -22,7 +23,7 @@ namespace pcb {
 		virtual void postRenderAction() const;
 
 	private:
-		const pcb::VertexPositionBufferObject& vertices;
+		std::shared_ptr<VertexPositionBufferObject> vertices;
 		glm::vec3 position;
 		glm::vec3 rotation;
 		glm::vec3 scale;
@@ -33,8 +34,8 @@ namespace pcb {
 
 	class SimpleTexturedObject final : public SimpleObject {
 	public:
-		SimpleTexturedObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::Texture& texture, const pcb::VertexTextureCoordinateBufferObject& VertexTextureCoordinateBufferObject);
-		SimpleTexturedObject(const pcb::SimpleTexturedObject& other);
+		SimpleTexturedObject(std::shared_ptr<VertexPositionBufferObject> vboVertexCoordinates, const Texture& texture, std::shared_ptr<VertexTextureCoordinateBufferObject> VertexTextureCoordinateBufferObject);
+		SimpleTexturedObject(const SimpleTexturedObject& other);
 
 	protected:
 		void preRenderAction() const override;
@@ -42,19 +43,19 @@ namespace pcb {
 
 	private:
 		const Texture& texture;
-		const pcb::VertexTextureCoordinateBufferObject& textureCoordinates;
+		std::shared_ptr<VertexTextureCoordinateBufferObject> textureCoordinates;
 	};
 
 	class SimpleColoredObject final : public SimpleObject {
 	public:
-		SimpleColoredObject(const pcb::VertexPositionBufferObject& vboVertexCoordinates, const pcb::VertexColorBufferObject& vboVertexColors);
-		SimpleColoredObject(const pcb::SimpleColoredObject& other);
+		SimpleColoredObject(std::shared_ptr<VertexPositionBufferObject> vboVertexCoordinates, std::shared_ptr<VertexColorBufferObject> vboVertexColors);
+		SimpleColoredObject(const SimpleColoredObject& other);
 
 	protected:
 		void preRenderAction() const override;
 		void postRenderAction() const override;
 
 	private:
-		const pcb::VertexColorBufferObject& colors;
+		std::shared_ptr<VertexColorBufferObject> colors;
 	};
 }

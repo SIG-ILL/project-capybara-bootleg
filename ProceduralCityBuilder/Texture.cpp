@@ -14,7 +14,7 @@ pcb::Texture::Texture(const Image& sourceImage) : name(0) {
 	glGenTextures(1, &name);
 	glActiveTexture(GL_TEXTURE0);
 	bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sourceImage.getWidth(), sourceImage.getHeight(), 0, pixelDataFormat, GL_UNSIGNED_BYTE, sourceImage.getPixels().data());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sourceImage.getWidth(), sourceImage.getHeight(), 0, pixelDataFormat, GL_UNSIGNED_BYTE, sourceImage.getPixels()->data());
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
