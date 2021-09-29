@@ -4,10 +4,9 @@
 #include <algorithm>
 #include <vector>
 
-pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : gridWidthInVertices(heightmap.getWidth()), gridHeightInVertices(heightmap.getHeight()), quadsVertexCount(4 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)), quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>()), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), highestElevation(static_cast<GLfloat>(scale * heightmap.getHighestElevation())) {
+pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : gridWidthInVertices(heightmap.getWidth()), gridHeightInVertices(heightmap.getHeight()), quadsVertexCount(4 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)), quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), highestElevation(static_cast<GLfloat>(scale * heightmap.getHighestElevation())) {
 	const int COORDINATE_ELEMENTS_PER_VERTEX = 3;
 	const int VERTICES_PER_QUAD = 4;
-	quadsVertexCoordinates->reserve(COORDINATE_ELEMENTS_PER_VERTEX * quadsVertexCount);
 
 	// Array size = 4 * 3 * (width - 1) * (height - 1) (4 for 4 vertices per quad, 3 for 3 dimensions - 3 values per coordinate).
 	int maxLoopWidthIndex = gridWidthInVertices - 1;
@@ -15,33 +14,34 @@ pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : gridWidth
 
 	for (int y = 0; y < maxLoopHeightIndex; y++) {
 		for (int x = 0; x < maxLoopWidthIndex; x++) {
+			int index = (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * maxLoopWidthIndex * y) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * x);
 			int vertexX = x;
 			int vertexY = y;
 			GLfloat elevation = static_cast<GLfloat>(heightmap.getValueAt(x, y));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexX));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * elevation));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexY));
+			(*quadsVertexCoordinates)[index] = static_cast<GLfloat>(scale * vertexX);
+			(*quadsVertexCoordinates)[index + 1] = static_cast<GLfloat>(scale * elevation);
+			(*quadsVertexCoordinates)[index + 2] = static_cast<GLfloat>(scale * vertexY);
 
 			vertexX = x + 1;
 			vertexY = y;
 			elevation = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexX));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * elevation));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexY));
+			(*quadsVertexCoordinates)[index + 3] = static_cast<GLfloat>(scale * vertexX);
+			(*quadsVertexCoordinates)[index + 4] = static_cast<GLfloat>(scale * elevation);
+			(*quadsVertexCoordinates)[index + 5] = static_cast<GLfloat>(scale * vertexY);
 
 			vertexX = x + 1;
 			vertexY = y + 1;
 			elevation = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexX));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * elevation));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexY));
+			(*quadsVertexCoordinates)[index + 6] = static_cast<GLfloat>(scale * vertexX);
+			(*quadsVertexCoordinates)[index + 7] = static_cast<GLfloat>(scale * elevation);
+			(*quadsVertexCoordinates)[index + 8] = static_cast<GLfloat>(scale * vertexY);
 
 			vertexX = x;
 			vertexY = y + 1;
 			elevation = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexX));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * elevation));
-			quadsVertexCoordinates->push_back(static_cast<GLfloat>(scale * vertexY));
+			(*quadsVertexCoordinates)[index + 9] = static_cast<GLfloat>(scale * vertexX);
+			(*quadsVertexCoordinates)[index + 10] = static_cast<GLfloat>(scale * elevation);
+			(*quadsVertexCoordinates)[index + 11] = static_cast<GLfloat>(scale * vertexY);
 		}
 	}
 
@@ -103,9 +103,9 @@ void pcb::Terrain::setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen,
 	for (int i = 0; i < (COORDINATE_ELEMENTS_PER_VERTEX * quadsVertexCount); i += COORDINATE_ELEMENTS_PER_VERTEX) {
 		GLfloat elevation = quadsVertexCoordinates->at(i + 1);
 		GLfloat colorValue = static_cast<GLfloat>((elevation / scale) / highestElevationValueDivider);
-		quadsColors->at(i) = minRed + (colorValue * (maxRed - minRed));
-		quadsColors->at(i + 1) = minGreen + (colorValue * (maxGreen - minGreen));
-		quadsColors->at(i + 2) = minBlue + (colorValue * (maxBlue - minBlue));
+		(*quadsColors)[i] = minRed + (colorValue * (maxRed - minRed));
+		(*quadsColors)[i + 1] = minGreen + (colorValue * (maxGreen - minGreen));
+		(*quadsColors)[i + 2] = minBlue + (colorValue * (maxBlue - minBlue));
 	}
 }
 

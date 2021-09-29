@@ -24,16 +24,17 @@ pcb::Heightmap& pcb::Heightmap::operator-=(const pcb::Heightmap& other) {
 }
 
 std::unique_ptr<pcb::Image> pcb::Heightmap::to24BitImage() const {
-	int vectorSize = 3 * width * height;
-	std::unique_ptr<std::vector<char>> sourcePixels = std::make_unique<std::vector<char>>();
-	sourcePixels->reserve(vectorSize);
+	const int COLOR_CHANNELS = 3;
+	int vectorSize = COLOR_CHANNELS * width * height;
+	std::unique_ptr<std::vector<char>> sourcePixels = std::make_unique<std::vector<char>>(vectorSize, 0);
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
+			int index = (y * COLOR_CHANNELS * width) + (COLOR_CHANNELS * x);
 			unsigned char elevationValue = elevationValues->at((y * width) + x);
-			sourcePixels->push_back(elevationValue);
-			sourcePixels->push_back(elevationValue);
-			sourcePixels->push_back(elevationValue);
+			(*sourcePixels)[index] = elevationValue;
+			(*sourcePixels)[index + 1] = elevationValue;
+			(*sourcePixels)[index + 2] = elevationValue;
 		}
 	}
 
