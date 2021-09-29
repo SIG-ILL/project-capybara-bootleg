@@ -1,13 +1,15 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <memory>
+#include <vector>
 
 namespace pcb {
 	enum class VertexAttribute { Position = 0, Color = 1, TextureCoordinate = 2 };
 
 	class VertexBufferObject {
 	protected:
-		VertexBufferObject(GLuint attributeIndex, const GLfloat* const vertexData, int elementsPerVertex, int vertexCount);
+		VertexBufferObject(GLuint attributeIndex, std::shared_ptr<std::vector<GLfloat>> vertexData, int elementsPerVertex, int vertexCount);
 
 	public:
 		virtual ~VertexBufferObject();
@@ -27,16 +29,16 @@ namespace pcb {
 
 	class VertexPositionBufferObject : public VertexBufferObject {
 	public:
-		VertexPositionBufferObject(const GLfloat* const vertexData, int vertexCount);
+		VertexPositionBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int vertexCount);
 	};
 
 	class VertexColorBufferObject : public VertexBufferObject {
 	public:
-		VertexColorBufferObject(const GLfloat* const vertexData, int elementsPerVertex, int vertexCount);
+		VertexColorBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int elementsPerVertex, int vertexCount);
 	};
 
 	class VertexTextureCoordinateBufferObject : public VertexBufferObject {
 	public:
-		VertexTextureCoordinateBufferObject(const GLfloat* const vertexData, int vertexCount);
+		VertexTextureCoordinateBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int vertexCount);
 	};
 }

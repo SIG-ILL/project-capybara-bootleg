@@ -44,7 +44,6 @@ namespace pcb {
 		std::unique_ptr<Texture> heightmapTexture;
 		std::unique_ptr<Texture> generatedHeightmapTexture;
 		std::array<std::unique_ptr<SimpleObject>, 3> renderObjects;
-		std::vector<std::shared_ptr<Terrain>> terrainLayers;
 		std::vector<SimpleColoredObject> terrainLayerRenderObjects;
 		ShaderManager shaderManager;
 		glm::mat4 projectionMatrix;

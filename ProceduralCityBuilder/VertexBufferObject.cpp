@@ -2,10 +2,10 @@
 
 #include <algorithm>
 
-pcb::VertexBufferObject::VertexBufferObject(GLuint attributeIndex, const GLfloat* const vertexData, int elementsPerVertex, int vertexCount) : attributeIndex(attributeIndex), name(0), elementsPerVertex(elementsPerVertex), vertexCount(vertexCount) {
+pcb::VertexBufferObject::VertexBufferObject(GLuint attributeIndex, std::shared_ptr<std::vector<GLfloat>> vertexData, int elementsPerVertex, int vertexCount) : attributeIndex(attributeIndex), name(0), elementsPerVertex(elementsPerVertex), vertexCount(vertexCount) {
 	glGenBuffers(1, &name);
 	bind();
-	glBufferData(GL_ARRAY_BUFFER, elementsPerVertex * vertexCount * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, elementsPerVertex * vertexCount * sizeof(GLfloat), vertexData->data(), GL_STATIC_DRAW);
 }
 
 pcb::VertexBufferObject::~VertexBufferObject() {
@@ -31,8 +31,8 @@ int pcb::VertexBufferObject::getVertexCount() const {
 	return vertexCount;
 }
 
-pcb::VertexPositionBufferObject::VertexPositionBufferObject(const GLfloat* const vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Position), vertexData, 3, vertexCount) {}
+pcb::VertexPositionBufferObject::VertexPositionBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Position), vertexData, 3, vertexCount) {}
 
-pcb::VertexColorBufferObject::VertexColorBufferObject(const GLfloat* const vertexData, int elementsPerVertex, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Color), vertexData, elementsPerVertex, vertexCount) {}
+pcb::VertexColorBufferObject::VertexColorBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int elementsPerVertex, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Color), vertexData, elementsPerVertex, vertexCount) {}
 
-pcb::VertexTextureCoordinateBufferObject::VertexTextureCoordinateBufferObject(const GLfloat* const vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::TextureCoordinate), vertexData, 2, vertexCount) {}
+pcb::VertexTextureCoordinateBufferObject::VertexTextureCoordinateBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::TextureCoordinate), vertexData, 2, vertexCount) {}

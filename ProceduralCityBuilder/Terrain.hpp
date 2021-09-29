@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <vector>
 
 #include "Heightmap.hpp"
 
@@ -8,14 +9,10 @@ namespace pcb {
 	class Terrain {
 	public:
 		Terrain(const Heightmap& heightmap, double scale);
-		Terrain(const Terrain& other);
-		virtual ~Terrain();
 
-		Terrain& operator=(const Terrain& other);
-
-		GLfloat* getQuadsVertices() const;
+		std::shared_ptr<std::vector<GLfloat>> getQuadsVertices() const;
 		int getQuadsVertexCount() const;
-		GLfloat* getQuadsColors() const;
+		std::shared_ptr<std::vector<GLfloat>> getQuadsColors() const;
 		std::unique_ptr<Heightmap> generateHeightmap() const;
 		void setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation);
 
@@ -23,8 +20,8 @@ namespace pcb {
 		int gridWidthInVertices;
 		int gridHeightInVertices;
 		int quadsVertexCount;
-		GLfloat* quadsVertexCoordinates;
-		GLfloat* quadsColors;
+		std::shared_ptr<std::vector<GLfloat>> quadsVertexCoordinates;
+		std::shared_ptr<std::vector<GLfloat>> quadsColors;
 		GLfloat highestElevation;
 
 		double getScale() const;
