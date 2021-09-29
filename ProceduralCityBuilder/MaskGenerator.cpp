@@ -9,9 +9,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	std::vector<unsigned char> maskData;
-	maskData.reserve(width * height);
-
+	std::vector<unsigned char> maskData(width * height, 0);
 	const float centerX = (width - 1) / 2.0f;
 	const float centerY = (height - 1) / 2.0f;
 
@@ -27,19 +25,20 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 				value = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
-			maskData.push_back(value);
+			int index = (y * width) + x;
+			maskData[index] = value;
 		}
 	}
 
-	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>();
-	offsettedData->reserve(width * height);
+	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>(maskData.size(), 0);
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
+			int index = (y * width) + x;
 			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
-				offsettedData->push_back(0);
+				(*offsettedData)[index] = 0;
 			}
 			else {
-				offsettedData->push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
+				(*offsettedData)[index] = maskData.at(((y - offsetY) * width) + (x - offsetX));
 			}			
 		}
 	}
@@ -52,8 +51,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFallo
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	std::vector<unsigned char> maskData;
-	maskData.reserve(width * height);
+	std::vector<unsigned char> maskData(width * height, 0);
 
 	const float centerX = (width - 1) / 2.0f;
 	const float centerY = (height - 1) / 2.0f;
@@ -74,19 +72,20 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFallo
 				verticalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
-			maskData.push_back(std::min(horizontalValue, verticalValue));
+			int index = (y * width) + x;
+			maskData[index] = std::min(horizontalValue, verticalValue);
 		}
 	}
 
-	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>();
-	offsettedData->reserve(width * height);
+	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>(maskData.size(), 0);
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
+			int index = (y * width) + x;
 			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
-				offsettedData->push_back(0);
+				(*offsettedData)[index] = 0;
 			}
 			else {
-				offsettedData->push_back(maskData.at(((y - offsetY) * width) + (x - offsetX)));
+				(*offsettedData)[index] = maskData.at(((y - offsetY) * width) + (x - offsetX));
 			}
 		}
 	}
@@ -99,8 +98,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(i
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>();
-	maskData->reserve(width * height);
+	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>(width * height, 0);
 
 	for (int y = 0; y < height; y++) {
 		unsigned char gradientValue;
@@ -119,7 +117,8 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(i
 				gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
 			}
 
-			maskData->push_back(gradientValue);
+			int index = (y * width) + x;
+			(*maskData)[index] = gradientValue;
 		}
 	}
 

@@ -13,6 +13,7 @@
 #include "ShaderProgram.hpp"
 
 #include "Logger.hpp"
+#include "MaskGenerator.hpp"
 
 std::shared_ptr<pcb::Application> pcb::Application::instance;
 
@@ -45,12 +46,21 @@ void pcb::Application::mouseCallback(int button, int state, int x, int y) {
 }
 
 pcb::Application::Application() : translationX(0), translationY(0), rotationZ(0), scale(1), mouseWindowX(0), mouseWindowY(0), globalRotationX(0), globalRotationY(0),
-isWarpingPointer(false), zoom(0), heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
+isWarpingPointer(false), zoom(0),
+quadVertices(std::make_shared<std::vector<GLfloat>>(std::initializer_list<GLfloat>{
+	-0.25f, -0.25f, 0.0f,
+	0.0f, -0.25f, 0.0f,
+	0.0f, 0.0f, 0.0f,
+	-0.25f, 0.0f, 0.0f
+})),
+quadTextureCoordinates(std::make_shared<std::vector<GLfloat>>(std::initializer_list<GLfloat>{
+	0.0, 0.0,
+	0.0, 1.0,
+	1.0, 1.0,
+	1.0, 0.0
+})),
+heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
 terrainLayerRenderObjects(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
-
-pcb::Application::~Application() {
-	deleteResources();
-}
 
 void pcb::Application::run(std::shared_ptr<Application> instance, int argc, char* argv[]) {
 	Application::instance = instance;
@@ -97,8 +107,11 @@ void pcb::Application::loadResources() {
 }
 
 void pcb::Application::generateTerrainResources() {
-	int terrainSize = 512;
-	LayeredTerrainGenerator terrainGenerator(terrainSize, terrainSize, 1);
+	int glutElapsedTimeAtStart = glutGet(GLUT_ELAPSED_TIME);
+
+	const int TERRAIN_SIZE = 512;
+	const float TERRAIN_SCALE = 2.5f;
+	LayeredTerrainGenerator terrainGenerator(TERRAIN_SIZE, TERRAIN_SIZE, 1);
 	//std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generate();
 	std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generateRandom();
 
@@ -109,28 +122,12 @@ void pcb::Application::generateTerrainResources() {
 	std::unique_ptr<Image> generatedHeightmapImage = generatedHeightmap->to24BitImage();
 	generatedHeightmapTexture = std::make_unique<Texture>(*generatedHeightmapImage);
 
-	//std::array<GLfloat, 12> quadVertices = {
-	std::shared_ptr<std::vector<GLfloat>> quadVertices = std::make_shared<std::vector<GLfloat>>(std::initializer_list<GLfloat>{
-		-0.25f, -0.25f, 0.0f,
-		0.0f, -0.25f, 0.0f,
-		0.0f, 0.0f, 0.0f,
-		-0.25f, 0.0f, 0.0f
-	});
-
-	//std::array<GLfloat, 8> quadTextureCoordinates = {
-	std::shared_ptr<std::vector<GLfloat>> quadTextureCoordinates = std::make_shared<std::vector<GLfloat>>(std::initializer_list<GLfloat>{
-		0.0, 0.0,
-		0.0, 1.0,
-		1.0, 1.0,
-		1.0, 0.0
-	});
-
 	std::unique_ptr<VertexPositionBufferObject> terrainVertices = std::make_unique<VertexPositionBufferObject>(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
 	std::unique_ptr<VertexColorBufferObject> terrainColors = std::make_unique<VertexColorBufferObject>(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
-	float terrainScale = 2.5f;
+	
 	std::unique_ptr<SimpleColoredObject> terrainObject = std::make_unique<SimpleColoredObject>(std::move(terrainVertices), std::move(terrainColors));
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
-	terrainObject->setScale(terrainScale, terrainScale, terrainScale);
+	terrainObject->setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
 
 	std::shared_ptr<VertexPositionBufferObject> heightMapImageObjectVertices = std::make_shared<VertexPositionBufferObject>(quadVertices, quadVertices->size() / 3);
 	std::shared_ptr<VertexTextureCoordinateBufferObject> heightMapImageObjectTextureCoordinates = std::make_shared<VertexTextureCoordinateBufferObject>(quadTextureCoordinates, quadTextureCoordinates->size() / 2);
@@ -154,8 +151,13 @@ void pcb::Application::generateTerrainResources() {
 		terrainLayerRenderObjects.emplace_back(terrainlayerVertices, terrainLayerColors);
 		SimpleColoredObject& object = terrainLayerRenderObjects.back();
 		object.setPosition(10.0f, static_cast<float>(i + 1), -0.5f);
-		object.setScale(terrainScale, terrainScale, terrainScale);
+		object.setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
 	}
+
+	int glutElapsedTimeAtEnd = glutGet(GLUT_ELAPSED_TIME);
+	int milisecondsSinceLastTimeCheck = glutElapsedTimeAtEnd - glutElapsedTimeAtStart;
+	Logger logger;
+	logger << "Terrain generation time: " << milisecondsSinceLastTimeCheck << "ms\n\n";
 }
 
 void pcb::Application::deleteResources() {
@@ -196,11 +198,6 @@ std::string pcb::Application::loadShaderFromFile(std::string filepath) const {
 }
 
 void pcb::Application::drawTestShapes() const {
-	/*for (const SimpleObject* const object : renderObjects) {
-		object->render();
-	}*/
-
-	//shaderManager.useProgram("defaultProgram");
 	shaderManager.useProgram("tempElevationColorsProgram");
 	renderObjects[0]->render();
 

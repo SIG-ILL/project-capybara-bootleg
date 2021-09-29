@@ -203,8 +203,7 @@ int pcb::RandomHeightmapGenerator::generateNoiseOffset() const {
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
-	std::unique_ptr<std::vector<unsigned char>> noiseMap = std::make_unique<std::vector<unsigned char>>();
-	noiseMap->reserve(mapWidth * mapHeight);
+	std::unique_ptr<std::vector<unsigned char>> noiseMap = std::make_unique<std::vector<unsigned char>>(mapWidth * mapHeight, 0);
 	const double samplingDistanceX = 1.0 / noiseSamplingFrequencyX;
 	const double samplingDistanceY = 1.0 / noiseSamplingFrequencyY;
 
@@ -212,7 +211,8 @@ std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateDefaultNo
 		for (int x = 0; x < mapWidth; x++) {
 			double noiseInputX = xOffset + (x * samplingDistanceX);
 			double noiseInputY = yOffset + (y * samplingDistanceY);
-			noiseMap->push_back(static_cast<unsigned char>(generateElevationForNoiseCoordinates(noiseInputX, noiseInputY)));
+			int index = (y * mapWidth) + x;
+			(*noiseMap)[index] = static_cast<unsigned char>(generateElevationForNoiseCoordinates(noiseInputX, noiseInputY));
 		}
 	}
 
@@ -220,8 +220,7 @@ std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateDefaultNo
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
-	std::unique_ptr<std::vector<unsigned char>> noiseMap = std::make_unique<std::vector<unsigned char>>();
-	noiseMap->reserve(mapWidth * mapHeight);
+	std::unique_ptr<std::vector<unsigned char>> noiseMap = std::make_unique<std::vector<unsigned char>>(mapWidth * mapHeight);
 	const double samplingDistanceX = 1.0 / noiseSamplingFrequencyX;
 	const double samplingDistanceY = 1.0 / noiseSamplingFrequencyY;
 
@@ -229,7 +228,8 @@ std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateAbsoluteN
 		for (int x = 0; x < mapWidth; x++) {
 			double noiseInputX = xOffset + (x * samplingDistanceX);
 			double noiseInputY = yOffset + (y * samplingDistanceY);
-			noiseMap->push_back(static_cast<unsigned char>(generateElevationForNoiseCoordinatesWithAbsoluteModifier(noiseInputX, noiseInputY)));
+			int index = (y * mapWidth) + x;
+			(*noiseMap)[index] = static_cast<unsigned char>(generateElevationForNoiseCoordinatesWithAbsoluteModifier(noiseInputX, noiseInputY));
 		}
 	}
 

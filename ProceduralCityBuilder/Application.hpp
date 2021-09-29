@@ -15,7 +15,6 @@ namespace pcb {
 	class Application final {
 	public:
 		Application();
-		~Application();
 
 		void run(std::shared_ptr<Application> instance, int argc, char* argv[]);
 
@@ -41,6 +40,8 @@ namespace pcb {
 		bool isWarpingPointer;
 		double zoom;
 
+		std::shared_ptr<std::vector<GLfloat>> quadVertices;
+		std::shared_ptr<std::vector<GLfloat>> quadTextureCoordinates;
 		std::unique_ptr<Texture> heightmapTexture;
 		std::unique_ptr<Texture> generatedHeightmapTexture;
 		std::array<std::unique_ptr<SimpleObject>, 3> renderObjects;
