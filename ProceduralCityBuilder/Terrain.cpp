@@ -4,13 +4,23 @@
 #include <algorithm>
 #include <vector>
 
-pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : gridWidthInVertices(heightmap.getWidth()), gridHeightInVertices(heightmap.getHeight()), quadsVertexCount(4 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)), quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), highestElevation(static_cast<GLfloat>(scale * heightmap.getHighestElevation())) {
+#include "Logger.hpp"
+#include <GL/freeglut.h>
+
+pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : Terrain(heightmap, scale, 0.0f, 0.0f, 0.0, 1.0f, 1.0f, 1.0f, false) {}
+
+pcb::Terrain::Terrain(const Heightmap& heightmap, double scale, GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation) :
+	gridWidthInVertices(heightmap.getWidth()), gridHeightInVertices(heightmap.getHeight()), quadsVertexCount(4 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)),
+quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)),
+highestElevation(static_cast<GLfloat>(scale* heightmap.getHighestElevation())) {
 	const int COORDINATE_ELEMENTS_PER_VERTEX = 3;
 	const int VERTICES_PER_QUAD = 4;
 
 	// Array size = 4 * 3 * (width - 1) * (height - 1) (4 for 4 vertices per quad, 3 for 3 dimensions - 3 values per coordinate).
 	int maxLoopWidthIndex = gridWidthInVertices - 1;
 	int maxLoopHeightIndex = gridHeightInVertices - 1;
+
+	int glutElapsedTimeAtStart = glutGet(GLUT_ELAPSED_TIME);
 
 	for (int y = 0; y < maxLoopHeightIndex; y++) {
 		for (int x = 0; x < maxLoopWidthIndex; x++) {
@@ -45,13 +55,18 @@ pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : gridWidth
 		}
 	}
 
-	setHeightBasedColorGradient(0, 0, 0, 1, 1, 1, false);
+	setHeightBasedColorGradient(minRed, minGreen, minBlue, maxRed, maxGreen, maxBlue, scaleToHighestElevation);
 
 	// A one-dimensional height map can't generate terrain as each pixel is used as vertex coordinates, not the definition of an entire quad.
 	if (gridWidthInVertices == 1 || gridHeightInVertices == 1) {
 		gridWidthInVertices = 0;
 		gridWidthInVertices = 0;
 	}
+
+	int glutElapsedTimeAtEnd = glutGet(GLUT_ELAPSED_TIME);
+	int milisecondsSinceLastTimeCheck = glutElapsedTimeAtEnd - glutElapsedTimeAtStart;
+	Logger logger;
+	logger << "Terrain generation took " << milisecondsSinceLastTimeCheck << "ms!\n";
 }
 
 std::shared_ptr<std::vector<GLfloat>> pcb::Terrain::getQuadsVertices() const {
@@ -67,8 +82,7 @@ std::shared_ptr<std::vector<GLfloat>> pcb::Terrain::getQuadsColors() const {
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::Terrain::generateHeightmap() const {	
-	std::unique_ptr<std::vector<unsigned char>> elevationValues = std::make_unique<std::vector<unsigned char>>();
-	elevationValues->reserve(gridWidthInVertices * gridHeightInVertices);
+	std::unique_ptr<std::vector<unsigned char>> elevationValues = std::make_unique<std::vector<unsigned char>>(gridWidthInVertices * gridHeightInVertices, 0);
 
 	const int COORDINATE_ELEMENTS_PER_VERTEX = 3;
 	const int VERTICES_PER_QUAD = 4;
@@ -79,15 +93,19 @@ std::unique_ptr<pcb::Heightmap> pcb::Terrain::generateHeightmap() const {
 
 	for (int y = 0; y < maxLoopHeightIndex; y++) {
 		for (int x = 0; x < maxLoopWidthIndex; x++) {
-			elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * y * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * x) + 1)), 255)));
+			int index = (y * gridWidthInVertices) + x;
+			(*elevationValues)[index] = static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * y * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * x) + 1)), 255));
 		}
-		elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * y * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopWidthIndex - 1)) + 3 + 1)), 255)));
+		int index = (y * gridWidthInVertices) + maxLoopWidthIndex;
+		(*elevationValues)[index] = static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * y * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopWidthIndex - 1)) + 3 + 1)), 255));
 	}
 
 	for (int i = 0; i < maxLoopWidthIndex; i++) {
-		elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * i) + (3 * 3) + 1)), 255)));
+		int index = (maxLoopHeightIndex * gridWidthInVertices) + i;
+		(*elevationValues)[index] = static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * i) + (3 * 3) + 1)), 255));
 	}
-	elevationValues->push_back(static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopWidthIndex - 1)) + (3 * 2) + 1)), 255)));
+	int index = (gridHeightInVertices * gridWidthInVertices) - 1;
+	(*elevationValues)[index] = static_cast<unsigned char>(std::fmin(std::round(inverseScale * quadsVertexCoordinates->at((VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopHeightIndex - 1) * maxLoopWidthIndex) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * (maxLoopWidthIndex - 1)) + (3 * 2) + 1)), 255));
 
 	return std::make_unique<Heightmap>(gridWidthInVertices, gridHeightInVertices, std::move(elevationValues));
 }

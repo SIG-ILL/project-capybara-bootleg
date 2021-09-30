@@ -1,6 +1,7 @@
 #include "LayeredTerrainGenerator.hpp"
 
 #include "LayeredHeightmapGenerator.hpp"
+#include "Logger.hpp"
 
 pcb::LayeredTerrainGenerator::LayeredTerrainGenerator(int mapWidth, int mapHeight, double scale) : mapWidth(mapWidth), mapHeight(mapHeight), scale(scale) {}
 
@@ -13,11 +14,16 @@ std::unique_ptr<pcb::LayeredTerrain> pcb::LayeredTerrainGenerator::generate() {
 }
 
 std::unique_ptr<pcb::LayeredTerrain> pcb::LayeredTerrainGenerator::generateRandom() {
+	Logger logger;
+	logger << "Generating random heightmap... ";
+
 	LayeredHeightmapGenerator heightmapGenerator(mapWidth, mapHeight);
 	heightmap = heightmapGenerator.generateRandom();
 
+	logger << "done!\nCreating layered terrain... ";
+
 	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
-	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);
+	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);		// TODO: Creating the LayeredTerrain (the layers themselves) is currently the biggest performance issue!
 }
 
 std::unique_ptr<pcb::HeightmapImage> pcb::LayeredTerrainGenerator::getHeightmap24BitImage() const {

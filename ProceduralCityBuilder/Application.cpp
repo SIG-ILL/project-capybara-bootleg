@@ -115,12 +115,19 @@ void pcb::Application::generateTerrainResources() {
 	//std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generate();
 	std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generateRandom();
 
+	Logger logger;
+	logger << "Terrain generation complete!\nGenerating heightmap image from terrain generator... ";
+
 	std::unique_ptr<HeightmapImage> heightmapImage = terrainGenerator.getHeightmap24BitImage();
 	heightmapTexture = std::make_unique<Texture>(*(heightmapImage->finalImage));
+
+	logger << "done!\nGenerating heightmap and heightmap image from terrain... ";
 
 	std::unique_ptr<Heightmap> generatedHeightmap = terrain->generateHeightmap();
 	std::unique_ptr<Image> generatedHeightmapImage = generatedHeightmap->to24BitImage();
 	generatedHeightmapTexture = std::make_unique<Texture>(*generatedHeightmapImage);
+
+	logger << "done!\nCreating terrain object... ";
 
 	std::unique_ptr<VertexPositionBufferObject> terrainVertices = std::make_unique<VertexPositionBufferObject>(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
 	std::unique_ptr<VertexColorBufferObject> terrainColors = std::make_unique<VertexColorBufferObject>(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
@@ -128,6 +135,8 @@ void pcb::Application::generateTerrainResources() {
 	std::unique_ptr<SimpleColoredObject> terrainObject = std::make_unique<SimpleColoredObject>(std::move(terrainVertices), std::move(terrainColors));
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
 	terrainObject->setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
+
+	logger << "done!\nCreating heightmap objects... ";
 
 	std::shared_ptr<VertexPositionBufferObject> heightMapImageObjectVertices = std::make_shared<VertexPositionBufferObject>(quadVertices, quadVertices->size() / 3);
 	std::shared_ptr<VertexTextureCoordinateBufferObject> heightMapImageObjectTextureCoordinates = std::make_shared<VertexTextureCoordinateBufferObject>(quadTextureCoordinates, quadTextureCoordinates->size() / 2);
@@ -139,9 +148,13 @@ void pcb::Application::generateTerrainResources() {
 	generatedHeightmapObject->setPosition(1.0f, 0.74f, -1.0f);
 	generatedHeightmapObject->setScale(heightmapHorizontalScale, 1.0f, 1.0f);
 
+	logger << "done!\nMoving object ownership... ";
+
 	renderObjects[0] = std::move(terrainObject);
 	renderObjects[1] = std::move(heightmapImageObject);
 	renderObjects[2] = std::move(generatedHeightmapObject);
+
+	logger << "done!\nGenerating terrain layer objects... ";
 
 	std::vector<std::shared_ptr<Terrain>> terrainLayers = terrain->getLayers();
 	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
@@ -154,9 +167,11 @@ void pcb::Application::generateTerrainResources() {
 		object.setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
 	}
 
+	logger << "done!\n";
+
 	int glutElapsedTimeAtEnd = glutGet(GLUT_ELAPSED_TIME);
 	int milisecondsSinceLastTimeCheck = glutElapsedTimeAtEnd - glutElapsedTimeAtStart;
-	Logger logger;
+
 	logger << "Terrain generation time: " << milisecondsSinceLastTimeCheck << "ms\n\n";
 }
 

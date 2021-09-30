@@ -9,6 +9,7 @@ namespace pcb {
 	class Terrain {
 	public:
 		Terrain(const Heightmap& heightmap, double scale);
+		Terrain(const Heightmap& heightmap, double scale, GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation);
 
 		std::shared_ptr<std::vector<GLfloat>> getQuadsVertices() const;
 		int getQuadsVertexCount() const;
