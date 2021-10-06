@@ -2,9 +2,9 @@
 
 #include <cmath>
 
-pcb::HeightmapGenerator::HeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
+pcb::HeightmapGenerator::HeightmapGenerator(int mapWidth, int mapHeight) : LayeredHeightmapGenerator(mapWidth, mapHeight) {}
 
-pcb::Heightmap pcb::HeightmapGenerator::generate() const {
+std::unique_ptr<pcb::LayeredHeightmap> pcb::HeightmapGenerator::generate() const {
 	std::unique_ptr<std::vector<unsigned char>> noiseMap = std::make_unique<std::vector<unsigned char>>(mapWidth * mapHeight, 0);
 
 	generateAndAddNoiseMap(*noiseMap, 0.025, 0.85, 1);
@@ -15,7 +15,7 @@ pcb::Heightmap pcb::HeightmapGenerator::generate() const {
 	generateAndSubtractNoiseMap(*noiseMap, 0.1, 0.3, 0.1);
 	generateAndSubtractNoiseMap(*noiseMap, 0.25, 0.55, 0.4);
 
-	Heightmap heightmap(mapWidth, mapHeight, std::move(noiseMap));
+	std::unique_ptr<LayeredHeightmap> heightmap = std::make_unique<LayeredHeightmap>(mapWidth, mapHeight, std::move(noiseMap));
 	return heightmap;
 }
 
@@ -51,8 +51,4 @@ void pcb::HeightmapGenerator::generateAndSubtractNoiseMap(std::vector<unsigned c
 			noiseMap.at((y * mapWidth) + x) = static_cast<unsigned char>(std::max(0, noiseMap.at((y * mapWidth) + x) - static_cast<unsigned char>(multiplier * std::round(maxValueFactor * generateElevationForNoiseCoordinates(noiseInputX, noiseInputY)))));
 		}
 	}
-}
-
-double pcb::HeightmapGenerator::generateElevationForNoiseCoordinates(double x, double y) const {
-	return 127.5 * (1 + noiseGenerator.getValueForCoordinate(x, y));
 }

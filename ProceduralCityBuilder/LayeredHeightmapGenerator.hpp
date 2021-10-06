@@ -7,19 +7,22 @@
 #include "NoiseGenerator.hpp"
 
 namespace pcb {
-	class LayeredHeightmapGenerator final {
+	class LayeredHeightmapGenerator {
 	public:
 		LayeredHeightmapGenerator(int mapWidth, int mapHeight);
 
-		std::unique_ptr<LayeredHeightmap> generate() const;
+		virtual std::unique_ptr<LayeredHeightmap> generate() const;
 		std::unique_ptr<LayeredHeightmap> generateRandom() const;
 
-	private:
+	protected:
 		int mapWidth;
 		int mapHeight;
+
+		double generateElevationForNoiseCoordinates(double x, double y) const;
+
+	private:		
 		NoiseGenerator noiseGenerator;
 
-		std::unique_ptr<Heightmap> generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
-		double generateElevationForNoiseCoordinates(double x, double y) const;
+		std::unique_ptr<Heightmap> generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;		
 	};
 }

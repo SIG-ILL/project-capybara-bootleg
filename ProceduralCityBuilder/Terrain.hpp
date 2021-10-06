@@ -21,10 +21,11 @@ namespace pcb {
 		int gridWidthInVertices;
 		int gridHeightInVertices;
 		int quadsVertexCount;
-		std::shared_ptr<std::vector<GLfloat>> quadsVertexCoordinates;
+		std::shared_ptr<std::vector<GLfloat>> quadsVertexCoordinates;	// TODO: Changing coordinates and colors vectors to std::shared_ptr<GLfloat[]> can give a decent performance boost (~28% on debug builds), but is not as recommended as a vector.
 		std::shared_ptr<std::vector<GLfloat>> quadsColors;
 		GLfloat highestElevation;
 
+		void setVertexDataValues(const Heightmap& heightmap, double scale, GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation);
 		double getScale() const;
 	};
 }

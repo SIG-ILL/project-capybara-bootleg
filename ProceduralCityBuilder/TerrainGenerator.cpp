@@ -6,7 +6,7 @@ pcb::TerrainGenerator::TerrainGenerator(int mapWidth, int mapHeight, double scal
 
 std::unique_ptr<pcb::LayeredTerrain> pcb::TerrainGenerator::generate() {
 	HeightmapGenerator heightmapGenerator(mapWidth, mapHeight);
-	heightmap = std::make_unique<LayeredHeightmap>(heightmapGenerator.generate());
+	heightmap = heightmapGenerator.generate();
 
 	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
 	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);
