@@ -76,6 +76,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="BitmapLoader.cpp" />
+    <ClCompile Include="BitmapWriter.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Heightmap.cpp" />
     <ClCompile Include="HeightmapGenerator.cpp" />
@@ -106,6 +107,7 @@
   <ItemGroup>
     <ClInclude Include="Application.hpp" />
     <ClInclude Include="BitmapLoader.hpp" />
+    <ClInclude Include="BitmapWriter.hpp" />
     <ClInclude Include="BitshiftingUtility.hpp" />
     <ClInclude Include="BoundsPair.hpp" />
     <ClInclude Include="Heightmap.hpp" />

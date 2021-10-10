@@ -1,12 +1,13 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "Image.hpp"
 
 namespace pcb {
 	class BitmapLoader final {
 	public:
-		Image* loadFromFile(std::string filename) const;
+		std::unique_ptr<Image> loadFromFile(const std::string& filepath) const;
 	};
 }

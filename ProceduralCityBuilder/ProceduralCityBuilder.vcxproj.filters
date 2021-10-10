@@ -117,6 +117,9 @@
     <ClCompile Include="Logger.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
+    <ClCompile Include="BitmapWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp">
@@ -211,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="HeightmapImage.hpp">
       <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="BitmapWriter.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

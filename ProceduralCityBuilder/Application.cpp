@@ -7,13 +7,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Application.hpp"
-#include "BitmapLoader.hpp"
 #include "LayeredTerrainGenerator.hpp"
 #include "VertexBufferObject.hpp"
 #include "ShaderProgram.hpp"
 
 #include "Logger.hpp"
-#include "MaskGenerator.hpp"
 
 std::shared_ptr<pcb::Application> pcb::Application::instance;
 

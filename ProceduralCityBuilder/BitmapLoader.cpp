@@ -2,19 +2,20 @@
 
 #include <fstream>
 #include <cmath>
+#include <array>
 
 #include "BitshiftingUtility.hpp"
 
 
-pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) const {
+std::unique_ptr<pcb::Image> pcb::BitmapLoader::loadFromFile(const std::string& filepath) const {
 	std::ifstream fileStream;
-	fileStream.open(filename, std::fstream::binary);
+	fileStream.open(filepath, std::fstream::binary);
 	if (!fileStream.is_open()) {
 		return nullptr;
 	}
 
-	char bufferBitMapHeader[2];
-	fileStream.read(bufferBitMapHeader, 2);
+	std::array<char, 2> bufferBitMapHeader;
+	fileStream.read(bufferBitMapHeader.data(), 2);
 	if (bufferBitMapHeader[0] != 'B' || bufferBitMapHeader[1] != 'M') {
 		fileStream.close();
 		return nullptr;
@@ -22,12 +23,12 @@ pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) const {
 
 	fileStream.ignore(8);
 
-	char bufferInt[4];
-	fileStream.read(bufferInt, 4);
-	int pixelArrayOffset = pcb::littleToBigEndian<int>(bufferInt, 4);
+	std::array<char, 4> bufferInt;
+	fileStream.read(bufferInt.data(), 4);
+	int pixelArrayOffset = pcb::littleToBigEndian<int, 4>(bufferInt);
 
-	fileStream.read(bufferInt, 4);
-	int headerSize = pcb::littleToBigEndian<unsigned int>(bufferInt, 4);
+	fileStream.read(bufferInt.data(), 4);
+	int headerSize = pcb::littleToBigEndian<unsigned int, 4>(bufferInt);
 
 	int bitmapWidth = 0;
 	int bitmapHeight = 0;	// TODO: If negative, pixels stored from top to bottom. Else (default) stored from bottom to top.
@@ -46,15 +47,15 @@ pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) const {
 	case 124:
 	case 108:	
 	case 40:
-		fileStream.read(bufferInt, 4);
-		bitmapWidth = pcb::littleToBigEndian<int>(bufferInt, 4);
-		fileStream.read(bufferInt, 4);
-		bitmapHeight = pcb::littleToBigEndian<int>(bufferInt, 4);
+		fileStream.read(bufferInt.data(), 4);
+		bitmapWidth = pcb::littleToBigEndian<int, 4>(bufferInt);
+		fileStream.read(bufferInt.data(), 4);
+		bitmapHeight = pcb::littleToBigEndian<int, 4>(bufferInt);
 
 		fileStream.ignore(2);
-		char colorDepthBuffer[2];
-		fileStream.read(colorDepthBuffer, 2);
-		colorDepth = pcb::littleToBigEndian<short>(colorDepthBuffer, 2);
+		std::array<char, 2> colorDepthBuffer;
+		fileStream.read(colorDepthBuffer.data(), 2);
+		colorDepth = pcb::littleToBigEndian<short, 2>(colorDepthBuffer);
 		break;
 	}
 
@@ -63,15 +64,17 @@ pcb::Image* pcb::BitmapLoader::loadFromFile(std::string filename) const {
 	char* pixelBuffer = new char[pixelArraySizeInBytes];
 	fileStream.seekg(pixelArrayOffset);
 	fileStream.read(pixelBuffer, pixelArraySizeInBytes);
-
 	fileStream.close();
 
-	char* pixelBufferReOrdered = new char[pixelArraySizeInBytes];
+	std::vector<char> pixelBufferReOrdered(pixelArraySizeInBytes);
 
+	std::unique_ptr<std::vector<char>> pixelBufferVector = std::make_unique<std::vector<char>>(pixelArraySizeInBytes);
+	for (int i = 0; i < pixelArraySizeInBytes; i++) {
+		(*pixelBufferVector)[i] = pixelBuffer[i];
+	}
 
-	Image* image = new Image(pixelBuffer, pixelArraySizeInBytes, bitmapWidth, bitmapHeight, pcb::PixelDataFormat::BGR);		// TODO: Pixel data format should be read from file, not hardcoded like this.
+	std::unique_ptr<Image> image = std::make_unique<Image>(std::move(pixelBufferVector), bitmapWidth, bitmapHeight, pcb::PixelDataFormat::BGR);	// TODO: Pixel data format should be read from file, not hardcoded like this.
 	delete[] pixelBuffer;
-	delete[] pixelBufferReOrdered;
 
 	return image;
 }

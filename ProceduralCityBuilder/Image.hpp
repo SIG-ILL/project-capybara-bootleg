@@ -9,7 +9,6 @@ namespace pcb {
 	class Image final {
 	public:
 		Image(std::shared_ptr<std::vector<char>> sourcePixels, int width, int height, PixelDataFormat pixelDataFormat);
-		Image(char const* sourcePixels, int pixelArraySize, int width, int height, PixelDataFormat pixelDataFormat);
 
 		int getWidth() const;
 		int getHeight() const;
