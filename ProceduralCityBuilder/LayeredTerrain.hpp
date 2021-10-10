@@ -16,5 +16,7 @@ namespace pcb {
 
 	private:
 		std::vector<std::shared_ptr<Terrain>> layers;
+
+		void generateLayer(int index, const HeightmapLayer& heightmap, double scale);
 	};
 }

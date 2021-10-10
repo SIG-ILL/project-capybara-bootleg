@@ -1,0 +1,1 @@
+Multithreading for terrain generation only seems to make a real difference with debug builds. For release builds it appears to decrease performance, especially at low layer count.
