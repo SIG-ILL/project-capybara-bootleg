@@ -13,6 +13,18 @@ pcb::Heightmap::Heightmap(const int width, const int height, std::shared_ptr<std
 	highestElevation = *(minMaxElevation.second);
 }
 
+pcb::Heightmap::Heightmap(const pcb::Image& image) : width(image.getWidth()), height(image.getHeight()), lowestElevation(MIN_ELEVATION_VALUE), highestElevation(MAX_ELEVATION_VALUE), elevationValues(std::make_unique<std::vector<unsigned char>>(image.getWidth() * image.getHeight(), MIN_ELEVATION_VALUE)) {
+	std::shared_ptr<std::vector<char>> imagePixels = image.getPixels();
+	const int BYTES_PER_PIXEL = 3;
+	for (int i = 0; i < elevationValues->size(); i++) {
+		(*elevationValues)[i] = (*imagePixels)[i * BYTES_PER_PIXEL];
+	}
+
+	std::pair minMaxElevation = std::minmax_element(elevationValues->begin(), elevationValues->end());
+	lowestElevation = *(minMaxElevation.first);
+	highestElevation = *(minMaxElevation.second);
+}
+
 pcb::Heightmap& pcb::Heightmap::operator+=(const pcb::Heightmap& other) {
 	add(other);
 	return *this;

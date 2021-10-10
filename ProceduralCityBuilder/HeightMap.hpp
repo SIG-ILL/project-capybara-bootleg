@@ -14,6 +14,7 @@ namespace pcb {
 	public:
 		Heightmap(const int width, const int height);
 		Heightmap(const int width, const int height, std::shared_ptr<std::vector<unsigned char>> elevationValues);
+		Heightmap(const Image& image);
 
 		Heightmap& operator+=(const Heightmap& other);
 		Heightmap& operator-=(const Heightmap& other);

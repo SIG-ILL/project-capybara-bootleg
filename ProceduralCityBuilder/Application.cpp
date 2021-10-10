@@ -5,6 +5,7 @@
 #include <array>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <chrono>
 
 #include "Application.hpp"
 #include "LayeredTerrainGenerator.hpp"
@@ -12,6 +13,7 @@
 #include "ShaderProgram.hpp"
 
 #include "Logger.hpp"
+#include "BitmapWriter.hpp"
 
 std::shared_ptr<pcb::Application> pcb::Application::instance;
 
@@ -125,7 +127,16 @@ void pcb::Application::generateTerrainResources() {
 	std::unique_ptr<Image> generatedHeightmapImage = generatedHeightmap->to24BitImage();
 	generatedHeightmapTexture = std::make_unique<Texture>(*generatedHeightmapImage);
 
-	logger << "done!\nCreating terrain object... ";
+	logger << "done!\nWriting generated heightmap to .bmp file... ";
+	BitmapWriter bitmapWriter;
+	std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
+	std::time_t currentTimeT = std::chrono::system_clock::to_time_t(currentTime);
+	std::stringstream stringStream;
+	stringStream << currentTimeT;
+	std::string filename = "GeneratedHeightmaps/" + stringStream.str() + ".bmp";
+	bitmapWriter.writeToFile(*(heightmapImage->finalImage), filename);
+
+	logger << "done! Heightmap written to file " << filename << ".\nCreating terrain object... ";
 
 	std::unique_ptr<VertexPositionBufferObject> terrainVertices = std::make_unique<VertexPositionBufferObject>(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
 	std::unique_ptr<VertexColorBufferObject> terrainColors = std::make_unique<VertexColorBufferObject>(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
