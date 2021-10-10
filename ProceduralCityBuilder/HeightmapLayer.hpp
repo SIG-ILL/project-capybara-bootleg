@@ -5,7 +5,7 @@
 #include "Heightmap.hpp"
 
 namespace pcb {
-	enum class LayerMode { Addition, Subtraction, Mask };
+	enum class LayerMode { Addition, Subtraction, Mask, FinalMask };
 
 	class HeightmapLayer final {
 	public:

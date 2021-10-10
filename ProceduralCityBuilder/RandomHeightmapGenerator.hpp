@@ -6,6 +6,8 @@
 #include "LayeredHeightmap.hpp"
 #include "NoiseGenerator.hpp"
 #include "BoundsPair.hpp"
+#include "NoiseMapGenerator.hpp"
+#include "AbsoluteNoiseMapGenerator.hpp"
 
 namespace pcb {
 #pragma region Random_Generation_Control_Properties
@@ -61,18 +63,14 @@ namespace pcb {
 		int mapWidth;
 		int mapHeight;
 		RandomGenerationControlProperties properties;
-		NoiseGenerator noiseGenerator;
+		NoiseMapGenerator noiseMapGenerator;
+		AbsoluteNoiseMapGenerator absoluteNoiseMapGenerator;
 
 		std::unique_ptr<LayeredHeightmap> generateLayeredHeightmap() const;
 		std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> generateLayers() const;
-		std::unique_ptr<std::vector<LayerMode>> generateLayerModes() const;
+		std::unique_ptr<std::vector<LayerMode>> generateLayerModes(int amountOfLayers) const;
 		std::unique_ptr<HeightmapLayer> generateLayer(int layerIndex, LayerMode layerMode) const;
 		int generateNoiseOffset() const;
-		std::unique_ptr<Heightmap> generateDefaultNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
-		std::unique_ptr<Heightmap> generateAbsoluteNoiseHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const;
-		double generateElevationForNoiseCoordinates(double x, double y) const;
-		double generateElevationForNoiseCoordinatesWithAbsoluteModifier(double x, double y) const;
-		double generateElevationFromNoiseValue(double noiseValue) const;
 		std::unique_ptr<Heightmap> generateMask() const;
 		std::unique_ptr<Heightmap> generateFinalMask() const;
 		void adjustLayeredHeightmap(LayeredHeightmap& heightmap) const;
@@ -81,7 +79,7 @@ namespace pcb {
 #pragma region Layer_Data
 		class LayerData {
 		public:
-			std::vector<LayerMode> getAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const;
+			std::unique_ptr<LayerData> getRandomAllowedNextNode(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const;
 			LayerMode getMode() const;
 
 		protected:
@@ -113,6 +111,14 @@ namespace pcb {
 		class MaskLayerData final : public LayerData {
 		public:
 			MaskLayerData();
+
+		protected:
+			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
+		};
+
+		class FinalMaskLayerData final : public LayerData {
+		public:
+			FinalMaskLayerData();
 
 		protected:
 			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;

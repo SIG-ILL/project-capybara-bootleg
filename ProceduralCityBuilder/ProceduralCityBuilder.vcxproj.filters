@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Utility">
       <UniqueIdentifier>{deff0b3b-d61c-4750-90a9-95a25b697907}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Terrain Generation\Feature Generation">
+      <UniqueIdentifier>{09e83e8d-ddc0-431f-98a2-bdd476555564}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Terrain Generation\Feature Generation">
+      <UniqueIdentifier>{6d3b92c7-4eea-4b49-a037-6b01d414220d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -119,6 +125,12 @@
     </ClCompile>
     <ClCompile Include="BitmapWriter.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseMapGenerator.cpp">
+      <Filter>Source Files\Terrain Generation\Feature Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="AbsoluteNoiseMapGenerator.cpp">
+      <Filter>Source Files\Terrain Generation\Feature Generation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -217,6 +229,12 @@
     </ClInclude>
     <ClInclude Include="BitmapWriter.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseMapGenerator.hpp">
+      <Filter>Header Files\Terrain Generation\Feature Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="AbsoluteNoiseMapGenerator.hpp">
+      <Filter>Header Files\Terrain Generation\Feature Generation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

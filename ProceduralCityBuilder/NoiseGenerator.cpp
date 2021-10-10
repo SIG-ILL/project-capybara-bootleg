@@ -89,10 +89,6 @@ double pcb::NoiseGenerator::getValueForCoordinate(double x, double y) const {
 	return 70.0 * (n0 + n1 + n2);
 }
 
-double pcb::NoiseGenerator::getAbsoluteValueForCoordinate(double x, double y) const {
-	return std::abs(getValueForCoordinate(x, y));
-}
-
 double pcb::NoiseGenerator::dot(const Gradient& g, double x, double y) const {
 	return g.x * x + g.y * y;
 }
