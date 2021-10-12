@@ -10,6 +10,7 @@
 #include "AbsoluteNoiseMapGenerator.hpp"
 
 namespace pcb {
+#pragma region Helper_Classes
 #pragma region Random_Generation_Control_Properties
 	class RandomGenerationControlProperties final {
 	public:
@@ -50,6 +51,85 @@ namespace pcb {
 	};
 #pragma endregion
 
+#pragma region Noise_Map_Generation_Parameters
+	class NoiseMapGenerationParameters {
+	public:
+		double symmetricalFrequency;
+		int noiseOffsetX;
+		int noiseOffsetY;
+		bool invert;
+		bool applyMask;
+	};
+#pragma endregion
+
+#pragma region Layer_Data
+	class LayerData {
+	public:
+		std::unique_ptr<LayerData> getRandomAllowedNextNode(const std::vector<std::unique_ptr<LayerData>>& previousLayers, int layerIndex, const RandomGenerationControlProperties& properties) const;
+		int getIndex() const;
+		LayerMode getMode() const;
+		NoiseMapGenerationParameters getNoiseMapGenerationParameters() const;
+
+	protected:
+		LayerData(int layerIndex, LayerMode layerMode, const RandomGenerationControlProperties& properties);
+
+		virtual std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const = 0;
+		int countAmountOfConsecutiveLayerModesAtEnd(const std::vector<std::unique_ptr<LayerData>>& previousLayers, pcb::LayerMode layerMode) const;
+
+	private:
+		int layerIndex;
+		LayerMode layerMode;
+		NoiseMapGenerationParameters generationParameters;
+
+		void generateNoiseMapGenerationParameters(const RandomGenerationControlProperties& properties);
+		int generateNoiseOffset(const RandomGenerationControlProperties& properties) const;
+	};
+
+	class AdditionLayerData final : public LayerData {
+	public:
+		AdditionLayerData(int layerIndex, const RandomGenerationControlProperties& properties);
+
+	protected:
+		std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
+	};
+
+	class SubtractionLayerData final : public LayerData {
+	public:
+		SubtractionLayerData(int layerIndex, const RandomGenerationControlProperties& properties);
+
+	protected:
+		std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
+	};
+
+	class MaskLayerData final : public LayerData {
+	public:
+		MaskLayerData(int layerIndex, const RandomGenerationControlProperties& properties);
+
+	protected:
+		std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
+	};
+
+	class FinalMaskLayerData final : public LayerData {
+	public:
+		FinalMaskLayerData(int layerIndex, const RandomGenerationControlProperties& properties);
+
+	protected:
+		std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
+	};
+#pragma endregion
+
+#pragma region Composite_Mask_Shape_Data
+	class MaskShapeData final {
+	public:
+		int offsetX;
+		int offsetY;
+		int unaffectedRadiusX;
+		int unaffectedRadiusY;
+		int falloffWidth;
+	};
+#pragma endregion
+#pragma endregion
+
 	class RandomHeightmapGenerator final {
 	public:
 		RandomHeightmapGenerator(int mapWidth, int mapHeight);
@@ -68,73 +148,10 @@ namespace pcb {
 
 		std::unique_ptr<LayeredHeightmap> generateLayeredHeightmap() const;
 		std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> generateLayers() const;
-		std::unique_ptr<std::vector<LayerMode>> generateLayerModes(int amountOfLayers) const;
-		std::unique_ptr<HeightmapLayer> generateLayer(int layerIndex, LayerMode layerMode) const;
-		int generateNoiseOffset() const;
+		std::unique_ptr<std::vector<std::unique_ptr<LayerData>>> generateLayerData(int amountOfLayers) const;
+		std::unique_ptr<HeightmapLayer> generateNoiseLayer(const NoiseMapGenerator& generator, const LayerData& layerData) const;
 		std::unique_ptr<Heightmap> generateMask() const;
 		std::unique_ptr<Heightmap> generateFinalMask() const;
 		void adjustLayeredHeightmap(LayeredHeightmap& heightmap) const;
-
-#pragma region Inner_Classes
-#pragma region Layer_Data
-		class LayerData {
-		public:
-			std::unique_ptr<LayerData> getRandomAllowedNextNode(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const;
-			LayerMode getMode() const;
-
-		protected:
-			LayerData(const LayerMode layerMode);
-
-			virtual std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const = 0;
-			int countAmountOfConsecutiveLayerModesAtEnd(const std::vector<std::unique_ptr<LayerData>>& previousLayers, pcb::LayerMode layerMode) const;
-
-		private:
-			LayerMode layerMode;
-		};
-
-		class AdditionLayerData final : public LayerData {
-		public:
-			AdditionLayerData();
-
-		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
-		};
-
-		class SubtractionLayerData final : public LayerData {
-		public:
-			SubtractionLayerData();
-
-		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
-		};
-
-		class MaskLayerData final : public LayerData {
-		public:
-			MaskLayerData();
-
-		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
-		};
-
-		class FinalMaskLayerData final : public LayerData {
-		public:
-			FinalMaskLayerData();
-
-		protected:
-			std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
-		};
-#pragma endregion
-
-#pragma region Composite_Mask_Shape_Data
-		class MaskShapeData final {
-		public:
-			int offsetX;
-			int offsetY;
-			int unaffectedRadiusX;
-			int unaffectedRadiusY;
-			int falloffWidth;
-		};
-#pragma endregion
-#pragma endregion
 	};
 }

@@ -117,6 +117,7 @@
     <ClInclude Include="HeightmapGenerator.hpp" />
     <ClInclude Include="HeightmapImage.hpp" />
     <ClInclude Include="HeightmapLayer.hpp" />
+    <ClInclude Include="HeightmapLayerDataGenerator.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="LayeredHeightmap.hpp" />
     <ClInclude Include="LayeredHeightmapGenerator.hpp" />
