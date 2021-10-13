@@ -81,6 +81,7 @@
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Heightmap.cpp" />
     <ClCompile Include="HeightmapGenerator.cpp" />
+    <ClCompile Include="RandomHeightmapLayerDataGenerator.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="LayeredHeightmap.cpp" />
     <ClCompile Include="LayeredHeightmapGenerator.cpp" />
@@ -113,11 +114,13 @@
     <ClInclude Include="BitmapWriter.hpp" />
     <ClInclude Include="BitshiftingUtility.hpp" />
     <ClInclude Include="BoundsPair.hpp" />
+    <ClInclude Include="GradientDirection.hpp" />
     <ClInclude Include="Heightmap.hpp" />
+    <ClInclude Include="HeightmapGenerationProperties.hpp" />
     <ClInclude Include="HeightmapGenerator.hpp" />
     <ClInclude Include="HeightmapImage.hpp" />
     <ClInclude Include="HeightmapLayer.hpp" />
-    <ClInclude Include="HeightmapLayerDataGenerator.hpp" />
+    <ClInclude Include="RandomHeightmapLayerDataGenerator.hpp" />
     <ClInclude Include="Image.hpp" />
     <ClInclude Include="LayeredHeightmap.hpp" />
     <ClInclude Include="LayeredHeightmapGenerator.hpp" />

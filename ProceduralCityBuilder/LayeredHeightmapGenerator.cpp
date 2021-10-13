@@ -10,8 +10,8 @@ pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapH
 
 std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate() const {
 	std::vector<std::shared_ptr<Heightmap>> heightmapLayers;
-	MaskGenerator maskGenerator;
-	heightmapLayers.push_back(maskGenerator.generateCircleLinearFalloffMask(mapWidth, mapHeight, (mapWidth/256.0f) * 30, (mapWidth / 256.0f) * 98, 0, 0));
+	MaskGenerator maskGenerator(mapWidth, mapHeight);
+	heightmapLayers.push_back(maskGenerator.generateCircleLinearFalloffMask((mapWidth/256.0f) * 30, (mapWidth / 256.0f) * 98, 0, 0));
 
 	heightmapLayers.push_back(generateHeightmap(128, 128, 0, 0));
 	heightmapLayers.back()->lowerToLevel(175);
@@ -34,7 +34,7 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate(
 
 	heightmap->scale(1.5);
 	heightmap->addLayer(heightmapLayers.at(0), LayerMode::Mask);
-	heightmapLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask(mapWidth, mapHeight, (mapWidth / 256.0f) * 15, (mapHeight / 256.0f) * 15, (mapWidth / 256.0f) * 64, 0, 0));
+	heightmapLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask((mapWidth / 256.0f) * 15, (mapHeight / 256.0f) * 15, (mapWidth / 256.0f) * 64, 0, 0));
 	heightmapLayers.back()->invert();
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Mask);
 
@@ -51,7 +51,7 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate(
 
 std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generateRandom() const {
 	RandomHeightmapGenerator generator(mapWidth, mapHeight);
-	RandomGenerationControlProperties properties = generator.getDefaultControlProperties();
+	RandomGenerationControlParameters properties = generator.getDefaultControlProperties();
 
 	properties.layerBaseNoiseFrequency = 256;
 	properties.layerNoiseFrequencyAdditionalLayerModifier = 20;

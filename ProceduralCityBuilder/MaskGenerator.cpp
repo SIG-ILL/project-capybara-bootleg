@@ -4,7 +4,12 @@
 #include <algorithm>
 #include <stdexcept>
 
-std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffMask(int width, int height, int unaffectedCircleRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
+#include "Logger.hpp"
+#include "GradientDirection.hpp"
+
+pcb::MaskGenerator::MaskGenerator(int width, int height) : width(width), height(height), absoluteNoiseMapGenerator(width, height), noiseMapGenerator(width, height) {}
+
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffMask(int unaffectedCircleRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
 	if (width < 0 || height < 0 || unaffectedCircleRadiusInPixels < 0 || falloffWidthInPixels < 0) {
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
@@ -46,7 +51,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 	return std::make_unique<Heightmap>(width, height, std::move(offsettedData));
 }
 
-std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFalloffMask(int width, int height, int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFalloffMask(int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
 	if (width < 0 || height < 0 || horizontalUnaffectedRadiusInPixels < 0 || verticalUnaffectedRadiusInPixels < 0 || falloffWidthInPixels < 0) {
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
@@ -93,7 +98,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFallo
 	return std::make_unique<Heightmap>(width, height, std::move(offsettedData));
 }
 
-std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(int width, int height, GradientDirection direction) const {
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(GradientDirection direction) const {
 	if (width < 0 || height < 0) {
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
@@ -123,4 +128,55 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(i
 	}
 
 	return std::make_unique<Heightmap>(width, height, std::move(maskData));
+}
+
+std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCombinedMask(const CombinedMaskGenerationParameters& parameters) const {
+	Logger logger;
+	logger << "Amount of mask layers: " << parameters.layerParameters.size() << "\n";
+
+	std::vector<std::unique_ptr<Heightmap>> maskLayers;
+	for (int i = 0; i < parameters.layerParameters.size(); i++) {
+		CombinedMaskGenerationLayerParameters layerParameters = parameters.layerParameters.at(i);
+		if (layerParameters.maskType == MaskType::Circle) {
+			logger << "MaskType: Circle\n";
+			maskLayers.push_back(generateCircleLinearFalloffMask(layerParameters.unaffectedRadiusX, layerParameters.falloffWidth, layerParameters.offsetX, layerParameters.offsetY));
+		}
+		else if (layerParameters.maskType == MaskType::Rectangle) {
+			logger << "MaskType: Rectangle\n";
+			maskLayers.push_back(generateRectangleLinearFalloffMask(layerParameters.unaffectedRadiusX, layerParameters.unaffectedRadiusY, layerParameters.falloffWidth, layerParameters.offsetX, layerParameters.offsetY));
+		}
+		else if (layerParameters.maskType == MaskType::LinearGradient) {		// TODO: If there already is a linear gradient in the vector, don't add the gradient that goes the opposite way as they will cancel each other out and producte a mask that doesn't do anything (or masks *everything* if it's inverted).
+			logger << "MaskType: Linear Gradient\n";
+			maskLayers.push_back(generateLinearGradientMask(layerParameters.gradientDirection));
+		}
+		else if (layerParameters.maskType == MaskType::Noise) {
+			logger << "MaskType: Noise - ";
+			if (layerParameters.isAbsoluteNoise) {
+				logger << "Absolute\n";
+				maskLayers.push_back(absoluteNoiseMapGenerator.generate(layerParameters.noiseFrequencyX, layerParameters.noiseFrequencyY, layerParameters.offsetX, layerParameters.offsetY));
+			}
+			else {
+				logger << "Default\n";
+				maskLayers.push_back(noiseMapGenerator.generate(layerParameters.noiseFrequencyX, layerParameters.noiseFrequencyY, layerParameters.offsetX, layerParameters.offsetY));
+			}
+
+			if (layerParameters.invert) {
+				logger << "Inverting mask noise layer\n";
+				maskLayers.back()->invert();
+			}
+		}
+	}
+
+	std::unique_ptr<Heightmap> mask = std::move(maskLayers.front());
+	maskLayers.erase(maskLayers.begin());
+	for (int i = 0; i < maskLayers.size(); i++) {
+		mask->add(*(maskLayers.at(i)));
+	}
+
+	if (parameters.invert) {
+		logger << "Inverting mask!\n";
+		mask->invert();
+	}
+
+	return mask;
 }
