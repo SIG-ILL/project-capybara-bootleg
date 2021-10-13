@@ -35,6 +35,7 @@ namespace pcb {
 		BoundsPair<double> finalMaskRadiusMultiplicationValueBounds;
 		BoundsPair<double> finalMaskFalloffMultiplicationValueBounds;
 		BoundsPair<double> finalMaskCompositeMaskShapesDistanceMultiplierBounds;
+		double finalMaskInversionChance;
 
 		BoundsPair<unsigned int> adjustmentLoweringThresholds;
 		unsigned int adjustmentLoweringValue;
@@ -80,6 +81,26 @@ namespace pcb {
 		bool invert;
 		bool applyMask;
 		CombinedMaskGenerationParameters maskParameters;
+	};
+#pragma endregion
+
+#pragma region Composite_Mask_Shape_Data
+	class MaskShapeData final {
+	public:
+		MaskType maskType;
+		int offsetX;
+		int offsetY;
+		int unaffectedRadiusX;
+		int unaffectedRadiusY;
+		int falloffWidth;
+	};
+#pragma endregion
+
+#pragma region Final_Mask_Generation_Parameters
+	class FinalMaskGenerationParameters final {
+	public:
+		std::vector<MaskShapeData> layerParameters;
+		bool invert;
 	};
 #pragma endregion
 }

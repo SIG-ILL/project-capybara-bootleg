@@ -14,8 +14,13 @@ namespace pcb {
 		int getIndex() const;
 		LayerMode getMode() const;
 		NoiseMapGenerationParameters getNoiseMapGenerationParameters() const;
+		FinalMaskGenerationParameters getFinalMaskGenerationParameters() const;
 
 	protected:
+		int width;
+		int height;
+		FinalMaskGenerationParameters finalMaskGenerationParameters;
+
 		LayerData(int width, int height, int layerIndex, LayerMode layerMode, const RandomGenerationControlParameters& properties);
 
 		virtual std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const = 0;
@@ -24,8 +29,6 @@ namespace pcb {
 	private:
 		int layerIndex;
 		LayerMode layerMode;
-		int width;
-		int height;
 		NoiseMapGenerationParameters generationParameters;
 
 		void generateNoiseMapGenerationParameters(const RandomGenerationControlParameters& properties);
@@ -62,6 +65,9 @@ namespace pcb {
 
 	protected:
 		std::vector<LayerMode> determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const override;
+
+	private:
+		void generateFinalMaskGenerationParameters(const RandomGenerationControlParameters& properties);
 	};
 #pragma endregion
 

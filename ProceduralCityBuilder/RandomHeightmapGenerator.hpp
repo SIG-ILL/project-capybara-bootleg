@@ -12,19 +12,6 @@
 #include "MaskGenerator.hpp"
 
 namespace pcb {
-#pragma region Helper_Classes
-#pragma region Composite_Mask_Shape_Data
-	class MaskShapeData final {
-	public:
-		int offsetX;
-		int offsetY;
-		int unaffectedRadiusX;
-		int unaffectedRadiusY;
-		int falloffWidth;
-	};
-#pragma endregion
-#pragma endregion
-
 	class RandomHeightmapGenerator final {
 	public:
 		RandomHeightmapGenerator(int mapWidth, int mapHeight);
@@ -45,7 +32,7 @@ namespace pcb {
 		std::unique_ptr<LayeredHeightmap> generateLayeredHeightmap() const;
 		std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> generateLayers() const;
 		std::unique_ptr<HeightmapLayer> generateNoiseLayer(const NoiseMapGenerator& generator, const LayerData& layerData) const;
-		std::unique_ptr<Heightmap> generateFinalMask() const;
+		std::unique_ptr<Heightmap> generateFinalMask(const FinalMaskGenerationParameters& finalMaskParameters) const;
 		void adjustLayeredHeightmap(LayeredHeightmap& heightmap) const;
 	};
 }

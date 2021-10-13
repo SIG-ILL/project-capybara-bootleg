@@ -137,6 +137,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCombinedMask(const C
 	std::vector<std::unique_ptr<Heightmap>> maskLayers;
 	for (int i = 0; i < parameters.layerParameters.size(); i++) {
 		CombinedMaskGenerationLayerParameters layerParameters = parameters.layerParameters.at(i);
+
 		if (layerParameters.maskType == MaskType::Circle) {
 			logger << "MaskType: Circle\n";
 			maskLayers.push_back(generateCircleLinearFalloffMask(layerParameters.unaffectedRadiusX, layerParameters.falloffWidth, layerParameters.offsetX, layerParameters.offsetY));

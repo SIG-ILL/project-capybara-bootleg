@@ -1,14 +1,16 @@
 #include "RandomHeightmapLayerDataGenerator.hpp"
 
 #include <array>
+#include <numbers>
 
 #include "RandomUniformInt.hpp"
 #include "RandomUniformReal.hpp"
 #include "RandomBinary.hpp"
 #include "GradientDirection.hpp"
+#include "Logger.hpp"
 
 #pragma region Layer_Data
-pcb::LayerData::LayerData(int width, int height, int layerIndex, LayerMode layerMode, const RandomGenerationControlParameters& properties) : layerIndex(layerIndex), layerMode(layerMode), width(width), height(height), generationParameters() {
+pcb::LayerData::LayerData(int width, int height, int layerIndex, LayerMode layerMode, const RandomGenerationControlParameters& properties) : width(width), height(height), finalMaskGenerationParameters(), layerIndex(layerIndex), layerMode(layerMode), generationParameters() {
 	generateNoiseMapGenerationParameters(properties);
 }
 
@@ -43,6 +45,10 @@ pcb::LayerMode pcb::LayerData::getMode() const {
 }
 pcb::NoiseMapGenerationParameters pcb::LayerData::getNoiseMapGenerationParameters() const {
 	return generationParameters;
+}
+
+pcb::FinalMaskGenerationParameters pcb::LayerData::getFinalMaskGenerationParameters() const {
+	return finalMaskGenerationParameters;
 }
 
 int pcb::LayerData::countAmountOfConsecutiveLayerModesAtEnd(const std::vector<std::unique_ptr<LayerData>>& previousLayers, pcb::LayerMode layerMode) const {
@@ -177,10 +183,77 @@ std::vector<pcb::LayerMode> pcb::MaskLayerData::determineAllowedNextModes(const 
 	return allowedNextModes;
 }
 
-pcb::FinalMaskLayerData::FinalMaskLayerData(int width, int height, int layerIndex, const RandomGenerationControlParameters& properties) : LayerData(width, height, layerIndex, LayerMode::FinalMask, properties) {}
+pcb::FinalMaskLayerData::FinalMaskLayerData(int width, int height, int layerIndex, const RandomGenerationControlParameters& properties) : LayerData(width, height, layerIndex, LayerMode::FinalMask, properties) {
+	generateFinalMaskGenerationParameters(properties);
+}
 
 std::vector<pcb::LayerMode> pcb::FinalMaskLayerData::determineAllowedNextModes(const std::vector<std::unique_ptr<LayerData>>& previousLayers) const {
 	return std::vector<LayerMode>();
+}
+
+void pcb::FinalMaskLayerData::generateFinalMaskGenerationParameters(const RandomGenerationControlParameters& properties) {
+	Logger logger;
+	logger << "---=== Final Mask Shape Data ===---\n";
+
+	RandomUniformInt layerCountValues(properties.finalMaskAmountOfLayersBounds);
+	int amountOfLayers = layerCountValues.generate();
+	RandomBinary invertChance(properties.finalMaskInversionChance);
+
+	RandomBinary binaryChance;
+	RandomUniformReal offsetMultiplicationValues(properties.finalMaskOffsetMultiplicationValueBounds);
+	RandomUniformReal radiusMultiplicationValues(properties.finalMaskRadiusMultiplicationValueBounds);
+	RandomUniformReal falloffMultiplicationValues(properties.finalMaskFalloffMultiplicationValueBounds);
+
+	std::vector<MaskShapeData> layerParameters;
+	for (int i = 0; i < amountOfLayers; i++) {
+		MaskType maskType = binaryChance.generate() ? MaskType::Circle : MaskType::Rectangle;
+		int offsetXModifier = binaryChance.generate() == true ? 1 : -1;
+		int offsetYModifier = binaryChance.generate() == true ? 1 : -1;
+		int offsetX = offsetMultiplicationValues.generate() * (offsetXModifier * 0.5f * width);
+		int offsetY = offsetMultiplicationValues.generate() * (offsetYModifier * 0.5f * height);
+		int unaffectedRadiusX = radiusMultiplicationValues.generate() * (0.25f * width);
+		int unaffectedRadiusY = radiusMultiplicationValues.generate() * (0.25f * height);
+		int falloffWidth = falloffMultiplicationValues.generate() * (0.25f * width);
+
+		if (i > 0) {
+			RandomUniformInt indexValues(0, i - 1);
+			int previousShapeIndex = indexValues.generate();
+			MaskShapeData previousShape = layerParameters.at(previousShapeIndex);
+
+			RandomUniformReal angleValues(0.0, 2 * std::numbers::pi);
+			double angleFromPreviousShapeToNewShape = angleValues.generate();
+			double cosAngle = std::cos(angleFromPreviousShapeToNewShape);
+			double sinAngle = std::sin(angleFromPreviousShapeToNewShape);
+			int minimumRadius = std::min(unaffectedRadiusX, unaffectedRadiusY);
+			int maximumDistance = minimumRadius + falloffWidth + std::min(previousShape.unaffectedRadiusX, previousShape.unaffectedRadiusY);
+			RandomUniformReal distanceMultiplierValues(properties.finalMaskCompositeMaskShapesDistanceMultiplierBounds);
+			double distanceMultiplier = distanceMultiplierValues.generate();
+			offsetX = (distanceMultiplier * cosAngle * maximumDistance) + previousShape.offsetX;
+			offsetY = (distanceMultiplier * sinAngle * maximumDistance) + previousShape.offsetY;
+
+			logger << "\n\n";
+			logger << "PreviousShapeIndex: " << previousShapeIndex << "\n";
+			logger << "AngleFromPreviousShapeToNewShape: " << angleFromPreviousShapeToNewShape * (180 / std::numbers::pi) << "\n";
+			logger << "cosAngle: " << cosAngle << "\n";
+			logger << "sinAngle: " << sinAngle << "\n";
+			logger << "minimumRadius: " << minimumRadius << "\n";
+			logger << "maximumDistance: " << maximumDistance << "\n";
+			logger << "distanceMultiplier: " << distanceMultiplier << "\n";
+			logger << "offsetFromPrevious: " << (distanceMultiplier * cosAngle * maximumDistance) << "; " << (distanceMultiplier * sinAngle * maximumDistance) << "\n";
+
+			// TODO: Check if offsets are in map range!?
+		}
+
+		logger << "offset: " << offsetX << "; " << offsetY << "\n";
+		logger << "RadiusX: " << unaffectedRadiusX << ", RadiusY: " << unaffectedRadiusY << "\n";
+		logger << "Falloff: " << falloffWidth << "\n";
+
+		layerParameters.emplace_back(maskType, offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY, falloffWidth);
+	}
+
+	logger << "---=== End of Final Mask Shape Data ===---\n\n";
+
+	finalMaskGenerationParameters = { layerParameters, invertChance.generate() };
 }
 #pragma endregion
 

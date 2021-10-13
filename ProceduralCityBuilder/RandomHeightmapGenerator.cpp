@@ -6,7 +6,6 @@
 
 #include "RandomUniformInt.hpp"
 #include "RandomUniformReal.hpp"
-#include "RandomBinary.hpp"
 #include "RandomHeightmapLayerDataGenerator.hpp"
 
 #include "Logger.hpp"
@@ -54,6 +53,7 @@ pcb::RandomGenerationControlParameters pcb::RandomHeightmapGenerator::getDefault
 	defaultProperties.finalMaskRadiusMultiplicationValueBounds = { 0.25, 1.0 };
 	defaultProperties.finalMaskFalloffMultiplicationValueBounds = { 0.3, 1.0 };
 	defaultProperties.finalMaskCompositeMaskShapesDistanceMultiplierBounds = { 0.5, 1.0 };
+	defaultProperties.finalMaskInversionChance = 0.5;
 
 	defaultProperties.adjustmentLoweringThresholds = { 50, 230 };
 	defaultProperties.adjustmentLoweringValue = 30;
@@ -93,7 +93,7 @@ std::unique_ptr<std::vector<std::unique_ptr<pcb::HeightmapLayer>>> pcb::RandomHe
 
 		if (layerData->at(i)->getMode() == LayerMode::FinalMask) {
 			logger << "Generating layer - Final Mask\n";
-			layers->push_back(std::make_unique<HeightmapLayer>(generateFinalMask(), LayerMode::Mask));
+			layers->push_back(std::make_unique<HeightmapLayer>(generateFinalMask(layerData->at(i)->getFinalMaskGenerationParameters()), LayerMode::Mask));
 		}
 		else if (layerData->at(i)->getNoiseMapGenerationParameters().isAbsolute) {
 			logger << "Generating layer, noise type: Absolute\n";
@@ -145,77 +145,21 @@ std::unique_ptr<pcb::HeightmapLayer> pcb::RandomHeightmapGenerator::generateNois
 	return layer;
 }
 
-std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateFinalMask() const {
-	RandomBinary binaryChance;
-	RandomUniformInt layerCountValues(properties.finalMaskAmountOfLayersBounds);
-	int amountOfLayers = layerCountValues.generate();
-	RandomUniformReal offsetMultiplicationValues(properties.finalMaskOffsetMultiplicationValueBounds);
-	RandomUniformReal radiusMultiplicationValues(properties.finalMaskRadiusMultiplicationValueBounds);
-	RandomUniformReal falloffMultiplicationValues(properties.finalMaskFalloffMultiplicationValueBounds);
-	std::vector<std::unique_ptr<Heightmap>> maskLayers;	
-	RandomBinary maskTypeSelector;
-
-	std::vector<MaskShapeData> maskShapeData;
+std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateFinalMask(const FinalMaskGenerationParameters& finalMaskParameters) const {
 	Logger logger;
 
-	logger << "\n\n";
+	std::vector<std::unique_ptr<Heightmap>> maskLayers;
+	for (int i = 0; i < finalMaskParameters.layerParameters.size(); i++) {
+		MaskShapeData layerParameters = finalMaskParameters.layerParameters.at(i);
 
-	for (int i = 0; i < amountOfLayers; i++) {
-		int offsetXModifier = binaryChance.generate() == true ? 1 : -1;
-		int offsetYModifier = binaryChance.generate() == true ? 1 : -1;
-		int offsetX = offsetMultiplicationValues.generate() * (offsetXModifier * 0.5f * mapWidth);
-		int offsetY = offsetMultiplicationValues.generate() * (offsetYModifier * 0.5f * mapHeight);
-		int unaffectedRadiusX = radiusMultiplicationValues.generate() * (0.25f * mapWidth);
-		int unaffectedRadiusY = radiusMultiplicationValues.generate() * (0.25f * mapHeight);
-		int falloffWidth = falloffMultiplicationValues.generate() * (0.25f * mapWidth);
-
-		if (maskShapeData.size() > 0) {
-			RandomUniformInt indexValues(0, maskShapeData.size() - 1);
-			int previousShapeIndex = indexValues.generate();
-			MaskShapeData previousShape = maskShapeData.at(previousShapeIndex);
-
-			RandomUniformReal angleValues(0.0, 2 * std::numbers::pi);
-			double angleFromPreviousShapeToNewShape = angleValues.generate();
-			double cosAngle = std::cos(angleFromPreviousShapeToNewShape);
-			double sinAngle = std::sin(angleFromPreviousShapeToNewShape);
-
-			int minimumRadius = std::min(unaffectedRadiusX, unaffectedRadiusY);
-			int maximumDistance = minimumRadius + falloffWidth + std::min(previousShape.unaffectedRadiusX, previousShape.unaffectedRadiusY);
-			RandomUniformReal distanceMultiplierValues(properties.finalMaskCompositeMaskShapesDistanceMultiplierBounds);
-			double distanceMultiplier = distanceMultiplierValues.generate();
-			offsetX = (distanceMultiplier * cosAngle * maximumDistance) + previousShape.offsetX;
-			offsetY = (distanceMultiplier * sinAngle * maximumDistance) + previousShape.offsetY;
-
-			logger << "\n\n";
-			logger << "PreviousShapeIndex: " << previousShapeIndex << "\n";
-			logger << "AngleFromPreviousShapeToNewShape: " << angleFromPreviousShapeToNewShape * (180 / std::numbers::pi) << "\n";
-			logger << "cosAngle: " << cosAngle << "\n";
-			logger << "sinAngle: " << sinAngle << "\n";
-			logger << "minimumRadius: " << minimumRadius << "\n";
-			logger << "maximumDistance: " << maximumDistance << "\n";
-			logger << "distanceMultiplier: " << distanceMultiplier << "\n";
-			logger << "offsetFromPrevious: " << (distanceMultiplier * cosAngle * maximumDistance) << "; " << (distanceMultiplier * sinAngle * maximumDistance) << "\n";
-			logger << "offset: " << offsetX << "; " << offsetY << "\n";
-
-			// TODO: Check if offsets are in map range!?
-		}
-		else {
-			logger << "offset: " << offsetX << "; " << offsetY << "\n";
-			logger << "RadiusX: " << unaffectedRadiusX << ", RadiusY: " << unaffectedRadiusY << "\n";
-			logger << "Falloff: " << falloffWidth << "\n";
-		}
-
-		bool maskTypeIsCircle = maskTypeSelector.generate();
-		if (maskTypeIsCircle) {
+		if (layerParameters.maskType == MaskType::Circle) {
 			logger << "MaskType: Circle\n";
-			maskLayers.push_back(maskGenerator.generateCircleLinearFalloffMask(unaffectedRadiusX, falloffWidth, offsetX, offsetY));			
+			maskLayers.push_back(maskGenerator.generateCircleLinearFalloffMask(layerParameters.unaffectedRadiusX, layerParameters.falloffWidth, layerParameters.offsetX, layerParameters.offsetY));
 		}
-		else {
+		else if(layerParameters.maskType == MaskType::Rectangle) {
 			logger << "MaskType: Rectangle\n";
-			maskLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask(unaffectedRadiusX, unaffectedRadiusY, falloffWidth, offsetX, offsetY));
+			maskLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask(layerParameters.unaffectedRadiusX, layerParameters.unaffectedRadiusY, layerParameters.falloffWidth, layerParameters.offsetX, layerParameters.offsetY));
 		}
-
-		maskShapeData.emplace_back(offsetX, offsetY, unaffectedRadiusX, unaffectedRadiusY, falloffWidth);
 	}
 
 	std::unique_ptr<Heightmap> mask = std::move(maskLayers.front());
@@ -224,9 +168,8 @@ std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateFinalMask
 		mask->add(*(maskLayers.at(i)));
 	}
 
-	bool invertMask = binaryChance.generate();
-	if (invertMask) {
-		logger << "Inverted mask!\n";
+	if (finalMaskParameters.invert) {
+		logger << "Inverting final mask!\n";
 		mask->invert();
 	}
 
