@@ -4,36 +4,30 @@
 #include <array>
 #include <memory>
 
-#include "RandomUniformInt.hpp"
-#include "RandomUniformReal.hpp"
 #include "RandomHeightmapLayerDataGenerator.hpp"
 
 #include "Logger.hpp"
 
-pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight) : RandomHeightmapGenerator(mapWidth, mapHeight, getDefaultControlProperties()) {}
+pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight) : RandomHeightmapGenerator(mapWidth, mapHeight, getDefaultGenerationParameters()) {}
 
-pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomGenerationControlParameters& properties) : mapWidth(mapWidth), mapHeight(mapHeight), properties(properties), noiseMapGenerator(mapWidth, mapHeight), absoluteNoiseMapGenerator(mapWidth, mapHeight), maskGenerator(mapWidth, mapHeight) {}
+pcb::RandomHeightmapGenerator::RandomHeightmapGenerator(int mapWidth, int mapHeight, const RandomHeightmapGenerationParameters& parameters) : mapWidth(mapWidth), mapHeight(mapHeight), parameters(parameters), noiseMapGenerator(mapWidth, mapHeight), absoluteNoiseMapGenerator(mapWidth, mapHeight), maskGenerator(mapWidth, mapHeight) {}
 
 // TODO: Rotation of layers (lack of rotation is especially noticeable with 'stretched' noise).
-std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generate() const {
-	std::unique_ptr<LayeredHeightmap> heightmap = generateLayeredHeightmap();
+std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generate(const std::vector<std::unique_ptr<LayerData>>& layerData) const {
+	std::unique_ptr<LayeredHeightmap> heightmap = generateLayeredHeightmap(layerData);
 	adjustLayeredHeightmap(*heightmap);
 
 	return heightmap;
 }
 
-pcb::RandomGenerationControlParameters pcb::RandomHeightmapGenerator::getDefaultControlProperties() const {
+pcb::RandomGenerationControlParameters pcb::RandomHeightmapGenerator::getDefaultRandomGenerationControlParameters() const {
 	RandomGenerationControlParameters defaultProperties;
 
 	defaultProperties.amountOfLayersBounds = { 1, 10 };
-	defaultProperties.layerBaseNoiseFrequency = 128;
-	defaultProperties.layerNoiseFrequencyAdditionalLayerModifier = 10;
-	defaultProperties.layerScalingBaseValue = 0.5;
-	defaultProperties.layerScalingAdditionalLayerModifier = 0.04;
+
 	defaultProperties.noiseOffsetValueBounds = { 1, 10 };
 	defaultProperties.defaultNoiseInversionChance = 0.5;
 	defaultProperties.absoluteNoiseChance = 0.33;
-	defaultProperties.absoluteNoiseFrequencyModifier = 2;
 	defaultProperties.absoluteNoiseInversionChance = 0.5;
 
 	defaultProperties.applyMaskOnLayerChance = 0.33;
@@ -43,7 +37,6 @@ pcb::RandomGenerationControlParameters pcb::RandomHeightmapGenerator::getDefault
 	defaultProperties.maskFalloffMultiplicationValueBounds = { 0.1, 1.0 };
 	defaultProperties.maskDefaultNoiseInversionChance = 0.5;
 	defaultProperties.maskAbsoluteNoiseChance = 0.33;
-	defaultProperties.maskAbsoluteNoiseFrequencyModifier = 2;
 	defaultProperties.maskAbsoluteNoiseInversionChance = 0.5;
 	defaultProperties.maskInversionChance = 0.5;
 
@@ -55,23 +48,40 @@ pcb::RandomGenerationControlParameters pcb::RandomHeightmapGenerator::getDefault
 	defaultProperties.finalMaskCompositeMaskShapesDistanceMultiplierBounds = { 0.5, 1.0 };
 	defaultProperties.finalMaskInversionChance = 0.5;
 
-	defaultProperties.adjustmentLoweringThresholds = { 50, 230 };
-	defaultProperties.adjustmentLoweringValue = 30;
-	defaultProperties.adjustmentScaleDownAmplitudeThreshold = 220;
 	defaultProperties.adjustmentScaleDownAmplitudeValueBounds = { 0.45, 0.75 };
-	defaultProperties.adjustmentScaleUpAmplitudeThreshold = 100;
 	defaultProperties.adjustmentScaleUpAmplitudeValueBounds = { 1.5, 2.2 };
 
 	return defaultProperties;
 }
 
-void pcb::RandomHeightmapGenerator::setControlProperties(const RandomGenerationControlParameters& properties) {
-	this->properties = properties;
+pcb::RandomHeightmapGenerationParameters pcb::RandomHeightmapGenerator::getDefaultGenerationParameters() const {
+	RandomHeightmapGenerationParameters defaultParameters;
+
+	defaultParameters.globalParameters.amountOfLayers = 5;
+
+	defaultParameters.globalParameters.adjustmentLoweringThresholds = { 50, 230 };
+	defaultParameters.globalParameters.adjustmentLoweringValue = 30;
+	defaultParameters.globalParameters.adjustmentScaleDownAmplitudeThreshold = 220;
+	defaultParameters.globalParameters.adjustmentScaleUpAmplitudeThreshold = 100;
+
+	defaultParameters.layerParameters.layerBaseNoiseFrequency = 128;
+	defaultParameters.layerParameters.layerNoiseFrequencyAdditionalLayerModifier = 10;
+	defaultParameters.layerParameters.layerScalingBaseValue = 0.5;
+	defaultParameters.layerParameters.layerScalingAdditionalLayerModifier = 0.04;
+	defaultParameters.layerParameters.absoluteNoiseFrequencyModifier = 2;
+
+	defaultParameters.layerParameters.maskAbsoluteNoiseFrequencyModifier = 2;
+
+	return defaultParameters;
 }
 
-std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generateLayeredHeightmap() const {
+void pcb::RandomHeightmapGenerator::setGenerationParameters(const RandomHeightmapGenerationParameters& parameters) {
+	this->parameters = parameters;
+}
+
+std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generateLayeredHeightmap(const std::vector<std::unique_ptr<LayerData>>& layerData) const {
 	std::unique_ptr<LayeredHeightmap> heightmap = std::make_unique<LayeredHeightmap>(mapWidth, mapHeight);
-	std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> layers = generateLayers();
+	std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> layers = generateLayers(layerData);
 
 	for (int i = 0; i < layers->size(); i++) {
 		heightmap->addLayer(std::move(layers->at(i)));
@@ -80,28 +90,24 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::RandomHeightmapGenerator::generateLa
 	return heightmap;
 }
 
-std::unique_ptr<std::vector<std::unique_ptr<pcb::HeightmapLayer>>> pcb::RandomHeightmapGenerator::generateLayers() const {
-	RandomUniformInt layerAmountValues(properties.amountOfLayersBounds);
-	int amountOfLayers = layerAmountValues.generate();
-	RandomHeightmapLayerDataGenerator layerDataGenerator;
-	std::unique_ptr<std::vector<std::unique_ptr<LayerData>>> layerData = layerDataGenerator.generateLayerData(mapWidth, mapHeight, amountOfLayers, properties);
+std::unique_ptr<std::vector<std::unique_ptr<pcb::HeightmapLayer>>> pcb::RandomHeightmapGenerator::generateLayers(const std::vector<std::unique_ptr<LayerData>>& layerData) const {
 	std::unique_ptr<std::vector<std::unique_ptr<HeightmapLayer>>> layers = std::make_unique<std::vector<std::unique_ptr<HeightmapLayer>>>();
 	Logger logger;
 
-	for (int i = 0; i < layerData->size(); i++) {
-		logger << "Loop index " << i << ", Layer index " << layerData->at(i)->getIndex() << " (these should be the same!)\n";
+	for (int i = 0; i < layerData.size(); i++) {
+		logger << "Loop index " << i << ", Layer index " << layerData.at(i)->getIndex() << " (these should be the same!)\n";
 
-		if (layerData->at(i)->getMode() == LayerMode::FinalMask) {
+		if (layerData.at(i)->getMode() == LayerMode::FinalMask) {
 			logger << "Generating layer - Final Mask\n";
-			layers->push_back(std::make_unique<HeightmapLayer>(generateFinalMask(layerData->at(i)->getFinalMaskGenerationParameters()), LayerMode::Mask));
+			layers->push_back(std::make_unique<HeightmapLayer>(generateFinalMask(layerData.at(i)->getFinalMaskGenerationParameters()), LayerMode::Mask));
 		}
-		else if (layerData->at(i)->getNoiseMapGenerationParameters().isAbsolute) {
+		else if (layerData.at(i)->getNoiseMapGenerationParameters().isAbsolute) {
 			logger << "Generating layer, noise type: Absolute\n";
-			layers->push_back(generateNoiseLayer(absoluteNoiseMapGenerator, *(layerData->at(i))));
+			layers->push_back(generateNoiseLayer(absoluteNoiseMapGenerator, *(layerData.at(i))));
 		}
 		else {
 			logger << "Generating layer, noise type: Default\n";
-			layers->push_back(generateNoiseLayer(noiseMapGenerator, *(layerData->at(i))));
+			layers->push_back(generateNoiseLayer(noiseMapGenerator, *(layerData.at(i))));
 		}
 		
 		logger << "\n";
@@ -131,7 +137,7 @@ std::unique_ptr<pcb::HeightmapLayer> pcb::RandomHeightmapGenerator::generateNois
 		layer->heightmap->raise(raiseAmount);
 	}
 	else {
-		double scalingFactor = properties.layerScalingBaseValue - (layerIndex * properties.layerScalingAdditionalLayerModifier);
+		double scalingFactor = parameters.layerParameters.layerScalingBaseValue - (layerIndex * parameters.layerParameters.layerScalingAdditionalLayerModifier);
 		logger << "Scaling layer by " << scalingFactor << " as it is not a mask\n";
 		layer->heightmap->scale(scalingFactor);
 	}
@@ -181,20 +187,18 @@ std::unique_ptr<pcb::Heightmap> pcb::RandomHeightmapGenerator::generateFinalMask
 void pcb::RandomHeightmapGenerator::adjustLayeredHeightmap(LayeredHeightmap& heightmap) const {
 	Logger logger;
 
-	if (heightmap.getLowestElevation() > properties.adjustmentLoweringThresholds.lower && heightmap.getHighestElevation() > properties.adjustmentLoweringThresholds.upper) {
+	if (heightmap.getLowestElevation() > parameters.globalParameters.adjustmentLoweringThresholds.lower && heightmap.getHighestElevation() > parameters.globalParameters.adjustmentLoweringThresholds.upper) {
 		logger << "ADJUSTMENT: Lowering heightmap\n";
-		heightmap.lower(properties.adjustmentLoweringValue);
+		heightmap.lower(parameters.globalParameters.adjustmentLoweringValue);
 	}
 
-	if (heightmap.getHighestElevation() - heightmap.getLowestElevation() > properties.adjustmentScaleDownAmplitudeThreshold) {
+	if (heightmap.getHighestElevation() - heightmap.getLowestElevation() > parameters.globalParameters.adjustmentScaleDownAmplitudeThreshold) {
 		logger << "ADJUSTMENT: Scaling down heightmap amplitude\n";
-		RandomUniformReal scaleAmplitudeFactorValues(properties.adjustmentScaleDownAmplitudeValueBounds);
-		heightmap.scaleAmplitude(scaleAmplitudeFactorValues.generate());
+		heightmap.scaleAmplitude(parameters.globalParameters.adjustmentScaleDownAmplitudeValue);
 	}
-	else if (heightmap.getHighestElevation() - heightmap.getLowestElevation() < properties.adjustmentScaleUpAmplitudeThreshold) {
-		logger << "ADJUSTMENT: Scaling up heightmap amplitude\n";
-		RandomUniformReal scaleAmplitudeFactorValues(properties.adjustmentScaleUpAmplitudeValueBounds);
-		heightmap.scaleAmplitude(scaleAmplitudeFactorValues.generate());
+	else if (heightmap.getHighestElevation() - heightmap.getLowestElevation() < parameters.globalParameters.adjustmentScaleUpAmplitudeThreshold) {
+		logger << "ADJUSTMENT: Scaling up heightmap amplitude\n";		
+		heightmap.scaleAmplitude(parameters.globalParameters.adjustmentScaleUpAmplitudeValue);
 	}
 
 	logger << "\n";

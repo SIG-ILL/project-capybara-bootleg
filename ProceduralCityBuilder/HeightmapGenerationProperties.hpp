@@ -8,14 +8,10 @@ namespace pcb {
 	class RandomGenerationControlParameters final {
 	public:
 		BoundsPair<unsigned int> amountOfLayersBounds;
-		double layerBaseNoiseFrequency;
-		double layerNoiseFrequencyAdditionalLayerModifier;
-		double layerScalingBaseValue;
-		double layerScalingAdditionalLayerModifier;
+
 		BoundsPair<int> noiseOffsetValueBounds;
 		double defaultNoiseInversionChance;
 		double absoluteNoiseChance;
-		double absoluteNoiseFrequencyModifier;
 		double absoluteNoiseInversionChance;
 
 		double applyMaskOnLayerChance;
@@ -25,7 +21,6 @@ namespace pcb {
 		BoundsPair<double> maskFalloffMultiplicationValueBounds;
 		double maskDefaultNoiseInversionChance;
 		double maskAbsoluteNoiseChance;
-		double maskAbsoluteNoiseFrequencyModifier;
 		double maskAbsoluteNoiseInversionChance;
 		double maskInversionChance;
 
@@ -37,11 +32,7 @@ namespace pcb {
 		BoundsPair<double> finalMaskCompositeMaskShapesDistanceMultiplierBounds;
 		double finalMaskInversionChance;
 
-		BoundsPair<unsigned int> adjustmentLoweringThresholds;
-		unsigned int adjustmentLoweringValue;
-		unsigned int adjustmentScaleDownAmplitudeThreshold;
 		BoundsPair<double> adjustmentScaleDownAmplitudeValueBounds;
-		unsigned int adjustmentScaleUpAmplitudeThreshold;
 		BoundsPair<double> adjustmentScaleUpAmplitudeValueBounds;
 	};
 #pragma endregion
@@ -103,4 +94,33 @@ namespace pcb {
 		bool invert;
 	};
 #pragma endregion
+
+	class RandomHeightmapGenerationGlobalParameters final {
+	public:
+		int amountOfLayers;
+
+		BoundsPair<unsigned int> adjustmentLoweringThresholds;
+		unsigned int adjustmentLoweringValue;
+		unsigned int adjustmentScaleDownAmplitudeThreshold;
+		double adjustmentScaleDownAmplitudeValue;
+		unsigned int adjustmentScaleUpAmplitudeThreshold;
+		double adjustmentScaleUpAmplitudeValue;
+	};
+
+	class RandomHeightmapGenerationLayerParameters final {
+	public:
+		double layerBaseNoiseFrequency;
+		double layerNoiseFrequencyAdditionalLayerModifier;
+		double layerScalingBaseValue;
+		double layerScalingAdditionalLayerModifier;
+		double absoluteNoiseFrequencyModifier;
+
+		double maskAbsoluteNoiseFrequencyModifier;
+	};
+
+	class RandomHeightmapGenerationParameters final {
+	public:
+		RandomHeightmapGenerationGlobalParameters globalParameters;
+		RandomHeightmapGenerationLayerParameters layerParameters;
+	};
 }
