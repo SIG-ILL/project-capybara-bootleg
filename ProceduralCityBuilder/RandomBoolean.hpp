@@ -3,10 +3,10 @@
 #include <random>
 
 namespace pcb {
-	class RandomBinary final {
+	class RandomBoolean final {
 	public:
-		RandomBinary();
-		RandomBinary(double trueProbability);
+		RandomBoolean();
+		RandomBoolean(double trueProbability);
 
 		bool generate();
 

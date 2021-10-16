@@ -99,7 +99,7 @@
     <ClCompile Include="RandomUniformReal.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="RandomBinary.cpp">
+    <ClCompile Include="RandomBoolean.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Logger.cpp">
@@ -145,6 +145,12 @@
       <Filter>Source Files\Terrain Generation\Model Generation</Filter>
     </ClCompile>
     <ClCompile Include="RandomHeightmapLayerDataGenerator.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="LayerData.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation</Filter>
+    </ClCompile>
+    <ClCompile Include="RandomHeightmapGenerationDataGenerator.cpp">
       <Filter>Source Files\Terrain Generation\Heightmap Generation</Filter>
     </ClCompile>
   </ItemGroup>
@@ -197,7 +203,7 @@
     <ClInclude Include="RandomUniformReal.hpp">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="RandomBinary.hpp">
+    <ClInclude Include="RandomBoolean.hpp">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Logger.hpp">
@@ -258,6 +264,18 @@
       <Filter>Header Files\Terrain Generation\Model Generation</Filter>
     </ClInclude>
     <ClInclude Include="GradientDirection.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomHeightmapGenerationData.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="LayerData.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomGenerationControlParameters.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomHeightmapGenerationDataGenerator.hpp">
       <Filter>Header Files\Terrain Generation\Heightmap Generation</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,8 +5,7 @@
 
 #include "MaskGenerator.hpp"
 #include "RandomHeightmapGenerator.hpp"
-#include "RandomUniformInt.hpp"
-#include "RandomUniformReal.hpp"
+#include "RandomHeightmapGenerationDataGenerator.hpp"
 
 pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
@@ -53,22 +52,10 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate(
 
 std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generateRandom() const {
 	RandomHeightmapGenerator generator(mapWidth, mapHeight);
-	RandomHeightmapGenerationParameters parameters = generator.getDefaultGenerationParameters();
-	RandomGenerationControlParameters randomGenerationControlParameters = generator.getDefaultRandomGenerationControlParameters();
+	RandomHeightmapGenerationDataGenerator dataGenerator;
+	RandomHeightmapGenerationData generationData = dataGenerator.generate(mapWidth, mapHeight);
 
-	RandomUniformInt layerAmountValues(randomGenerationControlParameters.amountOfLayersBounds);
-	RandomUniformReal scaleDownAmplitudeFactorValues(randomGenerationControlParameters.adjustmentScaleDownAmplitudeValueBounds);
-	RandomUniformReal scaleUpAmplitudeFactorValues(randomGenerationControlParameters.adjustmentScaleUpAmplitudeValueBounds);
-	parameters.globalParameters.amountOfLayers = layerAmountValues.generate();
-	parameters.globalParameters.adjustmentScaleDownAmplitudeValue = scaleDownAmplitudeFactorValues.generate();
-	parameters.globalParameters.adjustmentScaleUpAmplitudeValue = scaleUpAmplitudeFactorValues.generate();
-	parameters.layerParameters.layerBaseNoiseFrequency = 256;
-	parameters.layerParameters.layerNoiseFrequencyAdditionalLayerModifier = 20;
-	generator.setGenerationParameters(parameters);
-
-	RandomHeightmapLayerDataGenerator layerDataGenerator;
-	std::unique_ptr<std::vector<std::unique_ptr<LayerData>>> layerData = layerDataGenerator.generateLayerData(mapWidth, mapHeight, randomGenerationControlParameters, parameters);
-	return generator.generate(*layerData);
+	return generator.generate(generationData);
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::LayeredHeightmapGenerator::generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {

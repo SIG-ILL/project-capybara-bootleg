@@ -148,6 +148,21 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCombinedMask(const C
 		}
 		else if (layerParameters.maskType == MaskType::LinearGradient) {		// TODO: If there already is a linear gradient in the vector, don't add the gradient that goes the opposite way as they will cancel each other out and producte a mask that doesn't do anything (or masks *everything* if it's inverted).
 			logger << "MaskType: Linear Gradient\n";
+			switch (layerParameters.gradientDirection) {
+			case GradientDirection::Up:
+				logger << "GradientDirection: Up\n";
+				break;
+			case GradientDirection::Left:
+				logger << "GradientDirection: Left\n";
+				break;
+			case GradientDirection::Down:
+				logger << "GradientDirection: Down\n";
+				break;
+			case GradientDirection::Right:
+				logger << "GradientDirection: Right\n";
+				break;
+			}
+
 			maskLayers.push_back(generateLinearGradientMask(layerParameters.gradientDirection));
 		}
 		else if (layerParameters.maskType == MaskType::Noise) {

@@ -13,7 +13,7 @@ namespace pcb {
 		return returnValue;
 	}
 
-	template  <typename T, size_t N> std::vector<unsigned char> bigToLittleEndian(T source) {
+	template <typename T, size_t N> std::vector<unsigned char> bigToLittleEndian(T source) {
 		std::vector<unsigned char> returnValue(N);
 
 		const int BYTE_MASK = 0b11111111;
