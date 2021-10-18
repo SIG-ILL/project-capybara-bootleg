@@ -87,76 +87,61 @@ void pcb::Terrain::setVertexDataValues(const Heightmap& heightmap, double scale,
 	const GLfloat BLUE_RANGE = maxBlue - minBlue;
 
 	for (int y = 0; y < MAX_LOOP_HEIGHT_INDEX; y++) {
+		int vertexY = y;
+		int vertexYPlusOne = y + 1;
+		int indexRowStartIndex = (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * MAX_LOOP_WIDTH_INDEX * y);
+
 		for (int x = 0; x < MAX_LOOP_WIDTH_INDEX; x++) {
-			int index = (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * MAX_LOOP_WIDTH_INDEX * y) + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * x);
+			int index = indexRowStartIndex + (VERTICES_PER_QUAD * COORDINATE_ELEMENTS_PER_VERTEX * x);
 			int vertexX = x;
-			int vertexY = y;
-			GLfloat elevation = static_cast<GLfloat>(heightmap.getValueAt(x, y));
-			(*quadsVertexCoordinates)[index] = static_cast<GLfloat>(scale * vertexX);
-			(*quadsVertexCoordinates)[index + 1] = static_cast<GLfloat>(scale * elevation);
-			(*quadsVertexCoordinates)[index + 2] = static_cast<GLfloat>(scale * vertexY);
+			int vertexXPlusOne = x + 1;
 
-			GLfloat colorValue = elevation / highestElevationValueDivider;
-			(*quadsColors)[index] = minRed + (colorValue * RED_RANGE);
-			(*quadsColors)[index + 1] = minGreen + (colorValue * GREEN_RANGE);
-			(*quadsColors)[index + 2] = minBlue + (colorValue * BLUE_RANGE);
+			GLfloat elevation1 = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
+			GLfloat elevation2 = static_cast<GLfloat>(heightmap.getValueAt(vertexXPlusOne, vertexY));
+			GLfloat elevation3 = static_cast<GLfloat>(heightmap.getValueAt(vertexXPlusOne, vertexYPlusOne));
+			GLfloat elevation4 = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexYPlusOne));
 
-			vertexX = x + 1;
-			vertexY = y;
-			elevation = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
-			(*quadsVertexCoordinates)[index + 3] = static_cast<GLfloat>(scale * vertexX);
-			(*quadsVertexCoordinates)[index + 4] = static_cast<GLfloat>(scale * elevation);
-			(*quadsVertexCoordinates)[index + 5] = static_cast<GLfloat>(scale * vertexY);
+			GLfloat scaledVertexX = static_cast<GLfloat>(scale * vertexX);
+			GLfloat scaledVertexY = static_cast<GLfloat>(scale * vertexY);
+			GLfloat scaledVertexXPlusOne = static_cast<GLfloat>(scale * vertexXPlusOne);
+			GLfloat scaledVertexYPlusOne = static_cast<GLfloat>(scale * vertexYPlusOne);
 
-			colorValue = elevation / highestElevationValueDivider;
-			(*quadsColors)[index + 3] = minRed + (colorValue * RED_RANGE);
-			(*quadsColors)[index + 4] = minGreen + (colorValue * GREEN_RANGE);
-			(*quadsColors)[index + 5] = minBlue + (colorValue * BLUE_RANGE);
+			GLfloat scaledElevation1 = static_cast<GLfloat>(scale * elevation1);
+			GLfloat scaledElevation2 = static_cast<GLfloat>(scale * elevation2);
+			GLfloat scaledElevation3 = static_cast<GLfloat>(scale * elevation3);
+			GLfloat scaledElevation4 = static_cast<GLfloat>(scale * elevation4);
 
-			vertexX = x + 1;
-			vertexY = y + 1;
-			elevation = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
-			(*quadsVertexCoordinates)[index + 6] = static_cast<GLfloat>(scale * vertexX);
-			(*quadsVertexCoordinates)[index + 7] = static_cast<GLfloat>(scale * elevation);
-			(*quadsVertexCoordinates)[index + 8] = static_cast<GLfloat>(scale * vertexY);
-
-			colorValue = elevation / highestElevationValueDivider;
-			(*quadsColors)[index + 6] = minRed + (colorValue * RED_RANGE);
-			(*quadsColors)[index + 7] = minGreen + (colorValue * GREEN_RANGE);
-			(*quadsColors)[index + 8] = minBlue + (colorValue * BLUE_RANGE);
-
-			vertexX = x;
-			vertexY = y + 1;
-			elevation = static_cast<GLfloat>(heightmap.getValueAt(vertexX, vertexY));
-			(*quadsVertexCoordinates)[index + 9] = static_cast<GLfloat>(scale * vertexX);
-			(*quadsVertexCoordinates)[index + 10] = static_cast<GLfloat>(scale * elevation);
-			(*quadsVertexCoordinates)[index + 11] = static_cast<GLfloat>(scale * vertexY);
-
-			colorValue = elevation / highestElevationValueDivider;
-			(*quadsColors)[index + 9] = minRed + (colorValue * RED_RANGE);
-			(*quadsColors)[index + 10] = minGreen + (colorValue * GREEN_RANGE);
-			(*quadsColors)[index + 11] = minBlue + (colorValue * BLUE_RANGE);
+			GLfloat colorValue1 = elevation1 / highestElevationValueDivider;
+			GLfloat colorValue2 = elevation2 / highestElevationValueDivider;
+			GLfloat colorValue3 = elevation3 / highestElevationValueDivider;
+			GLfloat colorValue4 = elevation4 / highestElevationValueDivider;
+			
+			(*quadsVertexCoordinates)[index] = scaledVertexX;
+			(*quadsVertexCoordinates)[index + 1] = scaledElevation1;
+			(*quadsVertexCoordinates)[index + 2] = scaledVertexY;
+			(*quadsVertexCoordinates)[index + 3] = scaledVertexXPlusOne;
+			(*quadsVertexCoordinates)[index + 4] = scaledElevation2;
+			(*quadsVertexCoordinates)[index + 5] = scaledVertexY;
+			(*quadsVertexCoordinates)[index + 6] = scaledVertexXPlusOne;
+			(*quadsVertexCoordinates)[index + 7] = scaledElevation3;
+			(*quadsVertexCoordinates)[index + 8] = scaledVertexYPlusOne;
+			(*quadsVertexCoordinates)[index + 9] = scaledVertexX;
+			(*quadsVertexCoordinates)[index + 10] = scaledElevation4;
+			(*quadsVertexCoordinates)[index + 11] = scaledVertexYPlusOne;
+			
+			(*quadsColors)[index] = minRed + (colorValue1 * RED_RANGE);
+			(*quadsColors)[index + 1] = minGreen + (colorValue1 * GREEN_RANGE);
+			(*quadsColors)[index + 2] = minBlue + (colorValue1 * BLUE_RANGE);
+			(*quadsColors)[index + 3] = minRed + (colorValue2 * RED_RANGE);
+			(*quadsColors)[index + 4] = minGreen + (colorValue2 * GREEN_RANGE);
+			(*quadsColors)[index + 5] = minBlue + (colorValue2 * BLUE_RANGE);
+			(*quadsColors)[index + 6] = minRed + (colorValue3 * RED_RANGE);
+			(*quadsColors)[index + 7] = minGreen + (colorValue3 * GREEN_RANGE);
+			(*quadsColors)[index + 8] = minBlue + (colorValue3 * BLUE_RANGE);
+			(*quadsColors)[index + 9] = minRed + (colorValue4 * RED_RANGE);
+			(*quadsColors)[index + 10] = minGreen + (colorValue4 * GREEN_RANGE);
+			(*quadsColors)[index + 11] = minBlue + (colorValue4 * BLUE_RANGE);
 		}
-	}
-}
-
-void pcb::Terrain::setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation) {
-	double scale = getScale();
-	GLfloat highestElevationValueDivider = 255;	// TODO: Highest value of the unsigned char heightmap data. This is an assumption and should be changed to be actually read from the source heightmap, in case the type of the source data changes.
-	if (scaleToHighestElevation) {
-		highestElevationValueDivider = static_cast<GLfloat>(highestElevation / scale);
-	}
-
-	const int COORDINATE_ELEMENTS_PER_VERTEX = 3;
-	const GLfloat RED_RANGE = maxRed - minRed;
-	const GLfloat GREEN_RANGE = maxGreen - minGreen;
-	const GLfloat BLUE_RANGE = maxBlue - minBlue;
-	for (int i = 0; i < (COORDINATE_ELEMENTS_PER_VERTEX * quadsVertexCount); i += COORDINATE_ELEMENTS_PER_VERTEX) {
-		GLfloat elevation = quadsVertexCoordinates->at(i + 1);
-		GLfloat colorValue = static_cast<GLfloat>((elevation / scale) / highestElevationValueDivider);
-		(*quadsColors)[i] = minRed + (colorValue * RED_RANGE);
-		(*quadsColors)[i + 1] = minGreen + (colorValue * GREEN_RANGE);
-		(*quadsColors)[i + 2] = minBlue + (colorValue * BLUE_RANGE);
 	}
 }
 

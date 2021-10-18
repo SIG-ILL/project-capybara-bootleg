@@ -48,6 +48,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glm;E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -64,6 +65,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>E:\OpenGLDevLibs\glm;E:\OpenGLDevLibs\glew-2.1.0\include;E:\OpenGLDevLibs\freeglut\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

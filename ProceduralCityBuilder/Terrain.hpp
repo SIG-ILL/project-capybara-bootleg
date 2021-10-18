@@ -15,7 +15,6 @@ namespace pcb {
 		int getQuadsVertexCount() const;
 		std::shared_ptr<std::vector<GLfloat>> getQuadsColors() const;
 		std::unique_ptr<Heightmap> generateHeightmap() const;
-		void setHeightBasedColorGradient(GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation);
 
 	private:
 		int gridWidthInVertices;
