@@ -10,10 +10,12 @@ std::unique_ptr<pcb::Heightmap> pcb::NoiseMapGenerator::generate(double noiseSam
 	const double samplingDistanceY = 1.0 / noiseSamplingFrequencyY;
 
 	for (int y = 0; y < width; y++) {
+		int indexRowStartIndex = (y * width);
+		double noiseInputY = yOffset + (y * samplingDistanceY);
+
 		for (int x = 0; x < height; x++) {
-			double noiseInputX = xOffset + (x * samplingDistanceX);
-			double noiseInputY = yOffset + (y * samplingDistanceY);
-			int index = (y * width) + x;
+			double noiseInputX = xOffset + (x * samplingDistanceX);			
+			int index = indexRowStartIndex + x;
 			(*noiseMap)[index] = static_cast<unsigned char>(generateElevationForNoiseCoordinates(noiseInputX, noiseInputY));
 		}
 	}

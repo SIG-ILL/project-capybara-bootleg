@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#include <chrono>
 
 #include "Logger.hpp"
 #include "GradientDirection.hpp"
@@ -15,35 +16,44 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 	}
 
 	std::vector<unsigned char> maskData(width * height, 0);
-	const float centerX = (width - 1) / 2.0f;
-	const float centerY = (height - 1) / 2.0f;
+	const float CENTER_X = (width - 1) / 2.0f;
+	const float CENTER_Y = (height - 1) / 2.0f;
 
 	for (int y = 0; y < height; y++) {
+		int indexRowStartIndex = (y * width);
+		float verticalDistance = std::abs(y - CENTER_Y) + (height % 2 == 1 ? 0.5f : 0.0f);
+		float verticalDistanceSquared = (verticalDistance * verticalDistance);
+
 		for (int x = 0; x < width; x++) {
 			unsigned char value = MAX_MASK_VALUE;
-			float horizontalDistance = std::abs(x - centerX) + (width % 2 == 1 ? 0.5f : 0.0f);
-			float verticalDistance = std::abs(y - centerY) + (height % 2 == 1 ? 0.5f : 0.0f);
-			float distanceToCenter = std::sqrt((horizontalDistance * horizontalDistance) + (verticalDistance * verticalDistance));
+			float horizontalDistance = std::abs(x - CENTER_X) + (width % 2 == 1 ? 0.5f : 0.0f);			
+			float distanceToCenter = std::sqrt((horizontalDistance * horizontalDistance) + verticalDistanceSquared);
 
 			if (distanceToCenter >= unaffectedCircleRadiusInPixels) {
 				float progressIntoFalloffArea = std::min(((distanceToCenter - unaffectedCircleRadiusInPixels) / falloffWidthInPixels), 1.0f);
 				value = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
-			int index = (y * width) + x;
+			int index = indexRowStartIndex + x;
 			maskData[index] = value;
 		}
 	}
 
 	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>(maskData.size(), 0);
 	for (int y = 0; y < height; y++) {
+		int indexRowStartIndex = (y * width);
+		int offsettedY = (y - offsetY);
+		int offsettedIndexRowStartIndex = (offsettedY * width);
+
 		for (int x = 0; x < width; x++) {
-			int index = (y * width) + x;
-			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
+			int index = indexRowStartIndex + x;
+			int offsettedX = x - offsetX;
+
+			if (offsettedY < 0 || offsettedX < 0 || offsettedY > height - 1 || offsettedX > width - 1) {
 				(*offsettedData)[index] = 0;
 			}
 			else {
-				(*offsettedData)[index] = maskData.at(((y - offsetY) * width) + (x - offsetX));
+				(*offsettedData)[index] = maskData.at(offsettedIndexRowStartIndex + offsettedX);
 			}			
 		}
 	}
@@ -58,39 +68,47 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFallo
 
 	std::vector<unsigned char> maskData(width * height, 0);
 
-	const float centerX = (width - 1) / 2.0f;
-	const float centerY = (height - 1) / 2.0f;
+	const float CENTER_X = (width - 1) / 2.0f;
+	const float CENTER_Y = (height - 1) / 2.0f;
 
 	for (int y = 0; y < height; y++) {
+		int indexRowStartIndex = (y * width);
+
+		float verticalDistance = std::abs(y - CENTER_Y) + (height % 2 == 1 ? 0.5f : 0.0f);
+		float verticalProgressIntoFalloffArea = std::min(((verticalDistance - verticalUnaffectedRadiusInPixels) / falloffWidthInPixels), 1.0f);
+		unsigned char verticalValue = MAX_MASK_VALUE;
+		if (verticalDistance >= verticalUnaffectedRadiusInPixels) {
+			verticalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (verticalProgressIntoFalloffArea * MAX_MASK_VALUE)));
+		}
+
 		for (int x = 0; x < width; x++) {
 			unsigned char horizontalValue = MAX_MASK_VALUE;
-			float horizontalDistance = std::abs(x - centerX) + (width % 2 == 1 ? 0.5f : 0.0f);
+			float horizontalDistance = std::abs(x - CENTER_X) + (width % 2 == 1 ? 0.5f : 0.0f);
 			if (horizontalDistance >= horizontalUnaffectedRadiusInPixels) {
 				float progressIntoFalloffArea = std::min(((horizontalDistance - horizontalUnaffectedRadiusInPixels) / falloffWidthInPixels), 1.0f);
 				horizontalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
-			unsigned char verticalValue = MAX_MASK_VALUE;
-			float verticalDistance = std::abs(y - centerY) + (height % 2 == 1 ? 0.5f : 0.0f);
-			if (verticalDistance >= verticalUnaffectedRadiusInPixels) {
-				float progressIntoFalloffArea = std::min(((verticalDistance - verticalUnaffectedRadiusInPixels) / falloffWidthInPixels), 1.0f);
-				verticalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
-			}
-
-			int index = (y * width) + x;
+			int index = indexRowStartIndex + x;
 			maskData[index] = std::min(horizontalValue, verticalValue);
 		}
 	}
 
 	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>(maskData.size(), 0);
 	for (int y = 0; y < height; y++) {
+		int indexRowStartIndex = (y * width);
+		int offsettedY = (y - offsetY);
+		int offsettedIndexRowStartIndex = (offsettedY * width);
+
 		for (int x = 0; x < width; x++) {
-			int index = (y * width) + x;
-			if (y - offsetY < 0 || x - offsetX < 0 || y - offsetY > height - 1 || x - offsetX > width - 1) {
+			int index = indexRowStartIndex + x;
+			int offsettedX = x - offsetX;
+
+			if (offsettedY < 0 || offsettedX < 0 || offsettedY > height - 1 || offsettedX > width - 1) {
 				(*offsettedData)[index] = 0;
 			}
 			else {
-				(*offsettedData)[index] = maskData.at(((y - offsetY) * width) + (x - offsetX));
+				(*offsettedData)[index] = maskData.at(offsettedIndexRowStartIndex + offsettedX);
 			}
 		}
 	}
@@ -104,30 +122,67 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(G
 	}
 
 	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>(width * height, 0);
-
-	for (int y = 0; y < height; y++) {
-		unsigned char gradientValue;
-		if (direction == GradientDirection::Up) {
-			gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((y / static_cast<float>(height)) * MAX_MASK_VALUE));			
-		}
-		else if (direction == GradientDirection::Down) {
-			gradientValue = static_cast<unsigned char>(std::round((y / static_cast<float>(height)) * MAX_MASK_VALUE));
-		}	
-
-		for (int x = 0; x < width; x++) {
-			if (direction == GradientDirection::Left) {
-				gradientValue = static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
-			}
-			else if (direction == GradientDirection::Right) {
-				gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
-			}
-
-			int index = (y * width) + x;
-			(*maskData)[index] = gradientValue;
-		}
+	// The different directions have different functions for performace/optimization reasons.
+	if (direction == GradientDirection::Down) {
+		generateLinearGradientMaskDown(*maskData);
+	}
+	else if (direction == GradientDirection::Up) {
+		generateLinearGradientMaskUp(*maskData);
+	}
+	else if (direction == GradientDirection::Left) {
+		generateLinearGradientMaskLeft(*maskData);
+	}
+	else {
+		generateLinearGradientMaskRight(*maskData);
 	}
 
 	return std::make_unique<Heightmap>(width, height, std::move(maskData));
+}
+
+void pcb::MaskGenerator::generateLinearGradientMaskUp(std::vector<unsigned char>& maskData) const {
+	for (int y = 0; y < height; y++) {
+		unsigned char gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((y / static_cast<float>(height)) * MAX_MASK_VALUE));
+		int indexRowStartIndex = (y * width);
+
+		for (int x = 0; x < width; x++) {
+			int index = indexRowStartIndex + x;
+			maskData[index] = gradientValue;
+		}
+	}
+}
+
+void pcb::MaskGenerator::generateLinearGradientMaskDown(std::vector<unsigned char>& maskData) const {
+	for (int y = 0; y < height; y++) {
+		unsigned char gradientValue = static_cast<unsigned char>(std::round((y / static_cast<float>(height)) * MAX_MASK_VALUE));
+		int indexRowStartIndex = (y * width);
+
+		for (int x = 0; x < width; x++) {
+			int index = indexRowStartIndex + x;
+			maskData[index] = gradientValue;
+		}
+	}
+}
+
+void pcb::MaskGenerator::generateLinearGradientMaskLeft(std::vector<unsigned char>& maskData) const {
+	for (int x = 0; x < width; x++) {
+		unsigned char gradientValue = static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
+
+		for (int y = 0; y < height; y++) {
+			int index = (y * width) + x;
+			maskData[index] = gradientValue;
+		}
+	}
+}
+
+void pcb::MaskGenerator::generateLinearGradientMaskRight(std::vector<unsigned char>& maskData) const {
+	for (int x = 0; x < width; x++) {
+		unsigned char gradientValue = MAX_MASK_VALUE - static_cast<unsigned char>(std::round((x / static_cast<float>(width)) * MAX_MASK_VALUE));
+
+		for (int y = 0; y < height; y++) {
+			int index = (y * width) + x;
+			maskData[index] = gradientValue;
+		}
+	}
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCombinedMask(const CombinedMaskGenerationParameters& parameters) const {
@@ -146,7 +201,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCombinedMask(const C
 			logger << "MaskType: Rectangle\n";
 			maskLayers.push_back(generateRectangleLinearFalloffMask(layerParameters.unaffectedRadiusX, layerParameters.unaffectedRadiusY, layerParameters.falloffWidth, layerParameters.offsetX, layerParameters.offsetY));
 		}
-		else if (layerParameters.maskType == MaskType::LinearGradient) {		// TODO: If there already is a linear gradient in the vector, don't add the gradient that goes the opposite way as they will cancel each other out and producte a mask that doesn't do anything (or masks *everything* if it's inverted).
+		else if (layerParameters.maskType == MaskType::LinearGradient) {
 			logger << "MaskType: Linear Gradient\n";
 			switch (layerParameters.gradientDirection) {
 			case GradientDirection::Up:
@@ -186,7 +241,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCombinedMask(const C
 	std::unique_ptr<Heightmap> mask = std::move(maskLayers.front());
 	maskLayers.erase(maskLayers.begin());
 	for (int i = 0; i < maskLayers.size(); i++) {
-		mask->add(*(maskLayers.at(i)));
+		mask->add(*(maskLayers[i]));
 	}
 
 	if (parameters.invert) {

@@ -78,11 +78,15 @@ void pcb::Heightmap::add(const pcb::Heightmap& other) {
 	const int widthConditionValue = std::min(width, other.width);
 
 	for (int y = 0; y < heightConditionValue; y++) {
-		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues->at((y * width) + x) = static_cast<unsigned char>(std::min(this->elevationValues->at((y * width) + x) + other.elevationValues->at((y * other.width) + x), 255));
+		int indexRowStartIndex = (y * width);
 
-			if (this->elevationValues->at((y * width) + x) > highestElevation) {
-				highestElevation = this->elevationValues->at((y * width) + x);
+		for (int x = 0; x < widthConditionValue; x++) {
+			int index = indexRowStartIndex + x;
+			unsigned char newValue = static_cast<unsigned char>(std::min(this->elevationValues->at(index) + other.elevationValues->at((y * other.width) + x), 255));
+			this->elevationValues->at(index) = newValue;
+
+			if (newValue > highestElevation) {
+				highestElevation = newValue;
 			}
 		}
 	}
@@ -95,11 +99,15 @@ void pcb::Heightmap::subtract(const pcb::Heightmap& other) {
 	const int widthConditionValue = std::min(width, other.width);
 
 	for (int y = 0; y < heightConditionValue; y++) {
-		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues->at((y * width) + x) = static_cast<unsigned char>(std::max(0, this->elevationValues->at((y * width) + x) - other.elevationValues->at((y * other.width) + x)));
+		int indexRowStartIndex = (y * width);
 
-			if (this->elevationValues->at((y * width) + x) < lowestElevation) {
-				lowestElevation = this->elevationValues->at((y * width) + x);
+		for (int x = 0; x < widthConditionValue; x++) {
+			int index = indexRowStartIndex + x;
+			unsigned char newValue = static_cast<unsigned char>(std::max(0, this->elevationValues->at(index) - other.elevationValues->at((y * other.width) + x)));
+			this->elevationValues->at(index) = newValue;
+
+			if (newValue < lowestElevation) {
+				lowestElevation = newValue;
 			}
 		}
 	}
@@ -150,8 +158,11 @@ void pcb::Heightmap::mask(const pcb::Heightmap& mask) {
 	const double maskNormalizationValue = 1.0 / 255;
 
 	for (int y = 0; y < heightConditionValue; y++) {
+		int indexRowStartIndex = (y * width);
+
 		for (int x = 0; x < widthConditionValue; x++) {
-			this->elevationValues->at((y * width) + x) = std::clamp(static_cast<unsigned char>(std::round(mask.elevationValues->at((y * mask.width) + x) * (maskNormalizationValue * this->elevationValues->at((y * width) + x)))), MIN_ELEVATION_VALUE, MAX_ELEVATION_VALUE);
+			int index = indexRowStartIndex + x;
+			this->elevationValues->at(index) = std::clamp(static_cast<unsigned char>(std::round(mask.elevationValues->at((y * mask.width) + x) * (maskNormalizationValue * this->elevationValues->at(index)))), MIN_ELEVATION_VALUE, MAX_ELEVATION_VALUE);
 		}
 	}
 

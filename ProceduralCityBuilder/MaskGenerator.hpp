@@ -24,5 +24,10 @@ namespace pcb {
 		int height;
 		AbsoluteNoiseMapGenerator absoluteNoiseMapGenerator;
 		NoiseMapGenerator noiseMapGenerator;
+
+		void generateLinearGradientMaskUp(std::vector<unsigned char>& maskData) const;
+		void generateLinearGradientMaskDown(std::vector<unsigned char>& maskData) const;
+		void generateLinearGradientMaskLeft(std::vector<unsigned char>& maskData) const;
+		void generateLinearGradientMaskRight(std::vector<unsigned char>& maskData) const;
 	};
 }

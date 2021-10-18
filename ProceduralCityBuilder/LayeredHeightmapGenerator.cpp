@@ -2,10 +2,13 @@
 
 #include <cmath>
 #include <random>
+#include <chrono>
 
 #include "MaskGenerator.hpp"
 #include "RandomHeightmapGenerator.hpp"
 #include "RandomHeightmapGenerationDataGenerator.hpp"
+
+#include "Logger.hpp"
 
 pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
@@ -55,7 +58,16 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generateR
 	RandomHeightmapGenerationDataGenerator dataGenerator;
 	RandomHeightmapGenerationData generationData = dataGenerator.generate(mapWidth, mapHeight);
 
-	return generator.generate(generationData);
+	//return generator.generate(generationData);
+
+	auto startTime = std::chrono::high_resolution_clock::now();
+	auto returnValue = generator.generate(generationData);
+	auto endTime = std::chrono::high_resolution_clock::now();
+	Logger logger;
+	logger << "Layered Random Heightmap generated in " << static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count()) << " microseconds or " << static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << " milliseconds.\n";
+	logger << "This is an average of " << static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count() / generationData.layerData->size()) << " microseconds or " << static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() / generationData.layerData->size()) << " milliseconds per layer (" << generationData.layerData->size() << ").\n";
+
+	return returnValue;
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::LayeredHeightmapGenerator::generateHeightmap(double noiseSamplingFrequencyX, double noiseSamplingFrequencyY, double xOffset, double yOffset) const {
