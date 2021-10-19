@@ -3,10 +3,10 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
-#include <chrono>
+
+#include "GradientDirection.hpp"
 
 #include "Logger.hpp"
-#include "GradientDirection.hpp"
 
 pcb::MaskGenerator::MaskGenerator(int width, int height) : width(width), height(height), absoluteNoiseMapGenerator(width, height), noiseMapGenerator(width, height) {}
 
@@ -15,19 +15,27 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	std::vector<unsigned char> maskData(width * height, 0);
-	const float CENTER_X = (width - 1) / 2.0f;
-	const float CENTER_Y = (height - 1) / 2.0f;
+	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>(width * height, 0);
+	const float CENTER_X = ((width - 1) / 2.0f) + offsetX;
+	const float CENTER_Y = ((height - 1) / 2.0f) + offsetY;
+	const float VERTICAL_DISTANCE_ADDITION = (height % 2 == 1 ? 0.5f : 0.0f);
+	const float HORIZONTAL_DISTANCE_ADDITION = (width % 2 == 1 ? 0.5f : 0.0f);
 
-	for (int y = 0; y < height; y++) {
+	int circleTotalRadius = unaffectedCircleRadiusInPixels + falloffWidthInPixels;
+	int minX = static_cast<int>(std::round(std::max((CENTER_X - circleTotalRadius), 0.0f)));
+	int maxX = static_cast<int>(std::round(std::min((CENTER_X + circleTotalRadius), static_cast<float>(width))));
+	int minY = static_cast<int>(std::round(std::max((CENTER_Y - circleTotalRadius), 0.0f)));
+	int maxY = static_cast<int>(std::round(std::min((CENTER_Y + circleTotalRadius), static_cast<float>(height))));
+
+	for (int y = minY; y < maxY; y++) {
 		int indexRowStartIndex = (y * width);
-		float verticalDistance = std::abs(y - CENTER_Y) + (height % 2 == 1 ? 0.5f : 0.0f);
+		float verticalDistance = std::abs(y - CENTER_Y) + VERTICAL_DISTANCE_ADDITION;
 		float verticalDistanceSquared = (verticalDistance * verticalDistance);
 
-		for (int x = 0; x < width; x++) {
-			unsigned char value = MAX_MASK_VALUE;
-			float horizontalDistance = std::abs(x - CENTER_X) + (width % 2 == 1 ? 0.5f : 0.0f);			
+		for (int x = minX; x < maxX; x++) {
+			float horizontalDistance = std::abs(x - CENTER_X) + HORIZONTAL_DISTANCE_ADDITION;
 			float distanceToCenter = std::sqrt((horizontalDistance * horizontalDistance) + verticalDistanceSquared);
+			unsigned char value = MAX_MASK_VALUE;
 
 			if (distanceToCenter >= unaffectedCircleRadiusInPixels) {
 				float progressIntoFalloffArea = std::min(((distanceToCenter - unaffectedCircleRadiusInPixels) / falloffWidthInPixels), 1.0f);
@@ -35,30 +43,11 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 			}
 
 			int index = indexRowStartIndex + x;
-			maskData[index] = value;
+			(*maskData)[index] = value;
 		}
 	}
 
-	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>(maskData.size(), 0);
-	for (int y = 0; y < height; y++) {
-		int indexRowStartIndex = (y * width);
-		int offsettedY = (y - offsetY);
-		int offsettedIndexRowStartIndex = (offsettedY * width);
-
-		for (int x = 0; x < width; x++) {
-			int index = indexRowStartIndex + x;
-			int offsettedX = x - offsetX;
-
-			if (offsettedY < 0 || offsettedX < 0 || offsettedY > height - 1 || offsettedX > width - 1) {
-				(*offsettedData)[index] = 0;
-			}
-			else {
-				(*offsettedData)[index] = maskData.at(offsettedIndexRowStartIndex + offsettedX);
-			}			
-		}
-	}
-
-	return std::make_unique<Heightmap>(width, height, std::move(offsettedData));
+	return std::make_unique<Heightmap>(width, height, std::move(maskData));;
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFalloffMask(int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {
@@ -66,54 +55,43 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFallo
 		throw std::invalid_argument("An argument has a negative value. Only zero and positive values are allowed.");
 	}
 
-	std::vector<unsigned char> maskData(width * height, 0);
+	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>(width * height, 0);
+	const float CENTER_X = ((width - 1) / 2.0f) + offsetX;
+	const float CENTER_Y = ((height - 1) / 2.0f) + offsetY;
+	const float VERTICAL_DISTANCE_ADDITION = (height % 2 == 1 ? 0.5f : 0.0f);
+	const float HORIZONTAL_DISTANCE_ADDITION = (width % 2 == 1 ? 0.5f : 0.0f);
 
-	const float CENTER_X = (width - 1) / 2.0f;
-	const float CENTER_Y = (height - 1) / 2.0f;
+	int rectangleTotalWidth = horizontalUnaffectedRadiusInPixels + falloffWidthInPixels;
+	int rectangleTotalheight = verticalUnaffectedRadiusInPixels + falloffWidthInPixels;
+	int minX = static_cast<int>(std::round(std::max((CENTER_X - rectangleTotalWidth), 0.0f)));
+	int maxX = static_cast<int>(std::round(std::min((CENTER_X + rectangleTotalWidth), static_cast<float>(width))));
+	int minY = static_cast<int>(std::round(std::max((CENTER_Y - rectangleTotalheight), 0.0f)));
+	int maxY = static_cast<int>(std::round(std::min((CENTER_Y + rectangleTotalheight), static_cast<float>(height))));
 
-	for (int y = 0; y < height; y++) {
+	for (int y = minY; y < maxY; y++) {
 		int indexRowStartIndex = (y * width);
-
-		float verticalDistance = std::abs(y - CENTER_Y) + (height % 2 == 1 ? 0.5f : 0.0f);
+		float verticalDistance = std::abs(y - CENTER_Y) + VERTICAL_DISTANCE_ADDITION;
 		float verticalProgressIntoFalloffArea = std::min(((verticalDistance - verticalUnaffectedRadiusInPixels) / falloffWidthInPixels), 1.0f);
 		unsigned char verticalValue = MAX_MASK_VALUE;
+
 		if (verticalDistance >= verticalUnaffectedRadiusInPixels) {
 			verticalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (verticalProgressIntoFalloffArea * MAX_MASK_VALUE)));
 		}
 
-		for (int x = 0; x < width; x++) {
+		for (int x = minX; x < maxX; x++) {
 			unsigned char horizontalValue = MAX_MASK_VALUE;
-			float horizontalDistance = std::abs(x - CENTER_X) + (width % 2 == 1 ? 0.5f : 0.0f);
+			float horizontalDistance = std::abs(x - CENTER_X) + HORIZONTAL_DISTANCE_ADDITION;
 			if (horizontalDistance >= horizontalUnaffectedRadiusInPixels) {
 				float progressIntoFalloffArea = std::min(((horizontalDistance - horizontalUnaffectedRadiusInPixels) / falloffWidthInPixels), 1.0f);
 				horizontalValue = static_cast<unsigned char>(std::round(MAX_MASK_VALUE - (progressIntoFalloffArea * MAX_MASK_VALUE)));
 			}
 
 			int index = indexRowStartIndex + x;
-			maskData[index] = std::min(horizontalValue, verticalValue);
+			(*maskData)[index] = std::min(horizontalValue, verticalValue);
 		}
 	}
 
-	std::unique_ptr<std::vector<unsigned char>> offsettedData = std::make_unique<std::vector<unsigned char>>(maskData.size(), 0);
-	for (int y = 0; y < height; y++) {
-		int indexRowStartIndex = (y * width);
-		int offsettedY = (y - offsetY);
-		int offsettedIndexRowStartIndex = (offsettedY * width);
-
-		for (int x = 0; x < width; x++) {
-			int index = indexRowStartIndex + x;
-			int offsettedX = x - offsetX;
-
-			if (offsettedY < 0 || offsettedX < 0 || offsettedY > height - 1 || offsettedX > width - 1) {
-				(*offsettedData)[index] = 0;
-			}
-			else {
-				(*offsettedData)[index] = maskData.at(offsettedIndexRowStartIndex + offsettedX);
-			}
-		}
-	}
-
-	return std::make_unique<Heightmap>(width, height, std::move(offsettedData));
+	return std::make_unique<Heightmap>(width, height, std::move(maskData));
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(GradientDirection direction) const {
@@ -122,7 +100,8 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateLinearGradientMask(G
 	}
 
 	std::unique_ptr<std::vector<unsigned char>> maskData = std::make_unique<std::vector<unsigned char>>(width * height, 0);
-	// The different directions have different functions for performace/optimization reasons.
+
+	// The different directions have different functions for performance/optimization reasons.
 	if (direction == GradientDirection::Down) {
 		generateLinearGradientMaskDown(*maskData);
 	}
