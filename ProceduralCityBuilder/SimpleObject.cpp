@@ -13,15 +13,19 @@ void pcb::SimpleObject::render() const {
 	preRenderAction();
 
 	vertices->enable();
-	glDrawArrays(GL_QUADS, 0, vertices->getVertexCount());
+	draw();
 	vertices->disable();
 
 	postRenderAction();
 }
 
-void pcb::SimpleObject::preRenderAction() const {}
+void pcb::SimpleObject::preRenderAction() const {	/*Empty but defined because virtual*/ }
 
-void pcb::SimpleObject::postRenderAction() const {}
+void pcb::SimpleObject::draw() const {
+	glDrawArrays(GL_QUADS, 0, vertices->getVertexCount());
+}
+
+void pcb::SimpleObject::postRenderAction() const {	/*Empty but defined becaues virtual*/ }
 
 void pcb::SimpleObject::setPosition(float x, float y, float z) {
 	position = glm::vec3(x, y, z);
@@ -74,4 +78,10 @@ void pcb::SimpleColoredObject::preRenderAction() const {
 
 void pcb::SimpleColoredObject::postRenderAction() const {
 	colors->disable();
+}
+
+pcb::SimpleIndexedColoredObject::SimpleIndexedColoredObject(std::shared_ptr<VertexPositionBufferObject> vboVertexCoordinates, std::shared_ptr<VertexColorBufferObject> vboVertexColors, std::shared_ptr< VertexIndicesBufferObject> vboIndices) : SimpleColoredObject(vboVertexCoordinates, vboVertexColors), indices(vboIndices) {}
+
+void pcb::SimpleIndexedColoredObject::draw() const {
+	glDrawElements(GL_QUADS, indices->getIndexCount(), GL_UNSIGNED_INT, nullptr);
 }

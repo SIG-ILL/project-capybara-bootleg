@@ -20,6 +20,7 @@ namespace pcb {
 
 	protected:
 		virtual void preRenderAction() const;
+		virtual void draw() const;
 		virtual void postRenderAction() const;
 
 	private:
@@ -46,7 +47,7 @@ namespace pcb {
 		std::shared_ptr<VertexTextureCoordinateBufferObject> textureCoordinates;
 	};
 
-	class SimpleColoredObject final : public SimpleObject {
+	class SimpleColoredObject : public SimpleObject {
 	public:
 		SimpleColoredObject(std::shared_ptr<VertexPositionBufferObject> vboVertexCoordinates, std::shared_ptr<VertexColorBufferObject> vboVertexColors);
 		SimpleColoredObject(const SimpleColoredObject& other);
@@ -57,5 +58,16 @@ namespace pcb {
 
 	private:
 		std::shared_ptr<VertexColorBufferObject> colors;
+	};
+
+	class SimpleIndexedColoredObject final : public SimpleColoredObject {
+	public:
+		SimpleIndexedColoredObject(std::shared_ptr<VertexPositionBufferObject> vboVertexCoordinates, std::shared_ptr<VertexColorBufferObject> vboVertexColors, std::shared_ptr< VertexIndicesBufferObject> vboIndices);
+
+	protected:
+		void draw() const override;
+
+	private:
+		std::shared_ptr<VertexIndicesBufferObject> indices;
 	};
 }

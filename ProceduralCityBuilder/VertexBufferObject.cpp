@@ -36,3 +36,22 @@ pcb::VertexPositionBufferObject::VertexPositionBufferObject(std::shared_ptr<std:
 pcb::VertexColorBufferObject::VertexColorBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int elementsPerVertex, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::Color), vertexData, elementsPerVertex, vertexCount) {}
 
 pcb::VertexTextureCoordinateBufferObject::VertexTextureCoordinateBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int vertexCount) : VertexBufferObject(static_cast<int>(VertexAttribute::TextureCoordinate), vertexData, 2, vertexCount) {}
+
+pcb::VertexIndicesBufferObject::VertexIndicesBufferObject(std::shared_ptr<std::vector<unsigned int>> indexData, int indexCount) : indexCount(indexCount) {
+	glGenBuffers(1, &name);
+	enable();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData->size() * sizeof(unsigned int), indexData->data(), GL_STATIC_DRAW);
+	disable();
+}
+
+void pcb::VertexIndicesBufferObject::enable() const {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, name);
+}
+
+void pcb::VertexIndicesBufferObject::disable() const {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+int pcb::VertexIndicesBufferObject::getIndexCount() const {
+	return indexCount;
+}

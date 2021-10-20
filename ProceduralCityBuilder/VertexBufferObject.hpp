@@ -41,4 +41,18 @@ namespace pcb {
 	public:
 		VertexTextureCoordinateBufferObject(std::shared_ptr<std::vector<GLfloat>> vertexData, int vertexCount);
 	};
+
+	class VertexIndicesBufferObject final {
+	public:
+		VertexIndicesBufferObject(std::shared_ptr<std::vector<unsigned int>> indexData, int indexCount);
+
+		void enable() const;
+		void disable() const;
+
+		int getIndexCount() const;
+
+	private:
+		GLuint name;
+		int indexCount;
+	};
 }
