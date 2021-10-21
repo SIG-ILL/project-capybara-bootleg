@@ -105,6 +105,7 @@
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="SimpleObject.cpp" />
     <ClCompile Include="NoiseGenerator.cpp" />
+    <ClCompile Include="Stopwatch.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TerrainGenerator.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="ShaderManager.hpp" />
     <ClInclude Include="SimpleObject.hpp" />
     <ClInclude Include="NoiseGenerator.hpp" />
+    <ClInclude Include="Stopwatch.hpp" />
     <ClInclude Include="Terrain.hpp" />
     <ClInclude Include="TerrainGenerator.hpp" />
     <ClInclude Include="Texture.hpp" />

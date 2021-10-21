@@ -49,14 +49,12 @@ namespace pcb {
 		ShaderManager shaderManager;
 		glm::mat4 projectionMatrix;
 
-		int previousGlutElapsedTime;
-
 		void initializeGLUT(int argc, char* argv[]);
 		void loadResources();
 		void generateTerrainResources();
 		void deleteResources();
 		void prepareShaders();
-		std::string loadShaderFromFile(std::string filepath) const;
+		std::string loadShaderFromFile(const std::string& filepath) const;
 
 		void drawTestShapes() const;
 

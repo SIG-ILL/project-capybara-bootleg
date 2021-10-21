@@ -13,6 +13,7 @@
 #include "ShaderProgram.hpp"
 
 #include "Logger.hpp"
+#include "Stopwatch.hpp"
 #include "BitmapWriter.hpp"
 
 std::shared_ptr<pcb::Application> pcb::Application::instance;
@@ -60,7 +61,7 @@ quadTextureCoordinates(std::make_shared<std::vector<GLfloat>>(std::initializer_l
 	1.0, 0.0
 })),
 heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
-terrainLayerRenderObjects(), shaderManager(), projectionMatrix(), previousGlutElapsedTime(0) {}
+terrainLayerRenderObjects(), shaderManager(), projectionMatrix() {}
 
 void pcb::Application::run(std::shared_ptr<Application> instance, int argc, char* argv[]) {
 	Application::instance = instance;
@@ -107,7 +108,8 @@ void pcb::Application::loadResources() {
 }
 
 void pcb::Application::generateTerrainResources() {
-	int glutElapsedTimeAtStart = glutGet(GLUT_ELAPSED_TIME);
+	Stopwatch stopwatch;
+	stopwatch.start();
 
 	const int TERRAIN_SIZE = 512;
 	const float TERRAIN_SCALE = 2.5f;
@@ -178,12 +180,9 @@ void pcb::Application::generateTerrainResources() {
 		object.setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
 	}
 
+	stopwatch.stop();
 	logger << "done!\n";
-
-	int glutElapsedTimeAtEnd = glutGet(GLUT_ELAPSED_TIME);
-	int milisecondsSinceLastTimeCheck = glutElapsedTimeAtEnd - glutElapsedTimeAtStart;
-
-	logger << "Terrain generation time: " << milisecondsSinceLastTimeCheck << "ms\n\n";
+	logger << "Terrain generation time: " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms\n\n";
 }
 
 void pcb::Application::deleteResources() {
@@ -214,7 +213,7 @@ void pcb::Application::prepareShaders() {
 	shaderManager.useProgram("defaultProgram");
 }
 
-std::string pcb::Application::loadShaderFromFile(std::string filepath) const {
+std::string pcb::Application::loadShaderFromFile(const std::string& filepath) const {
 	std::ifstream fileStreamVertex(filepath);
 	std::stringstream stringStreamVertex;
 	stringStreamVertex << fileStreamVertex.rdbuf();
@@ -239,11 +238,6 @@ void pcb::Application::drawTestShapes() const {
 }
 
 void pcb::Application::render() {
-	//int glutElapsedTime = glutGet(GLUT_ELAPSED_TIME);
-	//int milisecondsSinceLastRenderStart = glutElapsedTime - previousGlutElapsedTime;
-	//previousGlutElapsedTime = glutElapsedTime;
-	//std::cout << "Time between render calls: " << milisecondsSinceLastRenderStart << ", which would be " << (1.0f / (milisecondsSinceLastRenderStart / 1000.0f)) << " FPS\n";
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 identityMatrix(1);

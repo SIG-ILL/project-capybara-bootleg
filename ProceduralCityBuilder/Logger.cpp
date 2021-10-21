@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-pcb::Logger& pcb::Logger::operator<<(const std::string input) {
+pcb::Logger& pcb::Logger::operator<<(const std::string& input) {
 	std::cout << input;
 
 	return *this;

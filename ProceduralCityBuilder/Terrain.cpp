@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "Logger.hpp"
-#include <GL/freeglut.h>
+#include "Stopwatch.hpp"
 
 pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : Terrain(heightmap, scale, 0.0f, 0.0f, 0.0, 1.0f, 1.0f, 1.0f, false) {}
 
@@ -13,7 +13,8 @@ pcb::Terrain::Terrain(const Heightmap& heightmap, double scale, GLfloat minRed, 
 	gridWidthInVertices(heightmap.getWidth()), gridHeightInVertices(heightmap.getHeight()), quadsVertexCount(gridWidthInVertices * gridHeightInVertices),
 quadsIndexCount(4 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)), quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)),
 quadsIndices(std::make_shared<std::vector<unsigned int>>(quadsIndexCount, 0)), highestElevation(static_cast<GLfloat>(scale * heightmap.getHighestElevation())) {
-	int glutElapsedTimeAtStart = glutGet(GLUT_ELAPSED_TIME);	
+	Stopwatch stopwatch;
+	stopwatch.start();
 
 	setVertexDataValues(heightmap, scale, minRed, minGreen, minBlue, maxRed, maxGreen, maxBlue, scaleToHighestElevation);
 
@@ -23,10 +24,9 @@ quadsIndices(std::make_shared<std::vector<unsigned int>>(quadsIndexCount, 0)), h
 		gridWidthInVertices = 0;
 	}
 
-	int glutElapsedTimeAtEnd = glutGet(GLUT_ELAPSED_TIME);
-	int milisecondsSinceLastTimeCheck = glutElapsedTimeAtEnd - glutElapsedTimeAtStart;
+	stopwatch.stop();
 	Logger logger;
-	logger << "Terrain generation took " << milisecondsSinceLastTimeCheck << "ms!\n";
+	logger << "Terrain generation took " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms!\n";
 }
 
 std::shared_ptr<std::vector<GLfloat>> pcb::Terrain::getQuadsVertices() const {
