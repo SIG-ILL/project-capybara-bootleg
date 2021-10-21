@@ -140,8 +140,9 @@ void pcb::Application::generateTerrainResources() {
 
 	std::unique_ptr<VertexPositionBufferObject> terrainVertices = std::make_unique<VertexPositionBufferObject>(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
 	std::unique_ptr<VertexColorBufferObject> terrainColors = std::make_unique<VertexColorBufferObject>(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
+	std::shared_ptr<VertexIndicesBufferObject> terrainIndices = std::make_unique<VertexIndicesBufferObject>(terrain->getQuadsIndices(), terrain->getQuadsIndexCount());
 	
-	std::unique_ptr<SimpleColoredObject> terrainObject = std::make_unique<SimpleColoredObject>(std::move(terrainVertices), std::move(terrainColors));
+	std::unique_ptr<SimpleIndexedColoredObject> terrainObject = std::make_unique<SimpleIndexedColoredObject>(std::move(terrainVertices), std::move(terrainColors), std::move(terrainIndices));
 	terrainObject->setPosition(-0.2f, -0.25f, -0.5f);
 	terrainObject->setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
 
@@ -168,10 +169,11 @@ void pcb::Application::generateTerrainResources() {
 	std::vector<std::shared_ptr<Terrain>> terrainLayers = terrain->getLayers();
 	for (unsigned int i = 0; i < terrainLayers.size(); i++) {
 		const Terrain& terrainLayer = *(terrainLayers.at(i));
-		std::shared_ptr<VertexPositionBufferObject> terrainlayerVertices = std::make_shared<VertexPositionBufferObject>(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount());
-		std::shared_ptr<VertexColorBufferObject> terrainLayerColors = std::make_shared<VertexColorBufferObject>(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
-		terrainLayerRenderObjects.emplace_back(terrainlayerVertices, terrainLayerColors);
-		SimpleColoredObject& object = terrainLayerRenderObjects.back();
+		std::unique_ptr<VertexPositionBufferObject> terrainlayerVertices = std::make_unique<VertexPositionBufferObject>(terrainLayer.getQuadsVertices(), terrainLayer.getQuadsVertexCount());
+		std::unique_ptr<VertexColorBufferObject> terrainLayerColors = std::make_unique<VertexColorBufferObject>(terrainLayer.getQuadsColors(), 3, terrainLayer.getQuadsVertexCount());
+		std::unique_ptr<VertexIndicesBufferObject> terrainLayerIndices = std::make_unique<VertexIndicesBufferObject>(terrainLayer.getQuadsIndices(), terrainLayer.getQuadsIndexCount());
+		terrainLayerRenderObjects.emplace_back(std::move(terrainlayerVertices), std::move(terrainLayerColors), std::move(terrainLayerIndices));
+		SimpleIndexedColoredObject& object = terrainLayerRenderObjects.back();
 		object.setPosition(10.0f, static_cast<float>(i + 1), -0.5f);
 		object.setScale(TERRAIN_SCALE, TERRAIN_SCALE, TERRAIN_SCALE);
 	}
@@ -231,7 +233,7 @@ void pcb::Application::drawTestShapes() const {
 
 	shaderManager.useProgram("defaultProgram");
 
-	for (const pcb::SimpleColoredObject& terrainLayerObject : terrainLayerRenderObjects) {
+	for (const pcb::SimpleIndexedColoredObject& terrainLayerObject : terrainLayerRenderObjects) {
 		terrainLayerObject.render();
 	}
 }

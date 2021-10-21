@@ -83,5 +83,7 @@ void pcb::SimpleColoredObject::postRenderAction() const {
 pcb::SimpleIndexedColoredObject::SimpleIndexedColoredObject(std::shared_ptr<VertexPositionBufferObject> vboVertexCoordinates, std::shared_ptr<VertexColorBufferObject> vboVertexColors, std::shared_ptr< VertexIndicesBufferObject> vboIndices) : SimpleColoredObject(vboVertexCoordinates, vboVertexColors), indices(vboIndices) {}
 
 void pcb::SimpleIndexedColoredObject::draw() const {
+	indices->enable();
 	glDrawElements(GL_QUADS, indices->getIndexCount(), GL_UNSIGNED_INT, nullptr);
+	indices->disable();
 }
