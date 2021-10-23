@@ -22,7 +22,7 @@ void pcb::SimpleObject::render() const {
 void pcb::SimpleObject::preRenderAction() const {	/*Empty but defined because virtual*/ }
 
 void pcb::SimpleObject::draw() const {
-	glDrawArrays(GL_QUADS, 0, vertices->getVertexCount());
+	glDrawArrays(GL_TRIANGLES, 0, vertices->getVertexCount());
 }
 
 void pcb::SimpleObject::postRenderAction() const {	/*Empty but defined becaues virtual*/ }

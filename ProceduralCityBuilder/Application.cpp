@@ -51,14 +51,21 @@ isWarpingPointer(false), zoom(0),
 quadVertices(std::make_shared<std::vector<GLfloat>>(std::initializer_list<GLfloat> {
 	-0.25f, -0.25f, 0.0f,
 	0.0f, -0.25f, 0.0f,
+	-0.25f, 0.0f, 0.0f,
+
+	-0.25f, 0.0f, 0.0f,
+	0.0f, -0.25f, 0.0f,
 	0.0f, 0.0f, 0.0f,
-	-0.25f, 0.0f, 0.0f
+	
 })),
 quadTextureCoordinates(std::make_shared<std::vector<GLfloat>>(std::initializer_list<GLfloat> {
-	0.0, 0.0,
-	1.0, 0.0,
-	1.0, 1.0,
-	0.0, 1.0
+		0.0, 0.0,
+		1.0, 0.0,
+		0.0, 1.0,
+
+		0.0, 1.0,
+		1.0, 0.0,
+		1.0, 1.0,
 })),
 heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
 terrainLayerRenderObjects(), shaderManager(), projectionMatrix() {}
