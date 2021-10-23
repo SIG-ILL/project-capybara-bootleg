@@ -59,10 +59,6 @@ quadTextureCoordinates(std::make_shared<std::vector<GLfloat>>(std::initializer_l
 	1.0, 0.0,
 	1.0, 1.0,
 	0.0, 1.0
-	/*0.0, 0.0,
-	0.0, 1.0,
-	1.0, 1.0,
-	1.0, 0.0*/
 })),
 heightmapTexture(nullptr), generatedHeightmapTexture(nullptr), renderObjects{ nullptr, nullptr, nullptr },
 terrainLayerRenderObjects(), shaderManager(), projectionMatrix() {}

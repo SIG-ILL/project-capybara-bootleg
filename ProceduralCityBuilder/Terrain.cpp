@@ -11,7 +11,7 @@ pcb::Terrain::Terrain(const pcb::Heightmap& heightmap, double scale) : Terrain(h
 
 pcb::Terrain::Terrain(const Heightmap& heightmap, double scale, GLfloat minRed, GLfloat minGreen, GLfloat minBlue, GLfloat maxRed, GLfloat maxGreen, GLfloat maxBlue, bool scaleToHighestElevation) :
 	gridWidthInVertices(heightmap.getWidth()), gridHeightInVertices(heightmap.getHeight()), quadsVertexCount(gridWidthInVertices * gridHeightInVertices),
-quadsIndexCount(4 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)), quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)),
+quadsIndexCount(6 * (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1)), quadsVertexCoordinates(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)), quadsColors(std::make_shared<std::vector<GLfloat>>(3 * quadsVertexCount, 0.0f)),
 quadsIndices(std::make_shared<std::vector<unsigned int>>(quadsIndexCount, 0)), highestElevation(static_cast<GLfloat>(scale * heightmap.getHighestElevation())) {
 	Stopwatch stopwatch;
 	stopwatch.start();
@@ -26,7 +26,7 @@ quadsIndices(std::make_shared<std::vector<unsigned int>>(quadsIndexCount, 0)), h
 
 	stopwatch.stop();
 	Logger logger;
-	logger << "Terrain generation took " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms!\n";
+	logger << "Terrain generation took " << static_cast<int>(stopwatch.getLastClockedDurationInMicroseconds()) << " microseconds!\n";
 }
 
 std::shared_ptr<std::vector<GLfloat>> pcb::Terrain::getQuadsVertices() const {
@@ -53,7 +53,7 @@ std::unique_ptr<pcb::Heightmap> pcb::Terrain::generateHeightmap() const {
 	std::unique_ptr<std::vector<unsigned char>> elevationValues = std::make_unique<std::vector<unsigned char>>(gridWidthInVertices * gridHeightInVertices, 0);
 
 	const int COORDINATE_ELEMENTS_PER_VERTEX = 3;
-	const int VERTICES_PER_QUAD = 4;
+	const int INDICES_PER_QUAD = 6;
 	const int ELEVATION_OFFSET_IN_COORDINATES = 1;
 	const int AMOUNT_OF_QUADS_HORIZONTALLY = gridWidthInVertices - 1;
 	const int AMOUNT_OF_QUADS_VERTICALLY = gridHeightInVertices - 1;
@@ -62,17 +62,17 @@ std::unique_ptr<pcb::Heightmap> pcb::Terrain::generateHeightmap() const {
 
 	for (int y = 0; y < AMOUNT_OF_QUADS_VERTICALLY; y++) {
 		int elevationIndexRowStartIndex = y * gridWidthInVertices;
-		int indicesIndexRowStartIndex = y * AMOUNT_OF_QUADS_HORIZONTALLY * VERTICES_PER_QUAD;
+		int indicesIndexRowStartIndex = y * AMOUNT_OF_QUADS_HORIZONTALLY * INDICES_PER_QUAD;
 
 		for (int x = 0; x < AMOUNT_OF_QUADS_HORIZONTALLY; x++) {
-			int vertexIndex = (*quadsIndices)[indicesIndexRowStartIndex + (x * VERTICES_PER_QUAD)];
+			int vertexIndex = (*quadsIndices)[indicesIndexRowStartIndex + (x * INDICES_PER_QUAD)];
 			GLfloat elevation = (*quadsVertexCoordinates)[(vertexIndex * COORDINATE_ELEMENTS_PER_VERTEX) + ELEVATION_OFFSET_IN_COORDINATES];
 			elevation *= inverseScale;
 			elevation = std::fmin(std::round(elevation), 255);
 			(*elevationValues)[elevationIndexRowStartIndex + x] = elevation;
 		}
 
-		int vertexIndex = (*quadsIndices)[indicesIndexRowStartIndex + ((AMOUNT_OF_QUADS_HORIZONTALLY - 1) * VERTICES_PER_QUAD) + 1];
+		int vertexIndex = (*quadsIndices)[indicesIndexRowStartIndex + ((AMOUNT_OF_QUADS_HORIZONTALLY - 1) * INDICES_PER_QUAD) + 1];
 		GLfloat elevation = (*quadsVertexCoordinates)[(vertexIndex * COORDINATE_ELEMENTS_PER_VERTEX) + ELEVATION_OFFSET_IN_COORDINATES];
 		elevation *= inverseScale;
 		elevation = std::fmin(std::round(elevation), 255);
@@ -80,17 +80,17 @@ std::unique_ptr<pcb::Heightmap> pcb::Terrain::generateHeightmap() const {
 	}
 
 	int elevationIndexRowStartIndex = (gridHeightInVertices - 1) * gridWidthInVertices;
-	int indicesIndexRowStartIndex = (AMOUNT_OF_QUADS_VERTICALLY - 1) * AMOUNT_OF_QUADS_HORIZONTALLY * VERTICES_PER_QUAD;
+	int indicesIndexRowStartIndex = (AMOUNT_OF_QUADS_VERTICALLY - 1) * AMOUNT_OF_QUADS_HORIZONTALLY * INDICES_PER_QUAD;
 
 	for (int i = 0; i < AMOUNT_OF_QUADS_HORIZONTALLY; i++) {
-		int vertexIndex = (*quadsIndices)[(indicesIndexRowStartIndex + (i * VERTICES_PER_QUAD)) + 3];
+		int vertexIndex = (*quadsIndices)[(indicesIndexRowStartIndex + (i * INDICES_PER_QUAD)) + 3];
 		GLfloat elevation = (*quadsVertexCoordinates)[(vertexIndex * COORDINATE_ELEMENTS_PER_VERTEX) + ELEVATION_OFFSET_IN_COORDINATES];
 		elevation *= inverseScale;
 		elevation = std::fmin(std::round(elevation), 255);
 		(*elevationValues)[elevationIndexRowStartIndex + i] = elevation;
 	}
 
-	int vertexIndex = (*quadsIndices)[(indicesIndexRowStartIndex + ((AMOUNT_OF_QUADS_HORIZONTALLY - 1) * VERTICES_PER_QUAD)) + 2];
+	int vertexIndex = (*quadsIndices)[(indicesIndexRowStartIndex + ((AMOUNT_OF_QUADS_HORIZONTALLY - 1) * INDICES_PER_QUAD)) + 2];
 	GLfloat elevation = (*quadsVertexCoordinates)[(vertexIndex * COORDINATE_ELEMENTS_PER_VERTEX) + ELEVATION_OFFSET_IN_COORDINATES];
 	elevation *= inverseScale;
 	elevation = std::fmin(std::round(elevation), 255);
@@ -133,17 +133,22 @@ void pcb::Terrain::setVertexDataValues(const Heightmap& heightmap, double scale,
 	}
 
 	const int VERTICES_PER_QUAD = 4;
-	int amountOfQuads = quadsIndexCount / VERTICES_PER_QUAD;
-	float amountOfQuadsHorizontally = gridWidthInVertices - 1;
+	const int INDICES_PER_QUAD = 6;
+	int amountOfQuads = (heightmap.getWidth() - 1) * (heightmap.getHeight() - 1);
+	int amountOfQuadsHorizontally = gridWidthInVertices - 1;
 	for (int i = 0; i < amountOfQuads; i++) {
-		int index = 4 * i;
-		int valueOfFirstIndex = i + std::floor(i / amountOfQuadsHorizontally);
-		int valueOfSecondIndex = valueOfFirstIndex + 1;
+		int index = INDICES_PER_QUAD * i;
+		int valueOfFirstIndexOfFirstTriangle = i + (i / amountOfQuadsHorizontally);
+		int valueOfSecondIndexOfFirstTriangle = valueOfFirstIndexOfFirstTriangle + 1;
+		int valueOfFirstIndexOfSecondTriangle = valueOfFirstIndexOfFirstTriangle + gridWidthInVertices;
 
-		(*quadsIndices)[index] = valueOfFirstIndex;
-		(*quadsIndices)[index + 1] = valueOfSecondIndex;
-		(*quadsIndices)[index + 2] = valueOfSecondIndex + gridWidthInVertices;
-		(*quadsIndices)[index + 3] = valueOfFirstIndex + gridWidthInVertices;
+		(*quadsIndices)[index] = valueOfFirstIndexOfFirstTriangle;
+		(*quadsIndices)[index + 1] = valueOfSecondIndexOfFirstTriangle;
+		(*quadsIndices)[index + 2] = valueOfFirstIndexOfSecondTriangle;
+
+		(*quadsIndices)[index + 3] = valueOfFirstIndexOfSecondTriangle;
+		(*quadsIndices)[index + 4] = valueOfSecondIndexOfFirstTriangle;
+		(*quadsIndices)[index + 5] = valueOfSecondIndexOfFirstTriangle + gridWidthInVertices;
 	}
 }
 

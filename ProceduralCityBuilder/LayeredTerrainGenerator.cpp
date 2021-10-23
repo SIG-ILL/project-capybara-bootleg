@@ -23,7 +23,7 @@ std::unique_ptr<pcb::LayeredTerrain> pcb::LayeredTerrainGenerator::generateRando
 	logger << "Random heightmap generation done!\nCreating layered terrain... ";
 
 	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
-	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);		// TODO: Creating the LayeredTerrain (the layers themselves) is currently the biggest performance issue!
+	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);
 }
 
 std::unique_ptr<pcb::HeightmapImage> pcb::LayeredTerrainGenerator::getHeightmap24BitImage() const {

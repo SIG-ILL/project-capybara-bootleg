@@ -84,6 +84,6 @@ pcb::SimpleIndexedColoredObject::SimpleIndexedColoredObject(std::shared_ptr<Vert
 
 void pcb::SimpleIndexedColoredObject::draw() const {
 	indices->enable();
-	glDrawElements(GL_QUADS, indices->getIndexCount(), GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, indices->getIndexCount(), GL_UNSIGNED_INT, nullptr);
 	indices->disable();
 }
