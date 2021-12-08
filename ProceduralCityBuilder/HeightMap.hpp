@@ -37,6 +37,8 @@ namespace pcb {
 		void scaleAmplitude(const double factor);	// Scales amplitude measured from current (lowest + (0.5 * (highest - lowest))) elevation value
 		void raise(const unsigned char amount);
 		void lower(const unsigned char amount);
+		void toBlackAndWhite(const unsigned char inclusiveThreshold);
+		void flatten(const unsigned char amountOfBuckets);
 
 	private:
 		static const unsigned char MIN_ELEVATION_VALUE = 0;

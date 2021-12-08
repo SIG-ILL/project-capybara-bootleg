@@ -62,7 +62,7 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generateR
 
 	Stopwatch stopwatch;
 	stopwatch.start();
-	auto returnValue = generator.generate(generationData);
+	std::unique_ptr<pcb::LayeredHeightmap> returnValue = generator.generate(generationData);
 	stopwatch.stop();
 	Logger logger;
 	logger << "Layered Random Heightmap generated in " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms.\n";

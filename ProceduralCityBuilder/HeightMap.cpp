@@ -234,3 +234,34 @@ void pcb::Heightmap::lower(const unsigned char amount) {
 	lowestElevation = static_cast<unsigned char>(std::max(lowestElevation - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
 	highestElevation = static_cast<unsigned char>(std::max(highestElevation - amount, static_cast<int>(MIN_ELEVATION_VALUE)));
 }
+
+void pcb::Heightmap::toBlackAndWhite(const unsigned char inclusiveThreshold) {
+	if (inclusiveThreshold < MIN_ELEVATION_VALUE || inclusiveThreshold > MAX_ELEVATION_VALUE) {
+		throw std::invalid_argument("Threshold is not allowed to be outside [MIN_ELEVATION_VALUE; MAX_ELEVATION_VALUE] range!");
+	}
+
+	for (int i = 0; i < (width * height); i++) {
+		elevationValues->at(i) = elevationValues->at(i) >= inclusiveThreshold ? MAX_ELEVATION_VALUE : MIN_ELEVATION_VALUE;
+	}
+
+	std::pair minMaxElevation = std::minmax_element(this->elevationValues->begin(), this->elevationValues->end());
+	lowestElevation = *(minMaxElevation.first);
+	highestElevation = *(minMaxElevation.second);
+}
+
+void pcb::Heightmap::flatten(const unsigned char amountOfBuckets) {
+	if (amountOfBuckets < 2) {
+		throw std::invalid_argument("amountOfBuckets is not allowed to be less than 2!");
+	}
+
+	int bucketSize = (MAX_ELEVATION_VALUE + 1) / amountOfBuckets;
+	int valueStepSize = MAX_ELEVATION_VALUE / (amountOfBuckets - 1);
+
+	for (int i = 0; i < (width * height); i++) {
+		elevationValues->at(i) = static_cast<unsigned char>(std::floor(std::floor(elevationValues->at(i) / bucketSize) * valueStepSize));
+	}
+
+	std::pair minMaxElevation = std::minmax_element(this->elevationValues->begin(), this->elevationValues->end());
+	lowestElevation = *(minMaxElevation.first);
+	highestElevation = *(minMaxElevation.second);
+}
