@@ -121,22 +121,23 @@ void pcb::Application::generateTerrainResources() {
 	const int TERRAIN_SIZE = 512;
 	const float TERRAIN_SCALE = 2.5f;
 	LayeredTerrainGenerator terrainGenerator(TERRAIN_SIZE, TERRAIN_SIZE, 1);
-	//std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generate();
-	std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generateRandom();
+	std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generate();
+	//std::unique_ptr<LayeredTerrain> terrain = terrainGenerator.generateRandom();
 
 	Logger logger;
-	logger << "Terrain generation complete!\nGenerating heightmap image from terrain generator... ";
-
+	logger << "Terrain generation complete!\n";
+	logger << "Generating heightmap image from terrain generator... ";
 	std::unique_ptr<HeightmapImage> heightmapImage = terrainGenerator.getHeightmap24BitImage();
 	heightmapTexture = std::make_unique<Texture>(*(heightmapImage->finalImage));
-
-	logger << "done!\nGenerating heightmap and heightmap image from terrain... ";
-
+	logger << "done!\n";
+	
+	logger << "Generating heightmap and heightmap image from terrain... ";
 	std::unique_ptr<Heightmap> generatedHeightmap = terrain->generateHeightmap();
 	std::unique_ptr<Image> generatedHeightmapImage = generatedHeightmap->to24BitImage();
 	generatedHeightmapTexture = std::make_unique<Texture>(*generatedHeightmapImage);
-
-	logger << "done!\nWriting generated heightmap to .bmp file... ";
+	logger << "done!\n";
+	
+	/*logger << "Writing generated heightmap to.bmp file... ";
 	BitmapWriter bitmapWriter;
 	std::chrono::system_clock::time_point currentTime = std::chrono::system_clock::now();
 	std::time_t currentTimeT = std::chrono::system_clock::to_time_t(currentTime);
@@ -144,8 +145,9 @@ void pcb::Application::generateTerrainResources() {
 	stringStream << currentTimeT;
 	std::string filename = "GeneratedHeightmaps/" + stringStream.str() + ".bmp";
 	bitmapWriter.writeToFile(*(heightmapImage->finalImage), filename);
-
-	logger << "done! Heightmap written to file " << filename << ".\nCreating terrain object... ";
+	logger << "done! Heightmap written to file " << filename << ".\n";*/
+	
+	logger << "Creating terrain object... ";
 
 	std::unique_ptr<VertexPositionBufferObject> terrainVertices = std::make_unique<VertexPositionBufferObject>(terrain->getQuadsVertices(), terrain->getQuadsVertexCount());
 	std::unique_ptr<VertexColorBufferObject> terrainColors = std::make_unique<VertexColorBufferObject>(terrain->getQuadsColors(), 3, terrain->getQuadsVertexCount());
@@ -189,7 +191,7 @@ void pcb::Application::generateTerrainResources() {
 
 	stopwatch.stop();
 	logger << "done!\n";
-	logger << "Terrain generation time: " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms\n\n";
+	logger << "Total terrain generation time: " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms\n\n";
 }
 
 void pcb::Application::deleteResources() {

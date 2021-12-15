@@ -47,7 +47,7 @@ std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateCircleLinearFalloffM
 		}
 	}
 
-	return std::make_unique<Heightmap>(width, height, std::move(maskData));;
+	return std::make_unique<Heightmap>(width, height, std::move(maskData));
 }
 
 std::unique_ptr<pcb::Heightmap> pcb::MaskGenerator::generateRectangleLinearFalloffMask(int horizontalUnaffectedRadiusInPixels, int verticalUnaffectedRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY) const {

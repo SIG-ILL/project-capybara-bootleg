@@ -354,3 +354,5 @@ MigrationBackup/
 
 Textures/
 Generatedheightmaps/
+*.xls
+*.xlsx

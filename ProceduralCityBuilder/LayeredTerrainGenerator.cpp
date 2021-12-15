@@ -2,12 +2,21 @@
 
 #include "LayeredHeightmapGenerator.hpp"
 #include "Logger.hpp"
+#include "Stopwatch.hpp"
 
 pcb::LayeredTerrainGenerator::LayeredTerrainGenerator(int mapWidth, int mapHeight, double scale) : mapWidth(mapWidth), mapHeight(mapHeight), scale(scale) {}
 
 std::unique_ptr<pcb::LayeredTerrain> pcb::LayeredTerrainGenerator::generate() {
 	LayeredHeightmapGenerator heightmapGenerator(mapWidth, mapHeight);
+
+	Stopwatch stopwatch;
+	stopwatch.start();
+
 	heightmap = heightmapGenerator.generate();
+
+	stopwatch.stop();
+	Logger logger;
+	logger << "Total heightmap generation time: " << static_cast<int>(stopwatch.getLastClockedDurationInMilliseconds()) << "ms\n\n";
 
 	double terrainScale = scale * (1.0f / 255);		// 255 is current heightmap maximum elevation.
 	return std::make_unique<LayeredTerrain>(*heightmap, terrainScale);

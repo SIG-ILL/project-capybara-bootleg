@@ -7,50 +7,137 @@
 #include "RandomHeightmapGenerator.hpp"
 #include "RandomHeightmapGenerationDataGenerator.hpp"
 
+#include "ProceduralHeightmap.hpp"
+#include "ProceduralHeightmapOperationMask.hpp"
+#include "ProceduralHeightmapOperationNoise.hpp"
+#include "ProceduralHeightmapOperationLowerToLevel.hpp"
+#include "ProceduralHeightmapOperationScale.hpp"
+#include "ProceduralHeightmapOperationScaleAmplitude.hpp"
+#include "ProceduralHeightmapOperationInvert.hpp"
+#include "ProceduralHeightmapOperationCircle.hpp"
+#include "ProceduralHeightmapOperationRectangle.hpp"
+#include "ProceduralHeightmapOperationAdd.hpp"
+
 #include "Logger.hpp"
 #include "Stopwatch.hpp"
 
 pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapHeight) : mapWidth(mapWidth), mapHeight(mapHeight), noiseGenerator() {}
 
 std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate() const {
-	std::vector<std::shared_ptr<Heightmap>> heightmapLayers;
+	/*std::vector<std::shared_ptr<Heightmap>> heightmapLayers;
 	MaskGenerator maskGenerator(mapWidth, mapHeight);
 	heightmapLayers.push_back(maskGenerator.generateCircleLinearFalloffMask((mapWidth/256.0f) * 30, (mapWidth / 256.0f) * 98, 0, 0));
 
+	// Layer 1
 	heightmapLayers.push_back(generateHeightmap(128, 128, 0, 0));
 	heightmapLayers.back()->lowerToLevel(175);
 	heightmapLayers.back()->scale(0.5);
 	std::unique_ptr<LayeredHeightmap> heightmap = std::make_unique<LayeredHeightmap>(*(heightmapLayers.back()));
 
+	// Layer 2
 	heightmapLayers.push_back(generateHeightmap(1024, 128, 8, 0));
 	heightmapLayers.back()->scale(0.5);
 	heightmapLayers.back()->scaleAmplitude(2);	
 	heightmapLayers.back()->mask(*(heightmapLayers.at(0)));
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Addition);
 
+	// Layer 3
 	heightmapLayers.push_back(generateHeightmap(32, 32, 0, 8));
 	heightmapLayers.back()->scale(0.0625);
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Addition);
 
+	// Layer 4
 	heightmapLayers.push_back(generateHeightmap(16, 16, 8, 8));
 	heightmapLayers.back()->scale(0.03125);
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Addition);
 
+	// Global heightmap scale
 	heightmap->scale(1.5);
+
+	// Layer 5
 	heightmap->addLayer(heightmapLayers.at(0), LayerMode::Mask);
+
+	// Layer 6
 	heightmapLayers.push_back(maskGenerator.generateRectangleLinearFalloffMask((mapWidth / 256.0f) * 15, (mapHeight / 256.0f) * 15, (mapWidth / 256.0f) * 64, 0, 0));
 	heightmapLayers.back()->invert();
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Mask);
 
+	// Layer 7
 	heightmapLayers.push_back(generateHeightmap(16, 16, 0, 0));
 	heightmapLayers.back()->mask(*heightmap);
 	heightmapLayers.at(0)->invert();
 	heightmapLayers.back()->mask(*(heightmapLayers.at(0)));
 	heightmap->addLayer(heightmapLayers.back(), LayerMode::Addition);
+
+	// Layer 8
 	heightmapLayers.at(3)->scale(10);
 	heightmap->addLayer(heightmapLayers.at(3), LayerMode::Mask);
 
-	return heightmap;
+	return heightmap;*/
+
+	
+	
+
+	// Layer 1
+	std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap1 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 128, 128, 0, 0);
+	std::unique_ptr<ProceduralHeightmapOperationLowerToLevel> heightmap1_2 = std::make_unique<ProceduralHeightmapOperationLowerToLevel>(std::move(heightmap1), 175);
+	std::unique_ptr<ProceduralHeightmapOperationScale> layer1 = std::make_unique<ProceduralHeightmapOperationScale>(std::move(heightmap1_2), 0.5);
+
+	// Layer 2
+	std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap2 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 1024, 128, 8, 0);
+	std::unique_ptr<ProceduralHeightmapOperationScale>heightmap2_1 = std::make_unique<ProceduralHeightmapOperationScale>(std::move(heightmap2), 0.5);
+	std::unique_ptr<ProceduralHeightmapOperationScaleAmplitude> heightmap2_2 = std::make_unique<ProceduralHeightmapOperationScaleAmplitude>(std::move(heightmap2_1), 2);
+	// Layer 2 mask
+	std::shared_ptr<ProceduralHeightmapOperationCircle> maskLayer2 = std::make_shared<ProceduralHeightmapOperationCircle>(mapWidth, mapHeight, (mapWidth / 256.0f) * 30, (mapWidth / 256.0f) * 98, 0, 0);
+	std::unique_ptr<ProceduralHeightmapOperationMask> layer2 = std::make_unique<ProceduralHeightmapOperationMask>(std::move(heightmap2_2), maskLayer2);
+
+	std::unique_ptr<ProceduralHeightmapOperationAdd> combinedLayers1 = std::make_unique<ProceduralHeightmapOperationAdd>(std::move(layer1), std::move(layer2));
+
+	// Layer 3
+	std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap3 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 32, 32, 0, 8);
+	std::shared_ptr<ProceduralHeightmapOperationScale> layer3 = std::make_shared<ProceduralHeightmapOperationScale>(std::move(heightmap3), 0.0625);
+
+	std::unique_ptr<ProceduralHeightmapOperationAdd> combinedLayers2 = std::make_unique<ProceduralHeightmapOperationAdd>(std::move(combinedLayers1), layer3);
+
+	// Layer 4
+	std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap4 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 16, 16, 8, 8);
+	std::unique_ptr<ProceduralHeightmapOperationScale> layer4 = std::make_unique<ProceduralHeightmapOperationScale>(std::move(heightmap4), 0.03125);
+
+	std::unique_ptr<ProceduralHeightmapOperationAdd> combinedLayers3 = std::make_unique<ProceduralHeightmapOperationAdd>(std::move(combinedLayers2), std::move(layer4));
+
+	// Global heightmap scale
+	std::unique_ptr<ProceduralHeightmapOperationScale> combinedLayers3_1 = std::make_unique<ProceduralHeightmapOperationScale>(std::move(combinedLayers3), 1.5);
+
+	// Layer 5
+	std::unique_ptr<ProceduralHeightmapOperationMask> combinedLayers4 = std::make_unique<ProceduralHeightmapOperationMask>(std::move(combinedLayers3_1), maskLayer2);
+
+	// Layer 6
+	std::unique_ptr<ProceduralHeightmapOperationRectangle> heightmap6 = std::make_unique<ProceduralHeightmapOperationRectangle>(mapWidth, mapHeight, (mapWidth / 256.0f) * 15, (mapHeight / 256.0f) * 15, (mapWidth / 256.0f) * 64, 0, 0);
+	std::unique_ptr<ProceduralHeightmapOperationInvert> layer6 = std::make_unique<ProceduralHeightmapOperationInvert>(std::move(heightmap6));
+
+	std::shared_ptr<ProceduralHeightmapOperationMask> combinedLayers5 = std::make_shared<ProceduralHeightmapOperationMask>(std::move(combinedLayers4), std::move(layer6));
+
+	// Layer 7
+	std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap7 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 16, 16, 0, 0);
+	std::unique_ptr<ProceduralHeightmapOperationMask> heightmap7_1 = std::make_unique<ProceduralHeightmapOperationMask>(std::move(heightmap7), combinedLayers5);
+	// Layer 7 mask
+	std::unique_ptr<ProceduralHeightmapOperationInvert> maskLayer7 = std::make_unique<ProceduralHeightmapOperationInvert>(maskLayer2);
+	std::unique_ptr<ProceduralHeightmapOperationMask> layer7 = std::make_unique<ProceduralHeightmapOperationMask>(std::move(heightmap7_1), std::move(maskLayer7));
+
+	std::unique_ptr<ProceduralHeightmapOperationAdd> combinedLayers6 = std::make_unique<ProceduralHeightmapOperationAdd>(combinedLayers5, std::move(layer7));
+
+	// Layer 8
+	std::unique_ptr<ProceduralHeightmapOperationScale> layer8 = std::make_unique<ProceduralHeightmapOperationScale>(layer3, 10);
+
+	std::unique_ptr<ProceduralHeightmapOperationMask> finalOperation = std::make_unique<ProceduralHeightmapOperationMask>(std::move(combinedLayers6), std::move(layer8));
+
+	ProceduralHeightmap proceduralHeightmap(std::move(finalOperation));
+
+	std::unique_ptr<Heightmap> result = proceduralHeightmap.generateResult();
+	std::unique_ptr<LayeredHeightmap> returnValue = std::make_unique<LayeredHeightmap>(mapWidth, mapHeight);
+	returnValue->addLayer(std::move(result), LayerMode::Addition);
+
+	return returnValue;
 }
 
 std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generateRandom() const {

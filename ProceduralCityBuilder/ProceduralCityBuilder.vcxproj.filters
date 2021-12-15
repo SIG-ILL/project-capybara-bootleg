@@ -49,6 +49,30 @@
     <Filter Include="Source Files\Terrain Generation\Model Generation">
       <UniqueIdentifier>{ef5138e8-4ff7-4fd4-a1de-42ba5b62a9fb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap">
+      <UniqueIdentifier>{6e7526fd-c403-4585-a36c-4198e924960c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap">
+      <UniqueIdentifier>{3398c937-fa74-481f-8225-169879ef597f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination">
+      <UniqueIdentifier>{d23833ac-885c-4b28-9d85-2873ac07ca42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination">
+      <UniqueIdentifier>{a494b877-35a1-4b14-8854-f643c26d5524}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation">
+      <UniqueIdentifier>{116bc841-8ec6-41ae-890b-bfc4d938c588}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification">
+      <UniqueIdentifier>{9dd9e537-48a3-4b47-b9ed-d15ea014204a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation">
+      <UniqueIdentifier>{c8dac5b8-5cad-4122-be2a-6e39fd073ef2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification">
+      <UniqueIdentifier>{a7eb3448-8e97-4728-828b-987adb624be9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -155,6 +179,63 @@
     </ClCompile>
     <ClCompile Include="Stopwatch.cpp">
       <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmap.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationSubtract.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationAdd.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationMask.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationRaiseToLevel.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationLowerToLevel.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationClamp.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationScale.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationInvert.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationScaleAmplitude.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationRaise.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationLower.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationToBlackAndWhite.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationFlatten.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationNoise.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationAbsoluteNoise.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationGradient.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationRectangle.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationCircle.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -283,6 +364,66 @@
     </ClInclude>
     <ClInclude Include="Stopwatch.hpp">
       <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmap.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperation.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationSubtract.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationAdd.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationMask.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationRaiseToLevel.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationLowerToLevel.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationClamp.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationScale.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationInvert.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationScaleAmplitude.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationRaise.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationLower.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationToBlackAndWhite.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationFlatten.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Modification</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationNoise.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationAbsoluteNoise.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationCircle.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationRectangle.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationGradient.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
