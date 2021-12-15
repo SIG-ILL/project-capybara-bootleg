@@ -95,6 +95,7 @@
     <ClCompile Include="ProceduralHeightmapOperationLower.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationLowerToLevel.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationMask.cpp" />
+    <ClCompile Include="ProceduralHeightmapOperationModifierCacheResult.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationNoise.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationRaise.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationRaiseToLevel.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="ProceduralHeightmapOperationLower.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationLowerToLevel.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationMask.hpp" />
+    <ClInclude Include="ProceduralHeightmapOperationModifierCacheResult.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationNoise.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationRaise.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationRaiseToLevel.hpp" />

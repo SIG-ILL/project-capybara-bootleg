@@ -25,6 +25,9 @@ pcb::Heightmap::Heightmap(const pcb::Image& image) : width(image.getWidth()), he
 	highestElevation = *(minMaxElevation.second);
 }
 
+pcb::Heightmap::Heightmap(const Heightmap& other) : width(other.width), height(other.height), lowestElevation(other.lowestElevation), highestElevation(other.highestElevation),
+elevationValues(std::make_shared<std::vector<unsigned char>>(*(other.elevationValues))) {}
+
 pcb::Heightmap& pcb::Heightmap::operator+=(const pcb::Heightmap& other) {
 	add(other);
 	return *this;
