@@ -8,6 +8,8 @@ namespace pcb {
 		ProceduralHeightmapOperationCircle(int width, int height, int unaffectedCircleRadiusInPixels, int falloffWidthInPixels, int offsetX, int offsetY);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
+		int getHeightmapWidth() const override;
+		int getHeightmapHeight() const override;
 
 	private:
 		int width;

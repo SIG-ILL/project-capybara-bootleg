@@ -30,6 +30,14 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationGradient::gener
 	return std::make_unique<Heightmap>(width, height, std::move(gradientData));
 }
 
+int pcb::ProceduralHeightmapOperationGradient::getHeightmapWidth() const {
+	return width;
+}
+
+int pcb::ProceduralHeightmapOperationGradient::getHeightmapHeight() const {
+	return height;
+}
+
 void pcb::ProceduralHeightmapOperationGradient::generateLinearGradientMaskUp(std::vector<unsigned char>& gradientData) const {
 	const unsigned char MAX_VALUE = 255;
 

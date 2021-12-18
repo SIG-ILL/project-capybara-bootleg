@@ -9,3 +9,10 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationToBlackAndWhite
 
 	return heightmap;
 }
+int pcb::ProceduralHeightmapOperationToBlackAndWhite::getHeightmapWidth() const {
+	return sourceToModify->getHeightmapWidth();
+}
+
+int pcb::ProceduralHeightmapOperationToBlackAndWhite::getHeightmapHeight() const {
+	return sourceToModify->getHeightmapHeight();
+}

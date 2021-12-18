@@ -268,3 +268,69 @@ void pcb::Heightmap::flatten(const unsigned char amountOfBuckets) {
 	lowestElevation = *(minMaxElevation.first);
 	highestElevation = *(minMaxElevation.second);
 }
+
+void pcb::Heightmap::maximum(const Heightmap& other) {
+	const int heightConditionValue = std::min(height, other.height);
+	const int widthConditionValue = std::min(width, other.width);
+
+	for (int y = 0; y < heightConditionValue; y++) {
+		int indexRowStartIndex = (y * width);
+
+		for (int x = 0; x < widthConditionValue; x++) {
+			int index = indexRowStartIndex + x;
+			unsigned char newValue = std::max(this->elevationValues->at(index), other.elevationValues->at(index));
+			this->elevationValues->at(index) = newValue;
+
+			if (newValue > highestElevation) {
+				highestElevation = newValue;
+			}
+		}
+	}
+
+	lowestElevation = *std::min_element(this->elevationValues->begin(), this->elevationValues->end());
+}
+
+void pcb::Heightmap::minimum(const Heightmap& other) {
+	const int heightConditionValue = std::min(height, other.height);
+	const int widthConditionValue = std::min(width, other.width);
+
+	for (int y = 0; y < heightConditionValue; y++) {
+		int indexRowStartIndex = (y * width);
+
+		for (int x = 0; x < widthConditionValue; x++) {
+			int index = indexRowStartIndex + x;
+			unsigned char newValue = std::min(this->elevationValues->at(index), other.elevationValues->at(index));
+			this->elevationValues->at(index) = newValue;
+
+			if (newValue < lowestElevation) {
+				lowestElevation = newValue;
+			}
+		}
+	}
+
+	highestElevation = *std::max_element(this->elevationValues->begin(), this->elevationValues->end());
+}
+
+void pcb::Heightmap::roughen(const Heightmap& other, const double scale) {
+	const int heightConditionValue = std::min(height, other.height);
+	const int widthConditionValue = std::min(width, other.width);
+	const int VALUE_THRESHOLD = static_cast<int>(std::ceil(MAX_ELEVATION_VALUE / 2.0f));
+	const int MIN_VALUE = MIN_ELEVATION_VALUE;
+	const int MAX_VALUE = MAX_ELEVATION_VALUE;
+
+	for (int y = 0; y < heightConditionValue; y++) {
+		int indexRowStartIndex = (y * width);
+
+		for (int x = 0; x < widthConditionValue; x++) {
+			int index = indexRowStartIndex + x;
+			
+			int valueChange = static_cast<int>(std::round(scale * (other.elevationValues->at(index) - VALUE_THRESHOLD)));
+			unsigned char newValue = static_cast<unsigned char>(std::clamp(this->elevationValues->at(index) + valueChange, MIN_VALUE, MAX_VALUE));
+			this->elevationValues->at(index) = newValue;
+		}
+	}
+
+	std::pair minMaxElevation = std::minmax_element(this->elevationValues->begin(), this->elevationValues->end());
+	lowestElevation = *(minMaxElevation.first);
+	highestElevation = *(minMaxElevation.second);
+}

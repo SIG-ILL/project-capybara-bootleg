@@ -41,6 +41,9 @@ namespace pcb {
 		void lower(const unsigned char amount);
 		void toBlackAndWhite(const unsigned char inclusiveThreshold);
 		void flatten(const unsigned char amountOfBuckets);
+		void maximum(const Heightmap& other);
+		void minimum(const Heightmap& other);
+		void roughen(const Heightmap& other, const double scale);
 
 	private:
 		static const unsigned char MIN_ELEVATION_VALUE = 0;

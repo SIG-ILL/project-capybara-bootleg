@@ -3,11 +3,15 @@
 // Combination
 #include "ProceduralHeightmapOperationAdd.hpp"
 #include "ProceduralHeightmapOperationMask.hpp"
+#include "ProceduralHeightmapOperationMaximum.hpp"
+#include "ProceduralHeightmapOperationMinimum.hpp"
+#include "ProceduralHeightmapOperationRoughen.hpp"
 #include "ProceduralHeightmapOperationSubtract.hpp"
 
 // Creation
 #include "ProceduralHeightmapOperationAbsoluteNoise.hpp"
 #include "ProceduralHeightmapOperationCircle.hpp"
+#include "ProceduralHeightmapOperationEmptyMap.hpp"
 #include "ProceduralHeightmapOperationGradient.hpp"
 #include "ProceduralHeightmapOperationNoise.hpp"
 #include "ProceduralHeightmapOperationRectangle.hpp"
@@ -23,6 +27,9 @@
 #include "ProceduralHeightmapOperationScale.hpp"
 #include "ProceduralHeightmapOperationScaleAmplitude.hpp"
 #include "ProceduralHeightmapOperationToBlackAndWhite.hpp"
+
+// Terrain Features
+#include "ProceduralHeightmapOperationAddMountains.hpp"
 
 // Operation Modifiers
 #include "ProceduralHeightmapOperationModifierCacheResult.hpp"

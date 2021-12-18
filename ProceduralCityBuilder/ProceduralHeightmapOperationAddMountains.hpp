@@ -3,9 +3,9 @@
 #include "ProceduralHeightmapOperation.hpp"
 
 namespace pcb {
-	class ProceduralHeightmapOperationRaise final : public ProceduralHeightmapOperation {
+	class ProceduralHeightmapOperationAddMountains final : public ProceduralHeightmapOperation {
 	public:
-		ProceduralHeightmapOperationRaise(std::shared_ptr<ProceduralHeightmapOperation> sourceToModify, unsigned char amount);
+		ProceduralHeightmapOperationAddMountains(std::shared_ptr<ProceduralHeightmapOperation> sourceToModify, int offsetFromCenterX, int offsetFromCenterY);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
 		int getHeightmapWidth() const override;
@@ -13,6 +13,7 @@ namespace pcb {
 
 	private:
 		std::shared_ptr<ProceduralHeightmapOperation> sourceToModify;
-		unsigned char amount;
+		int offsetFromCenterX;
+		int offsetFromCenterY;
 	};
 }

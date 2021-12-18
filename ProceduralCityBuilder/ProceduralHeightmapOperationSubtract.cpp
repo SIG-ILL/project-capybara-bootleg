@@ -11,3 +11,11 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationSubtract::gener
 
 	return firstResult;
 }
+
+int pcb::ProceduralHeightmapOperationSubtract::getHeightmapWidth() const {
+	return firstOperand->getHeightmapWidth();
+}
+
+int pcb::ProceduralHeightmapOperationSubtract::getHeightmapHeight() const {
+	return firstOperand->getHeightmapHeight();
+}

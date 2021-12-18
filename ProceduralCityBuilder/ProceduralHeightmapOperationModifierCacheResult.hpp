@@ -14,6 +14,8 @@ namespace pcb {
 		ProceduralHeightmapOperationModifierCacheResult(const ProceduralHeightmapOperation& operation);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
+		int getHeightmapWidth() const override;
+		int getHeightmapHeight() const override;
 
 	private:
 		std::unique_ptr<Heightmap> cachedResult;

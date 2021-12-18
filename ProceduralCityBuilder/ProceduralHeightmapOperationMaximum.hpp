@@ -3,9 +3,9 @@
 #include "ProceduralHeightmapOperation.hpp"
 
 namespace pcb {
-	class ProceduralHeightmapOperationSubtract final : public ProceduralHeightmapOperation {
+	class ProceduralHeightmapOperationMaximum final : public ProceduralHeightmapOperation {
 	public:
-		ProceduralHeightmapOperationSubtract(std::shared_ptr<ProceduralHeightmapOperation> firstOperand, std::shared_ptr<ProceduralHeightmapOperation> secondOperand);
+		ProceduralHeightmapOperationMaximum(std::shared_ptr<ProceduralHeightmapOperation> firstOperand, std::shared_ptr<ProceduralHeightmapOperation> secondOperand);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
 		int getHeightmapWidth() const override;

@@ -3,9 +3,9 @@
 #include "ProceduralHeightmapOperation.hpp"
 
 namespace pcb {
-	class ProceduralHeightmapOperationSubtract final : public ProceduralHeightmapOperation {
+	class ProceduralHeightmapOperationRoughen final : public ProceduralHeightmapOperation {
 	public:
-		ProceduralHeightmapOperationSubtract(std::shared_ptr<ProceduralHeightmapOperation> firstOperand, std::shared_ptr<ProceduralHeightmapOperation> secondOperand);
+		ProceduralHeightmapOperationRoughen(std::shared_ptr<ProceduralHeightmapOperation> firstOperand, std::shared_ptr<ProceduralHeightmapOperation> secondOperand, double scale);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
 		int getHeightmapWidth() const override;
@@ -14,5 +14,6 @@ namespace pcb {
 	private:
 		std::shared_ptr<ProceduralHeightmapOperation> firstOperand;
 		std::shared_ptr<ProceduralHeightmapOperation> secondOperand;
+		double scale;
 	};
 }

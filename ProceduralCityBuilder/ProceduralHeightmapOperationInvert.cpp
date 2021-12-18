@@ -8,3 +8,11 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationInvert::generat
 
 	return heightmap;
 }
+
+int pcb::ProceduralHeightmapOperationInvert::getHeightmapWidth() const {
+	return sourceToModify->getHeightmapWidth();
+}
+
+int pcb::ProceduralHeightmapOperationInvert::getHeightmapHeight() const {
+	return sourceToModify->getHeightmapHeight();
+}

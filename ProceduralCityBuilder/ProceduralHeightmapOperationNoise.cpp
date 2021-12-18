@@ -10,3 +10,11 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationNoise::generate
 
 	return generator.generate(noiseSamplingFrequencyX, noiseSamplingFrequencyY, xOffset, yOffset);
 }
+
+int pcb::ProceduralHeightmapOperationNoise::getHeightmapWidth() const {
+	return width;
+}
+
+int pcb::ProceduralHeightmapOperationNoise::getHeightmapHeight() const {
+	return height;
+}

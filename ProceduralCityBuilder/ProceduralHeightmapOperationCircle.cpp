@@ -46,3 +46,11 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationCircle::generat
 
 	return std::make_unique<Heightmap>(width, height, std::move(circleData));
 }
+
+int pcb::ProceduralHeightmapOperationCircle::getHeightmapWidth() const {
+	return width;
+}
+
+int pcb::ProceduralHeightmapOperationCircle::getHeightmapHeight() const {
+	return height;
+}

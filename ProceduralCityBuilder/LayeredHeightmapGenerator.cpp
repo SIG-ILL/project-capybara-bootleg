@@ -17,7 +17,7 @@ pcb::LayeredHeightmapGenerator::LayeredHeightmapGenerator(int mapWidth, int mapH
 
 std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate() const {
 	// Layer 1
-	std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap1 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 128, 128, 0, 0);
+	/*std::unique_ptr<ProceduralHeightmapOperationNoise> heightmap1 = std::make_unique<ProceduralHeightmapOperationNoise>(mapWidth, mapHeight, 128, 128, 0, 0);
 	std::unique_ptr<ProceduralHeightmapOperationLowerToLevel> heightmap1_2 = std::make_unique<ProceduralHeightmapOperationLowerToLevel>(std::move(heightmap1), 175);
 	std::unique_ptr<ProceduralHeightmapOperationScale> layer1 = std::make_unique<ProceduralHeightmapOperationScale>(std::move(heightmap1_2), 0.5);
 
@@ -52,7 +52,7 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate(
 	std::unique_ptr<ProceduralHeightmapOperationMask> combinedLayers4 = std::make_unique<ProceduralHeightmapOperationMask>(std::move(combinedLayers3_1), maskLayer2);
 
 	// Layer 6
-	std::unique_ptr<ProceduralHeightmapOperationRectangle> heightmap6 = std::make_unique<ProceduralHeightmapOperationRectangle>(mapWidth, mapHeight, (mapWidth / 256.0f) * 15, (mapHeight / 256.0f) * 15, (mapWidth / 256.0f) * 64, 0, 0);
+	std::unique_ptr<ProceduralHeightmapOperationRectangle> heightmap6 = std::make_unique<ProceduralHeightmapOperationRectangle>(mapWidth, mapHeight, (mapWidth / 256.0f) * 15, (mapHeight / 256.0f) * 15, (mapWidth / 256.0f) * 64, (mapWidth / 256.0f) * 64, 0, 0);
 	std::unique_ptr<ProceduralHeightmapOperationInvert> layer6 = std::make_unique<ProceduralHeightmapOperationInvert>(std::move(heightmap6));
 
 	std::unique_ptr<ProceduralHeightmapOperationMask> combinedLayers5Uncached = std::make_unique<ProceduralHeightmapOperationMask>(std::move(combinedLayers4), std::move(layer6));
@@ -72,12 +72,22 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate(
 
 	std::unique_ptr<ProceduralHeightmapOperationMask> finalOperation = std::make_unique<ProceduralHeightmapOperationMask>(std::move(combinedLayers6), std::move(layer8));
 
-	ProceduralHeightmap proceduralHeightmap(std::move(finalOperation));
+	ProceduralHeightmap proceduralHeightmap(std::move(finalOperation));	
 
 	std::unique_ptr<Heightmap> result = proceduralHeightmap.generateResult();
 	std::unique_ptr<LayeredHeightmap> returnValue = std::make_unique<LayeredHeightmap>(mapWidth, mapHeight);
 	returnValue->addLayer(std::move(result), LayerMode::Addition);
 
+	return returnValue;*/
+
+	std::unique_ptr<ProceduralHeightmapOperationEmptyMap> emptyMap = std::make_unique<ProceduralHeightmapOperationEmptyMap>(mapWidth, mapHeight);
+	std::unique_ptr<ProceduralHeightmapOperationAddMountains> mountains = std::make_unique<ProceduralHeightmapOperationAddMountains>(std::move(emptyMap), 100, 100);
+	
+	ProceduralHeightmap proceduralHeightmap(std::move(mountains));
+	std::unique_ptr<Heightmap> result = proceduralHeightmap.generateResult();
+
+	std::unique_ptr<LayeredHeightmap> returnValue = std::make_unique<LayeredHeightmap>(mapWidth, mapHeight);
+	returnValue->addLayer(std::move(result), LayerMode::Addition);
 	return returnValue;
 }
 
@@ -85,8 +95,6 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generateR
 	RandomHeightmapGenerator generator(mapWidth, mapHeight);
 	RandomHeightmapGenerationDataGenerator dataGenerator;
 	RandomHeightmapGenerationData generationData = dataGenerator.generate(mapWidth, mapHeight);
-
-	//return generator.generate(generationData);
 
 	Stopwatch stopwatch;
 	stopwatch.start();

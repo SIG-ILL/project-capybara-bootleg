@@ -9,6 +9,8 @@ namespace pcb {
 		ProceduralHeightmapOperationGradient(int width, int height, GradientDirection direction);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
+		int getHeightmapWidth() const override;
+		int getHeightmapHeight() const override;
 
 	private:
 		int width;

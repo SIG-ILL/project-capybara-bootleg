@@ -11,3 +11,11 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationMask::generateR
 
 	return firstResult;
 }
+
+int pcb::ProceduralHeightmapOperationMask::getHeightmapWidth() const {
+	return firstOperand->getHeightmapWidth();
+}
+
+int pcb::ProceduralHeightmapOperationMask::getHeightmapHeight() const {
+	return firstOperand->getHeightmapHeight();
+}
