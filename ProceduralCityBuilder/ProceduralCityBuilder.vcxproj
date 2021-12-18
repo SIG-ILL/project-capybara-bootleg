@@ -163,6 +163,7 @@
     <ClInclude Include="ProceduralHeightmapOperationRaise.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationRaiseToLevel.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationRectangle.hpp" />
+    <ClInclude Include="ProceduralHeightmapOperations.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationScale.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationScaleAmplitude.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationSubtract.hpp" />

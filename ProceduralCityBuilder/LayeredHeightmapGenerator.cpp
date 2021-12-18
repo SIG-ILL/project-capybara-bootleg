@@ -8,16 +8,7 @@
 #include "RandomHeightmapGenerationDataGenerator.hpp"
 
 #include "ProceduralHeightmap.hpp"
-#include "ProceduralHeightmapOperationMask.hpp"
-#include "ProceduralHeightmapOperationNoise.hpp"
-#include "ProceduralHeightmapOperationLowerToLevel.hpp"
-#include "ProceduralHeightmapOperationScale.hpp"
-#include "ProceduralHeightmapOperationScaleAmplitude.hpp"
-#include "ProceduralHeightmapOperationInvert.hpp"
-#include "ProceduralHeightmapOperationCircle.hpp"
-#include "ProceduralHeightmapOperationRectangle.hpp"
-#include "ProceduralHeightmapOperationAdd.hpp"
-#include "ProceduralHeightmapOperationModifierCacheResult.hpp"
+#include "ProceduralHeightmapOperations.hpp"
 
 #include "Logger.hpp"
 #include "Stopwatch.hpp"

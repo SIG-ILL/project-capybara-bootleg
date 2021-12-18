@@ -431,5 +431,8 @@
     <ClInclude Include="ProceduralHeightmapOperationModifierCacheResult.hpp">
       <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap</Filter>
     </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperations.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
