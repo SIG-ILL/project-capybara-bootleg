@@ -80,6 +80,8 @@ std::unique_ptr<pcb::LayeredHeightmap> pcb::LayeredHeightmapGenerator::generate(
 
 	return returnValue;*/
 
+
+
 	std::unique_ptr<ProceduralHeightmapOperationEmptyMap> emptyMap = std::make_unique<ProceduralHeightmapOperationEmptyMap>(mapWidth, mapHeight);
 	std::unique_ptr<ProceduralHeightmapOperationAddMountains> mountains = std::make_unique<ProceduralHeightmapOperationAddMountains>(std::move(emptyMap), 100, 100);
 	

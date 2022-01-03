@@ -11,6 +11,7 @@
 // Creation
 #include "ProceduralHeightmapOperationAbsoluteNoise.hpp"
 #include "ProceduralHeightmapOperationCircle.hpp"
+#include "ProceduralHeightmapOperationEllipse.hpp"
 #include "ProceduralHeightmapOperationEmptyMap.hpp"
 #include "ProceduralHeightmapOperationGradient.hpp"
 #include "ProceduralHeightmapOperationNoise.hpp"

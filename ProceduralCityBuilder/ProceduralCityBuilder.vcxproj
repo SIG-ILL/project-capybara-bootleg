@@ -90,6 +90,7 @@
     <ClCompile Include="ProceduralHeightmapOperationAddMountains.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationCircle.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationClamp.cpp" />
+    <ClCompile Include="ProceduralHeightmapOperationEllipse.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationEmptyMap.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationFlatten.cpp" />
     <ClCompile Include="ProceduralHeightmapOperationGradient.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="ProceduralHeightmapOperationAddMountains.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationCircle.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationClamp.hpp" />
+    <ClInclude Include="ProceduralHeightmapOperationEllipse.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationEmptyMap.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationFlatten.hpp" />
     <ClInclude Include="ProceduralHeightmapOperationGradient.hpp" />

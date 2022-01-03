@@ -261,6 +261,9 @@
     <ClCompile Include="ProceduralHeightmapOperationRoughen.cpp">
       <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
     </ClCompile>
+    <ClCompile Include="ProceduralHeightmapOperationEllipse.cpp">
+      <Filter>Source Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.hpp">
@@ -469,6 +472,9 @@
     </ClInclude>
     <ClInclude Include="ProceduralHeightmapOperationRoughen.hpp">
       <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Combination</Filter>
+    </ClInclude>
+    <ClInclude Include="ProceduralHeightmapOperationEllipse.hpp">
+      <Filter>Header Files\Terrain Generation\Heightmap Generation\Procedural Heightmap\Creation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
