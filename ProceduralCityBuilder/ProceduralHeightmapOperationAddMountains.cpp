@@ -7,6 +7,7 @@
 #include "ProceduralHeightmapOperationEllipse.hpp"
 #include "ProceduralHeightmapOperationMask.hpp"
 #include "ProceduralHeightmapOperationMaximum.hpp"
+#include "ProceduralHeightmapOperationScale.hpp"
 
 pcb::ProceduralHeightmapOperationAddMountains::ProceduralHeightmapOperationAddMountains(std::shared_ptr<ProceduralHeightmapOperation> sourceToModify, int offsetFromCenterX, int offsetFromCenterY)
 	: sourceToModify(sourceToModify), offsetFromCenterX(offsetFromCenterX), offsetFromCenterY(offsetFromCenterY) {}
@@ -15,21 +16,26 @@ std::unique_ptr<pcb::Heightmap> pcb::ProceduralHeightmapOperationAddMountains::g
 	int width = sourceToModify->getHeightmapWidth();
 	int height = sourceToModify->getHeightmapHeight();
 
-	std::unique_ptr<ProceduralHeightmapOperationAbsoluteNoise> baseNoise = std::make_unique<ProceduralHeightmapOperationAbsoluteNoise>(width, height, 196, 196, 0, 0);
-	std::unique_ptr<ProceduralHeightmapOperationInvert> invertedNoise = std::make_unique<ProceduralHeightmapOperationInvert>(std::move(baseNoise));
-	std::unique_ptr<ProceduralHeightmapOperationNoise> roughenerNoise = std::make_unique<ProceduralHeightmapOperationNoise>(width, height, 32, 32, 32, 32);
-	std::unique_ptr<ProceduralHeightmapOperationRoughen> roughNoise = std::make_unique<ProceduralHeightmapOperationRoughen>(std::move(invertedNoise), std::move(roughenerNoise), 0.125);
-	std::unique_ptr<ProceduralHeightmapOperationNoise> roughenerNoise2 = std::make_unique<ProceduralHeightmapOperationNoise>(width, height, 16, 16, 16, 16);
-	std::unique_ptr<ProceduralHeightmapOperationRoughen> roughNoise2 = std::make_unique<ProceduralHeightmapOperationRoughen>(std::move(roughNoise), std::move(roughenerNoise2), 0.0625);
-	std::unique_ptr<ProceduralHeightmapOperationNoise> roughenerNoise3 = std::make_unique<ProceduralHeightmapOperationNoise>(width, height, 8, 8, 8, 8);
-	std::unique_ptr<ProceduralHeightmapOperationRoughen> roughNoise3 = std::make_unique<ProceduralHeightmapOperationRoughen>(std::move(roughNoise2), std::move(roughenerNoise3), 0.03125);
-	// Use an oval mask instead? Which first needs to be implemented...
-	std::unique_ptr<ProceduralHeightmapOperationEllipse> mask = std::make_unique<ProceduralHeightmapOperationEllipse>(width, height, static_cast<int>(0.2 * width), static_cast<int>(0.0625 * height), 2.0, offsetFromCenterX, offsetFromCenterY);
-	std::unique_ptr<ProceduralHeightmapOperationMask> maskedNoise = std::make_unique<ProceduralHeightmapOperationMask>(std::move(roughNoise3), std::move(mask));
+	auto baseNoise = std::make_unique<ProceduralHeightmapOperationAbsoluteNoise>(width, height, 392, 196, 0, 0);
+	auto invertedNoise = std::make_unique<ProceduralHeightmapOperationInvert>(std::move(baseNoise));
+	auto roughenerNoise = std::make_unique<ProceduralHeightmapOperationNoise>(width, height, 64, 32, 32, 32);
+	auto roughNoise = std::make_unique<ProceduralHeightmapOperationRoughen>(std::move(invertedNoise), std::move(roughenerNoise), 0.125);
+	auto roughenerNoise2 = std::make_unique<ProceduralHeightmapOperationNoise>(width, height, 32, 16, 16, 16);
+	auto roughNoise2 = std::make_unique<ProceduralHeightmapOperationRoughen>(std::move(roughNoise), std::move(roughenerNoise2), 0.0625);
+	auto roughenerNoise3 = std::make_unique<ProceduralHeightmapOperationNoise>(width, height, 16, 8, 8, 8);
+	auto roughNoise3 = std::make_unique<ProceduralHeightmapOperationRoughen>(std::move(roughNoise2), std::move(roughenerNoise3), 0.03125);
 
-	std::unique_ptr<ProceduralHeightmapOperationMaximum> finalOperation = std::make_unique<ProceduralHeightmapOperationMaximum>(sourceToModify, std::move(maskedNoise));
+	auto mask = std::make_unique<ProceduralHeightmapOperationEllipse>(width, height, static_cast<int>(0.2 * width), static_cast<int>(0.0625 * height), 2.0, offsetFromCenterX, offsetFromCenterY);
+	auto maskedNoise = std::make_unique<ProceduralHeightmapOperationMask>(std::move(roughNoise3), std::move(mask));
 
-	return finalOperation->generateResult();
+	std::unique_ptr<Heightmap> mountainsResult = maskedNoise->generateResult();
+	std::unique_ptr<Heightmap> sourceResult = sourceToModify->generateResult();
+	const float TARGET_MOUNTAIN_MAX_HEIGHT_FACTOR = 1.35f;
+	float scalingFactor = (TARGET_MOUNTAIN_MAX_HEIGHT_FACTOR / (static_cast<float>(mountainsResult->getHighestElevation()) / static_cast<float>(sourceResult->getHighestElevation())));	// TODO: Make ellipse mask falloff linked to this factor (higher factor = higher falloff, lower factor = lower falloff) to improve blending of mountains into source and reduce steepness at high scaling factors?
+	mountainsResult->scale(scalingFactor);
+	sourceResult->maximum(*mountainsResult);
+
+	return sourceResult;
 }
 
 int pcb::ProceduralHeightmapOperationAddMountains::getHeightmapWidth() const {

@@ -5,7 +5,7 @@
 namespace pcb {
 	class ProceduralHeightmapOperationEllipse final : public ProceduralHeightmapOperation {
 	public:
-		ProceduralHeightmapOperationEllipse(int width, int height, int unaffectedHorizontalRadiusInPixels, int unaffectedVerticalRadiusInPixels, float falloffEllipseScaleFactor, int offsetX, int offsetY);
+		ProceduralHeightmapOperationEllipse(int width, int height, int unaffectedHorizontalSemiDiameterInPixels, int unaffectedVerticalSemiDiameterInPixels, float falloffEllipseScaleFactor, int offsetX, int offsetY);
 
 		std::unique_ptr<Heightmap> generateResult() const override;
 		int getHeightmapWidth() const override;
@@ -14,8 +14,8 @@ namespace pcb {
 	private:
 		int width;
 		int height;
-		int unaffectedHorizontalRadiusInPixels;
-		int unaffectedVerticalRadiusInPixels;
+		int unaffectedHorizontalSemiDiameterInPixels;
+		int unaffectedVerticalSemiDiameterInPixels;
 		float falloffEllipseScaleFactor;
 		int offsetX;
 		int offsetY;
